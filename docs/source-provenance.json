@@ -1,0 +1,11 @@
+{
+  "sourceComponents": [
+    "."
+  ],
+  "excludedArtifactCategories": [
+    "local runtime configuration; clean example retained",
+    "private environment"
+  ],
+  "previousGitHistoryIncluded": false,
+  "datasetsAndWeightsIncluded": false
+}

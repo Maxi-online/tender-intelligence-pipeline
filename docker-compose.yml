@@ -1,0 +1,212 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: tpis
+      POSTGRES_USER: ${SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD:?Set SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD
+        in private environment}
+      POSTGRES_PASSWORD: ${SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD:?Set SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD
+        in private environment}
+    ports:
+    - 5433:5432
+    volumes:
+    - tpis_db:/var/lib/postgresql/data
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+    - 5672:5672
+    - 15672:15672
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+    - ./.env
+    command:
+    - uvicorn
+    - app.main:app
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8001'
+    ports:
+    - 8001:8001
+    volumes:
+    - ./backend/app:/app/app
+    - ./config:/app/config
+    - ./exports:/app/exports
+    depends_on:
+    - db
+    - rabbitmq
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
+    environment:
+      DATABASE_URL: ${DATABASE_URL-}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL-}
+      SELDON_BASE_URL: ${SELDON_BASE_URL-}
+      SELDON_API_KEY: ${SELDON_API_KEY-}
+      DISCOVERY_API_KEY: ${DISCOVERY_API_KEY-}
+      HTTP_PROXY_URL: ${HTTP_PROXY_URL-}
+      PERPLEXITY_API_KEY: ${PERPLEXITY_API_KEY-}
+      DADATA_API_KEY: ${DADATA_API_KEY-}
+      DADATA_SECRET_KEY: ${DADATA_SECRET_KEY-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD: ${SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD-}
+      DATABASE_URL_ALT_2: ${DATABASE_URL_ALT_2-}
+      CELERY_BROKER_URL_ALT_2: ${CELERY_BROKER_URL_ALT_2-}
+      DISCOVERY_API_KEY_ALT_2: ${DISCOVERY_API_KEY_ALT_2-}
+      HTTP_PROXY_URL_ALT_2: ${HTTP_PROXY_URL_ALT_2-}
+      PERPLEXITY_API_KEY_ALT_2: ${PERPLEXITY_API_KEY_ALT_2-}
+      DADATA_API_KEY_ALT_2: ${DADATA_API_KEY_ALT_2-}
+      DADATA_SECRET_KEY_ALT_2: ${DADATA_SECRET_KEY_ALT_2-}
+      DADATA_MCP_URL: ${DADATA_MCP_URL-}
+      EMAIL: ${EMAIL-}
+  celery_worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+    - ./.env
+    command:
+    - celery
+    - -A
+    - app.tasks.celery_app.celery_app
+    - worker
+    - -l
+    - INFO
+    - -c
+    - '1'
+    volumes:
+    - ./backend/app:/app/app
+    - ./config:/app/config
+    - ./exports:/app/exports
+    depends_on:
+    - rabbitmq
+    - db
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
+    environment:
+      DATABASE_URL: ${DATABASE_URL-}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL-}
+      SELDON_BASE_URL: ${SELDON_BASE_URL-}
+      SELDON_API_KEY: ${SELDON_API_KEY-}
+      DISCOVERY_API_KEY: ${DISCOVERY_API_KEY-}
+      HTTP_PROXY_URL: ${HTTP_PROXY_URL-}
+      PERPLEXITY_API_KEY: ${PERPLEXITY_API_KEY-}
+      DADATA_API_KEY: ${DADATA_API_KEY-}
+      DADATA_SECRET_KEY: ${DADATA_SECRET_KEY-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD: ${SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD-}
+      DATABASE_URL_ALT_2: ${DATABASE_URL_ALT_2-}
+      CELERY_BROKER_URL_ALT_2: ${CELERY_BROKER_URL_ALT_2-}
+      DISCOVERY_API_KEY_ALT_2: ${DISCOVERY_API_KEY_ALT_2-}
+      HTTP_PROXY_URL_ALT_2: ${HTTP_PROXY_URL_ALT_2-}
+      PERPLEXITY_API_KEY_ALT_2: ${PERPLEXITY_API_KEY_ALT_2-}
+      DADATA_API_KEY_ALT_2: ${DADATA_API_KEY_ALT_2-}
+      DADATA_SECRET_KEY_ALT_2: ${DADATA_SECRET_KEY_ALT_2-}
+      DADATA_MCP_URL: ${DADATA_MCP_URL-}
+      EMAIL: ${EMAIL-}
+  celery_beat:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+    - ./.env
+    command:
+    - celery
+    - -A
+    - app.tasks.celery_app.celery_app
+    - beat
+    - -l
+    - INFO
+    volumes:
+    - ./backend/app:/app/app
+    - ./config:/app/config
+    - ./exports:/app/exports
+    depends_on:
+    - rabbitmq
+    - db
+    dns:
+    - 8.8.8.8
+    - 1.1.1.1
+    environment:
+      DATABASE_URL: ${DATABASE_URL-}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL-}
+      SELDON_BASE_URL: ${SELDON_BASE_URL-}
+      SELDON_API_KEY: ${SELDON_API_KEY-}
+      DISCOVERY_API_KEY: ${DISCOVERY_API_KEY-}
+      HTTP_PROXY_URL: ${HTTP_PROXY_URL-}
+      PERPLEXITY_API_KEY: ${PERPLEXITY_API_KEY-}
+      DADATA_API_KEY: ${DADATA_API_KEY-}
+      DADATA_SECRET_KEY: ${DADATA_SECRET_KEY-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD: ${SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD-}
+      DATABASE_URL_ALT_2: ${DATABASE_URL_ALT_2-}
+      CELERY_BROKER_URL_ALT_2: ${CELERY_BROKER_URL_ALT_2-}
+      DISCOVERY_API_KEY_ALT_2: ${DISCOVERY_API_KEY_ALT_2-}
+      HTTP_PROXY_URL_ALT_2: ${HTTP_PROXY_URL_ALT_2-}
+      PERPLEXITY_API_KEY_ALT_2: ${PERPLEXITY_API_KEY_ALT_2-}
+      DADATA_API_KEY_ALT_2: ${DADATA_API_KEY_ALT_2-}
+      DADATA_SECRET_KEY_ALT_2: ${DADATA_SECRET_KEY_ALT_2-}
+      DADATA_MCP_URL: ${DADATA_MCP_URL-}
+      EMAIL: ${EMAIL-}
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    working_dir: /app/streamlit_app
+    environment:
+      TPIS_API_BASE: http://backend:8001/api
+      PYTHONPATH: /app/streamlit_app
+      DATABASE_URL: ${DATABASE_URL-}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL-}
+      SELDON_BASE_URL: ${SELDON_BASE_URL-}
+      SELDON_API_KEY: ${SELDON_API_KEY-}
+      DISCOVERY_API_KEY: ${DISCOVERY_API_KEY-}
+      HTTP_PROXY_URL: ${HTTP_PROXY_URL-}
+      PERPLEXITY_API_KEY: ${PERPLEXITY_API_KEY-}
+      DADATA_API_KEY: ${DADATA_API_KEY-}
+      DADATA_SECRET_KEY: ${DADATA_SECRET_KEY-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY-}
+      OPENROUTER_BASE_URL: ${OPENROUTER_BASE_URL-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY-}
+      SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD: ${SERVICES_DB_ENVIRONMENT_POSTGRES_PASSWORD-}
+      DATABASE_URL_ALT_2: ${DATABASE_URL_ALT_2-}
+      CELERY_BROKER_URL_ALT_2: ${CELERY_BROKER_URL_ALT_2-}
+      DISCOVERY_API_KEY_ALT_2: ${DISCOVERY_API_KEY_ALT_2-}
+      HTTP_PROXY_URL_ALT_2: ${HTTP_PROXY_URL_ALT_2-}
+      PERPLEXITY_API_KEY_ALT_2: ${PERPLEXITY_API_KEY_ALT_2-}
+      DADATA_API_KEY_ALT_2: ${DADATA_API_KEY_ALT_2-}
+      DADATA_SECRET_KEY_ALT_2: ${DADATA_SECRET_KEY_ALT_2-}
+      DADATA_MCP_URL: ${DADATA_MCP_URL-}
+      EMAIL: ${EMAIL-}
+    command:
+    - streamlit
+    - run
+    - Главная.py
+    - --server.port
+    - '8501'
+    - --server.address
+    - 0.0.0.0
+    - --server.headless
+    - 'true'
+    - --server.enableCORS
+    - 'false'
+    - --server.enableXsrfProtection
+    - 'false'
+    ports:
+    - 8501:8501
+    volumes:
+    - ./frontend/streamlit_app:/app/streamlit_app
+    depends_on:
+    - backend
+volumes:
+  tpis_db: null

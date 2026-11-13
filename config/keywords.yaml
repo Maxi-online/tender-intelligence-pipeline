@@ -1,0 +1,8 @@
+# Generic demonstration vocabulary; not a customer's search specification.
+# Override KEYWORDS_CONFIG_PATH with an ignored config/keywords.local.yaml file
+# when deploying for a particular domain or region.
+construction_keywords:
+  - "infrastructure"
+  - "public works"
+  - "construction"
+regions: []

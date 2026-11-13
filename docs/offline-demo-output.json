@@ -1,0 +1,15 @@
+{
+  "mode": "synthetic-normalization-and-matching",
+  "record": {
+    "title": "Строительство школы",
+    "currency": "RUB",
+    "date": "2026-11-14"
+  },
+  "differences": {},
+  "matching_score": 1.0,
+  "source_urls": [
+    "https://example.invalid/tender/1"
+  ],
+  "score_is_probability": false,
+  "llm_extraction_executed": false
+}

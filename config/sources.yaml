@@ -1,0 +1,4 @@
+# Public default: no organization-specific sites or automatic network ingestion.
+# Configure approved sources in an ignored config/sources.local.yaml file and
+# set SOURCES_CONFIG_PATH to that file before starting the full application.
+sources: []

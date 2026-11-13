@@ -1,0 +1,1660 @@
+"""Маршруты API для базовых сущностей.
+
+Автор: Maxi-online
+"""
+
+from __future__ import annotations
+
+import re
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
+
+from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
+from sqlalchemy import delete, func, nulls_last, or_, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import FileResponse
+
+from app.core.config import get_settings
+from app.db.session import get_db_session
+from app.models import Article, Company, MatchLink, Project, Source, Tender
+from app.schemas import (
+    ArticleCreate,
+    ArticleRead,
+    CompanyCreate,
+    CompanyRead,
+    MatchLinkCreate,
+    MatchLinkRead,
+    ProjectCreate,
+    ProjectRead,
+    SourceCreate,
+    SourceRead,
+    TextRequestCreate,
+    TenderCreate,
+    TenderRead,
+    SearchKeywordSetCreate,
+    SearchKeywordSetRead,
+    SearchKeywordSetUpdate,
+)
+from app.services.config_loader import load_keywords_config, load_sources_config
+from app.services.dedupe_companies import dedupe_companies
+from app.services.discovery import DiscoveryService
+from app.services.exporter import (
+    export_dossier_docx,
+    export_dossier_pdf,
+    export_projects_excel_template,
+    export_records,
+)
+from app.services.automation_state import get_state, set_enabled
+from app.services.search_settings import get_search_settings, update_search_settings
+from app.services.matching import diff_fields
+from app.services.llm_processing import classify_text, extract_entities
+from app.services.pipeline import ingest_sources, match_tenders_and_articles
+from app.services.seldon_client import SeldonClient
+from app.services.seldon_service import fetch_tenders, ingest_tenders
+from app.services.keywords import (
+    bootstrap_keyword_sets_from_yaml,
+    create_keyword_set,
+    delete_keyword_set,
+    list_keyword_sets,
+    resolve_keywords_for_set,
+    update_keyword_set,
+)
+from app.services.perplexity_client import PerplexityClient
+from app.services.claude_client import ClaudeClient
+from app.services.companies_enrichment import apply_company_profile, enrich_company
+from app.services.dadata_mcp import check_dadata_mcp_server
+from app.tasks.celery_app import celery_app
+
+router = APIRouter()
+
+
+class SearchSettingsUpdate(BaseModel):
+    perplexity_limit_sources: int | None = None
+    perplexity_limit_leads: int | None = None
+    perplexity_query_limit: int | None = None
+
+
+@router.get("/health", tags=["system"])
+async def health_check() -> dict:
+    """Проверить доступность сервиса.
+
+    :return: Словарь со статусом сервиса.
+    """
+
+    return {"status": "ok"}
+
+
+@router.get("/tenders", response_model=list[TenderRead], tags=["tenders"])
+async def list_tenders(
+    limit: int = 50,
+    offset: int = 0,
+    region: str | None = None,
+    search: str | None = None,
+    status: str | None = None,
+    winner: str | None = None,
+    participant: str | None = None,
+    stage: str | None = None,
+    budget_min: float | None = None,
+    budget_max: float | None = None,
+    start_date_from: date | None = None,
+    start_date_to: date | None = None,
+    end_date_from: date | None = None,
+    end_date_to: date | None = None,
+    session: AsyncSession = Depends(get_db_session),
+) -> list[TenderRead]:
+    """Получить список тендеров с пагинацией.
+
+    :param limit: Максимальное количество записей в ответе.
+    :param offset: Смещение от начала выборки.
+    :param region: Фильтр по региону.
+    :param search: Поисковая строка по ID/статусу.
+    :param stage: Стадия тендера/проекта.
+    :param status: Статус тендера.
+    :param winner: Фильтр по победителю.
+    :param participant: Фильтр по участнику.
+    :param budget_min: Минимальный бюджет.
+    :param budget_max: Максимальный бюджет.
+    :param start_date_from: Начальная дата (от).
+    :param start_date_to: Начальная дата (до).
+    :param end_date_from: Конечная дата (от).
+    :param end_date_to: Конечная дата (до).
+    :param session: Асинхронная сессия БД.
+    :return: Список тендеров.
+    """
+
+    query = select(Tender)
+    if region:
+        query = query.where(Tender.region.ilike(f"%{region}%"))
+    if search:
+        query = query.where(
+            or_(
+                Tender.tender_id.ilike(f"%{search}%"),
+                Tender.status.ilike(f"%{search}%"),
+                Tender.title.ilike(f"%{search}%"),
+            )
+        )
+    if status:
+        query = query.where(Tender.status.ilike(f"%{status}%"))
+    if winner:
+        query = query.where(Tender.winner.ilike(f"%{winner}%"))
+    if stage:
+        query = query.where(Tender.stage.ilike(f"%{stage}%"))
+    if budget_min is not None:
+        query = query.where(Tender.budget >= budget_min)
+    if budget_max is not None:
+        query = query.where(Tender.budget <= budget_max)
+    if start_date_from is not None:
+        query = query.where(Tender.start_date >= start_date_from)
+    if start_date_to is not None:
+        query = query.where(Tender.start_date <= start_date_to)
+    if end_date_from is not None:
+        query = query.where(Tender.end_date >= end_date_from)
+    if end_date_to is not None:
+        query = query.where(Tender.end_date <= end_date_to)
+    query = query.order_by(Tender.id.desc())
+    result = await session.execute(query.offset(offset).limit(limit))
+    tenders = list(result.scalars().all())
+    if participant:
+        filtered = []
+        for item in tenders:
+            participants = item.participants or []
+            participants_text = " ".join([str(p) for p in participants])
+            if participant.lower() in participants_text.lower():
+                filtered.append(item)
+        tenders = filtered
+    return tenders
+
+
+@router.post("/tenders", response_model=TenderRead, tags=["tenders"])
+async def create_tender(
+    payload: TenderCreate,
+    session: AsyncSession = Depends(get_db_session),
+) -> TenderRead:
+    """Создать тендер.
+
+    :param payload: Данные тендера для создания.
+    :param session: Асинхронная сессия БД.
+    :return: Созданная запись тендера.
+    """
+
+    tender = Tender(**payload.model_dump())
+    session.add(tender)
+    await session.commit()
+    await session.refresh(tender)
+    return tender
+
+
+@router.get("/tenders/{tender_id}", response_model=TenderRead, tags=["tenders"])
+async def get_tender(
+    tender_id: str,
+    session: AsyncSession = Depends(get_db_session),
+) -> TenderRead:
+    """Получить тендер по внешнему идентификатору.
+
+    :param tender_id: Идентификатор тендера (внешний).
+    :param session: Асинхронная сессия БД.
+    :return: Тендер.
+    """
+
+    result = await session.execute(select(Tender).where(Tender.tender_id == tender_id))
+    tender = result.scalars().first()
+    if not tender:
+        return {"error": "not_found"}
+    return tender
+
+
+@router.get("/companies", response_model=list[CompanyRead], tags=["companies"])
+async def list_companies(
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_db_session),
+) -> list[CompanyRead]:
+    """Получить список компаний с пагинацией.
+
+    :param limit: Максимальное количество записей в ответе.
+    :param offset: Смещение от начала выборки.
+    :param session: Асинхронная сессия БД.
+    :return: Список компаний.
+    """
+
+    result = await session.execute(select(Company).offset(offset).limit(limit))
+    return list(result.scalars().all())
+
+
+@router.post("/companies/dedupe", tags=["companies"])
+async def dedupe_companies_endpoint(
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Запустить дедупликацию компаний.
+
+    :param session: Асинхронная сессия БД.
+    :return: Статистика склейки.
+    """
+
+    return await dedupe_companies(session)
+
+
+@router.post("/companies", response_model=CompanyRead, tags=["companies"])
+async def create_company(
+    payload: CompanyCreate,
+    session: AsyncSession = Depends(get_db_session),
+) -> CompanyRead:
+    """Создать компанию.
+
+    :param payload: Данные компании для создания.
+    :param session: Асинхронная сессия БД.
+    :return: Созданная запись компании.
+    """
+
+    company = Company(**payload.model_dump())
+    session.add(company)
+    await session.commit()
+    await session.refresh(company)
+    return company
+
+
+@router.get("/dadata-mcp/check", tags=["companies"])
+async def dadata_mcp_check() -> dict:
+    """Проверить доступность MCP-сервера Dadata напрямую (без OpenAI).
+
+    Помогает понять, возвращается ли 424 из-за недоступности Dadata или из-за OpenAI.
+    """
+    return await check_dadata_mcp_server()
+
+
+@router.post("/companies/enrich", tags=["companies"])
+async def enrich_company_endpoint(
+    inn: str | None = None,
+    ogrn: str | None = None,
+    email: str | None = None,
+    phone: str | None = None,
+    name: str | None = None,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Обогатить данные о компании через Dadata и Rusprofile.
+
+    Параметры можно передавать в любом сочетании; сервис попытается собрать
+    максимум информации из внешних источников.
+    """
+
+    profile = await enrich_company(
+        session,
+        inn=inn,
+        ogrn=ogrn,
+        email=email,
+        phone=phone,
+        name=name,
+    )
+    return profile
+
+
+@router.post("/companies/enrich/auto", tags=["companies"])
+async def enrich_companies_auto(
+    limit: int = 50,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Автоматически обогатить компании из БД через Dadata/Perplexity/Rusprofile."""
+
+    result = await session.execute(select(Company).limit(limit))
+    companies = list(result.scalars().all())
+    updated = 0
+    for company in companies:
+        profile = await enrich_company(
+            session,
+            inn=company.inn,
+            ogrn=company.ogrn,
+            email=company.email,
+            phone=company.phone,
+            name=company.name,
+        )
+        apply_company_profile(company, profile)
+        updated += 1
+    await session.commit()
+    return {"updated": updated}
+
+
+@router.get("/projects", response_model=list[ProjectRead], tags=["projects"])
+async def list_projects(
+    limit: int = 50,
+    offset: int = 0,
+    region: str | None = None,
+    stage: str | None = None,
+    budget_min: float | None = None,
+    budget_max: float | None = None,
+    start_date_from: date | None = None,
+    start_date_to: date | None = None,
+    end_date_from: date | None = None,
+    end_date_to: date | None = None,
+    session: AsyncSession = Depends(get_db_session),
+) -> list[ProjectRead]:
+    """Получить список проектов с пагинацией.
+
+    :param limit: Максимальное количество записей в ответе.
+    :param offset: Смещение от начала выборки.
+    :param region: Фильтр по региону.
+    :param stage: Стадия проекта.
+    :param budget_min: Минимальный бюджет.
+    :param budget_max: Максимальный бюджет.
+    :param start_date_from: Начальная дата (от).
+    :param start_date_to: Начальная дата (до).
+    :param end_date_from: Конечная дата (от).
+    :param end_date_to: Конечная дата (до).
+    :param session: Асинхронная сессия БД.
+    :return: Список проектов.
+    """
+
+    query = select(Project)
+    if region:
+        query = query.where(Project.region.ilike(f"%{region}%"))
+    if stage:
+        query = query.where(Project.stage.ilike(f"%{stage}%"))
+    if budget_min is not None:
+        query = query.where(Project.budget >= budget_min)
+    if budget_max is not None:
+        query = query.where(Project.budget <= budget_max)
+    if start_date_from is not None:
+        query = query.where(Project.start_date >= start_date_from)
+    if start_date_to is not None:
+        query = query.where(Project.start_date <= start_date_to)
+    if end_date_from is not None:
+        query = query.where(Project.end_date >= end_date_from)
+    if end_date_to is not None:
+        query = query.where(Project.end_date <= end_date_to)
+    query = query.order_by(Project.id.desc())
+    result = await session.execute(query.offset(offset).limit(limit))
+    return list(result.scalars().all())
+
+
+@router.get("/projects/count", tags=["projects"])
+async def count_projects(session: AsyncSession = Depends(get_db_session)) -> dict:
+    """Получить количество проектов.
+
+    :param session: Асинхронная сессия БД.
+    :return: Количество проектов.
+    """
+
+    result = await session.execute(select(Project.id))
+    return {"count": len(result.scalars().all())}
+
+
+@router.post("/projects", response_model=ProjectRead, tags=["projects"])
+async def create_project(
+    payload: ProjectCreate,
+    session: AsyncSession = Depends(get_db_session),
+) -> ProjectRead:
+    """Создать проект.
+
+    :param payload: Данные проекта для создания.
+    :param session: Асинхронная сессия БД.
+    :return: Созданная запись проекта.
+    """
+
+    project = Project(**payload.model_dump())
+    session.add(project)
+    await session.commit()
+    await session.refresh(project)
+    return project
+
+
+@router.get("/projects/{project_id}", response_model=ProjectRead, tags=["projects"])
+async def get_project(
+    project_id: int,
+    session: AsyncSession = Depends(get_db_session),
+) -> ProjectRead:
+    """Получить проект по идентификатору.
+
+    :param project_id: Идентификатор проекта.
+    :param session: Асинхронная сессия БД.
+    :return: Проект.
+    """
+
+    result = await session.execute(select(Project).where(Project.id == project_id))
+    project = result.scalars().first()
+    if not project:
+        return {"error": "not_found"}
+    return project
+
+
+def _format_contact_block(name: str, emails: list[str], phones: list[str]) -> str:
+    """Сформировать контактный блок для отчёта.
+
+    :param name: Название компании.
+    :param emails: Email контакты.
+    :param phones: Телефоны.
+    :return: Строка с контактами.
+    """
+
+    unique_phones = []
+    for phone in phones:
+        if phone and phone not in unique_phones:
+            unique_phones.append(phone)
+    unique_emails = []
+    for email in emails:
+        if email and email not in unique_emails:
+            unique_emails.append(email)
+    parts = [name]
+    if unique_phones:
+        parts.append(f"тел.: {', '.join(unique_phones[:2])}")
+    if unique_emails:
+        parts.append(f"email: {', '.join(unique_emails[:2])}")
+    return " | ".join([p for p in parts if p])
+
+
+def _infer_industry(project_name: str) -> str:
+    """Определить отрасль по названию проекта.
+
+    :param project_name: Название проекта.
+    :return: Отрасль.
+    """
+
+    return "Строительство"
+
+
+def _clean_companies_for_report(companies: list[str]) -> list[str]:
+    """Очистить список компаний для отчёта.
+
+    :param companies: Сырые названия.
+    :return: Очищенный список.
+    """
+
+    cleaned_list: list[str] = []
+    for name in companies:
+        cleaned = " ".join(name.replace("\n", " ").split()).strip()
+        if not cleaned:
+            continue
+        if len(cleaned) > 120:
+            continue
+        cleaned_list.append(cleaned)
+    return cleaned_list
+
+
+def _normalize_company_key(raw_name: str) -> str:
+    """Нормализовать ключ компании для защиты от дублей.
+
+    :param raw_name: Исходное название.
+    :return: Нормализованный ключ.
+    """
+
+    lowered = raw_name.lower()
+    cleaned = re.sub(r"[\"'«»]", "", lowered)
+    cleaned = cleaned.replace("общество с ограниченной ответственностью", "ооо")
+    cleaned = cleaned.replace("акционерное общество", "ао")
+    cleaned = cleaned.replace("публичное акционерное общество", "пао")
+    cleaned = cleaned.replace("закрытое акционерное общество", "зао")
+    cleaned = re.sub(r"[^a-zа-я0-9]+", " ", cleaned)
+    return " ".join(cleaned.split()).strip()
+
+
+def _normalize_project_key(raw_name: str) -> str:
+    """Нормализовать ключ проекта для защиты от дублей.
+
+    :param raw_name: Исходное название.
+    :return: Нормализованный ключ.
+    """
+
+    lowered = raw_name.lower()
+    cleaned = re.sub(r"[\"'«»]", "", lowered)
+    cleaned = re.sub(r"[^a-zа-я0-9]+", " ", cleaned)
+    return " ".join(cleaned.split()).strip()
+
+
+
+
+def _is_project_name(name: str) -> bool:
+    """Проверить, что строка похожа на название проекта.
+
+    :param name: Название проекта.
+    :return: True, если это похоже на проект.
+    """
+
+    cleaned = " ".join(name.split()).strip()
+    if len(cleaned) > 140:
+        return False
+    lowered = cleaned.lower()
+    stop_words = (
+        "конференц",
+        "выставк",
+        "форум",
+        "семинар",
+        "совещан",
+        "круглый стол",
+        "подписка",
+        "журнал",
+    )
+    if any(word in lowered for word in stop_words):
+        return False
+    keywords = (
+        "проект",
+        "строительств",
+        "реконструкц",
+        "капремонт",
+        "ремонт",
+        "мост",
+        "дорог",
+        "аэропорт",
+        "обход",
+        "объект",
+        "комплекс",
+        "завод",
+        "станция",
+    )
+    return any(word in lowered for word in keywords)
+
+
+def _parse_ruble_amount(raw_value: str) -> float | None:
+    """Распарсить сумму в рублях из строки.
+
+    :param raw_value: Сырые данные суммы.
+    :return: Сумма в рублях или None.
+    """
+
+    lowered = raw_value.lower().replace(" ", "")
+    if any(token in lowered for token in ("usd", "дол", "$", "eur", "евро", "€")):
+        return None
+    match = re.search(r"(\d+(?:[.,]\d+)?)", lowered)
+    if not match:
+        return None
+    value = float(match.group(1).replace(",", "."))
+    multiplier = 1.0
+    if "тыс" in lowered:
+        multiplier = 1_000.0
+    if "млн" in lowered:
+        multiplier = 1_000_000.0
+    if "млрд" in lowered:
+        multiplier = 1_000_000_000.0
+    if "руб" in lowered or "₽" in lowered or "р." in lowered or "р" in lowered:
+        return value * multiplier
+    return value * multiplier
+
+
+def _extract_geo_materials_budget(texts: list[str]) -> float | None:
+    """Извлечь бюджет по геосинтетическим материалам.
+
+    :param texts: Список текстов статей.
+    :return: Сумма в рублях или None.
+    """
+
+    for text in texts:
+        lowered = text.lower()
+        if "геосинтет" not in lowered:
+            continue
+        for match in re.finditer(
+            r"\d+(?:[.,]\d+)?\s*(?:тыс|млн|млрд)?\s*руб",
+            lowered,
+        ):
+            parsed = _parse_ruble_amount(match.group(0))
+            if parsed:
+                return parsed
+    return None
+
+
+def _project_score(project: Project) -> tuple[int, float]:
+    """Оценить качество заполненности проекта.
+
+    :param project: Проект.
+    :return: Кортеж (score, budget).
+    """
+
+    score = 0
+    if project.region:
+        score += 1
+    if project.stage:
+        score += 1
+    if project.start_date:
+        score += 1
+    if project.end_date:
+        score += 1
+    if project.budget:
+        score += 2
+    return score, project.budget or 0.0
+
+
+def _get_company_contacts(company: Company | None) -> tuple[str, str]:
+    """Получить телефон и email компании.
+
+    :param company: Компания.
+    :return: Телефон и email.
+    """
+
+    if not company:
+        return "", ""
+    contacts = company.contacts or {}
+    emails = contacts.get("emails") or []
+    phones = contacts.get("phones") or []
+    email_value = emails[0] if emails else (company.email or "")
+    phone_value = phones[0] if phones else (company.phone or "")
+    return phone_value, email_value
+
+
+def _build_company_cells(
+    name: str | None,
+    companies_map: dict[str, Company],
+) -> tuple[str, str, str]:
+    """Сформировать ячейки компании для отчёта.
+
+    :param name: Название компании.
+    :param companies_map: Справочник компаний по нормализованному ключу.
+    :return: Название, телефон, email.
+    """
+
+    if not name:
+        return "", "", ""
+    normalized_key = _normalize_company_key(name)
+    company = companies_map.get(normalized_key)
+    phone, email = _get_company_contacts(company)
+    return name, phone, email
+
+
+def _filter_emails_for_article(article: Article, emails: list[str]) -> list[str]:
+    """Удалить email домены источника из списка.
+
+    :param article: Статья источника.
+    :param emails: Список email.
+    :return: Отфильтрованный список.
+    """
+
+    free_domains = {
+        "gmail.com",
+        "mail.ru",
+        "bk.ru",
+        "list.ru",
+        "inbox.ru",
+        "yandex.ru",
+        "yandex.com",
+        "outlook.com",
+        "hotmail.com",
+        "icloud.com",
+    }
+    sources = load_sources_config()
+    source_domains = set()
+    for item in sources:
+        url = item.get("url", "")
+        if not url:
+            continue
+        domain_part = url.replace("https://", "").replace("http://", "").split("/")[0]
+        source_domains.add(domain_part.replace("www.", ""))
+    domain = ""
+    if article.url:
+        domain = article.url.replace("https://", "").replace("http://", "").split("/")[0]
+        domain = domain.replace("www.", "")
+    filtered = []
+    for email in emails:
+        email_lower = email.lower()
+        email_domain = email_lower.split("@")[-1] if "@" in email_lower else ""
+        if email_domain in free_domains:
+            continue
+        if domain and email_domain.endswith(domain):
+            continue
+        if email_domain in source_domains:
+            continue
+        filtered.append(email)
+    return filtered
+
+
+async def _build_project_report(session: AsyncSession) -> list[dict]:
+    """Сформировать строки отчёта по проектам.
+
+    :param session: Асинхронная сессия БД.
+    :return: Список строк отчёта.
+    """
+
+    projects = (await session.execute(select(Project))).scalars().all()
+    companies_db = (await session.execute(select(Company))).scalars().all()
+    articles = (await session.execute(select(Article))).scalars().all()
+    tenders = (await session.execute(select(Tender))).scalars().all()
+    report_rows: list[dict] = []
+    seen_projects: set[str] = set()
+    companies_map: dict[str, Company] = {}
+    for company in companies_db:
+        if company.normalized_name:
+            companies_map[company.normalized_name] = company
+        else:
+            companies_map[_normalize_company_key(company.name)] = company
+
+    grouped_projects: dict[str, Project] = {}
+    for project in projects:
+        if not _is_project_name(project.name):
+            continue
+        project_key = _normalize_project_key(project.name)
+        existing = grouped_projects.get(project_key)
+        if not existing:
+            grouped_projects[project_key] = project
+            continue
+        if _project_score(project) > _project_score(existing):
+            grouped_projects[project_key] = project
+    if not grouped_projects and projects:
+        for project in projects:
+            project_key = _normalize_project_key(project.name)
+            existing = grouped_projects.get(project_key)
+            if not existing:
+                grouped_projects[project_key] = project
+            elif _project_score(project) > _project_score(existing):
+                grouped_projects[project_key] = project
+
+    project_items: list[dict] = []
+    for project in grouped_projects.values():
+        # Для отчёта по проектам ориентируемся на локальные статьи,
+        # а не на внешний поиск Perplexity.
+        related_articles = [
+            a for a in articles if a.text and project.name.lower() in (a.text or "").lower()
+        ]
+        latest_date = None
+        for article in related_articles:
+            if article.published_at:
+                if latest_date is None or article.published_at > latest_date:
+                    latest_date = article.published_at
+        project_items.append(
+            {
+                "project": project,
+                "related": related_articles,
+                "latest_date": latest_date,
+            }
+        )
+
+    sorted_projects = sorted(
+        project_items,
+        key=lambda item: (
+            item["latest_date"] or datetime.min,
+            item["project"].id,
+        ),
+        reverse=True,
+    )
+    for idx, item in enumerate(sorted_projects, start=1):
+        project = item["project"]
+        project_key = _normalize_project_key(project.name)
+        if project_key in seen_projects:
+            continue
+        seen_projects.add(project_key)
+        related = item["related"]
+        related_texts: list[str] = []
+        for article in related:
+            if article.text:
+                related_texts.append(article.text)
+
+        customer_name = project.customer_name
+        customer_phone = project.customer_phone
+        customer_email = project.customer_email
+        investor_name = project.investor_name
+        investor_phone = project.investor_phone
+        investor_email = project.investor_email
+        contractor_name = project.contractor_name
+        contractor_phone = project.contractor_phone
+        contractor_email = project.contractor_email
+
+        geo_budget = _extract_geo_materials_budget(related_texts)
+        budget_value = project.budget
+        if isinstance(budget_value, str):
+            try:
+                budget_value = float(budget_value.replace(" ", "").replace(",", "."))
+            except ValueError:
+                budget_value = None
+        if budget_value is None:
+            budget_value = 0
+        report_rows.append(
+            {
+                "№п/п": idx,
+                "Отрасль": _infer_industry(project.name),
+                "Заказчик": customer_name or "",
+                "Телефон заказчика": customer_phone or "",
+                "Email заказчика": customer_email or "",
+                "Инвестор": investor_name or "",
+                "Телефон инвестора": investor_phone or "",
+                "Email инвестора": investor_email or "",
+                "Подрядчик": contractor_name or "",
+                "Телефон подрядчика": contractor_phone or "",
+                "Email подрядчика": contractor_email or "",
+                "Наименование проекта": project.name,
+                "Описание проекта": project.description or "",
+                "Источник": ", ".join(project.source_urls or []),
+                "Регион": project.region or "",
+                "Сумма инвестиций общая, руб": budget_value,
+                "Объем геосинтетических материалов в смете, руб": geo_budget,
+                "Срок реализации": project.end_date,
+                "Текущая стадия проекта": project.stage or "",
+            }
+        )
+    return report_rows
+
+
+@router.get("/reports/projects", tags=["reports"])
+async def report_projects(session: AsyncSession = Depends(get_db_session)) -> list[dict]:
+    """Получить отчет по проектам в формате таблицы.
+
+    :param session: Асинхронная сессия БД.
+    :return: Список строк отчёта.
+    """
+
+    missing_stmt = (
+        select(Project.id)
+        .where(
+            or_(
+                Project.description.is_(None),
+                Project.customer_name.is_(None),
+                Project.contractor_name.is_(None),
+                Project.customer_email.is_(None),
+                Project.customer_phone.is_(None),
+            )
+        )
+        .limit(1)
+    )
+    missing = (await session.execute(missing_stmt)).scalars().first()
+    if missing:
+        celery_app.send_task("tpis.enrich_projects_now", kwargs={"limit": 200})
+    return await _build_project_report(session)
+
+
+@router.post("/projects/clear", tags=["projects"])
+async def clear_projects(session: AsyncSession = Depends(get_db_session)) -> dict:
+    """Полностью очистить проекты, тендеры и кэш канонических названий."""
+
+    project_count = await session.execute(select(func.count(Project.id)))
+    project_total = int(project_count.scalar() or 0)
+    tender_count = await session.execute(select(func.count(Tender.id)))
+    tender_total = int(tender_count.scalar() or 0)
+    await session.execute(text("DELETE FROM project_title_cache"))
+    await session.execute(delete(MatchLink))
+    await session.execute(delete(Tender))
+    await session.execute(delete(Project))
+    await session.commit()
+    return {"projects_deleted": project_total, "tenders_deleted": tender_total}
+
+
+@router.post("/automation/start_test", tags=["automation"])
+async def automation_start_test() -> dict:
+    """Запустить полный цикл с одним запросом Perplexity."""
+
+    from app.tasks.celery_app import celery_app
+
+    update_search_settings(
+        {
+            "perplexity_limit_sources": 10,
+            "perplexity_limit_leads": 10,
+            "perplexity_query_limit": 10,
+        }
+    )
+    celery_app.send_task("tpis.update_cycle")
+    return {"queued": True, "mode": "test"}
+
+
+@router.get("/export/projects/excel", tags=["export"])
+async def export_projects_excel(session: AsyncSession = Depends(get_db_session)):
+    """Выгрузить проекты в Excel по шаблону.
+
+    :param session: Асинхронная сессия БД.
+    :return: Файл XLSX.
+    """
+
+    records = await _build_project_report(session)
+    file_path = export_projects_excel_template(records, name="projects_template")
+    return FileResponse(
+        path=file_path,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename="projects_template.xlsx",
+    )
+
+
+@router.get("/export/dossier/project/{project_id}", tags=["export"])
+async def export_project_dossier(
+    project_id: int,
+    format: str = "pdf",
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Сформировать досье проекта.
+
+    :param project_id: Идентификатор проекта.
+    :param format: Формат выгрузки (pdf, docx).
+    :param session: Асинхронная сессия БД.
+    :return: Файл с досье проекта.
+    """
+
+    result = await session.execute(select(Project).where(Project.id == project_id))
+    project = result.scalars().first()
+    if not project:
+        return {"error": "not_found"}
+    sections = {
+        "Параметры проекта": [
+            f"Название: {project.name}",
+            f"Регион: {project.region or ''}",
+            f"Стадия: {project.stage or ''}",
+            f"Бюджет: {project.budget or ''}",
+            f"Начало: {project.start_date or ''}",
+            f"Окончание: {project.end_date or ''}",
+        ]
+    }
+    if format == "docx":
+        file_path = export_dossier_docx("Досье проекта", sections, f"project_{project_id}")
+    else:
+        file_path = export_dossier_pdf("Досье проекта", sections, f"project_{project_id}")
+    return FileResponse(path=file_path)
+
+
+@router.get("/projects/{project_id}/related", tags=["projects"])
+async def get_project_related(
+    project_id: int,
+    session: AsyncSession = Depends(get_db_session),
+) -> list[dict]:
+    """Получить связанные материалы по названию проекта через Perplexity/Claude.
+
+    :param project_id: Идентификатор проекта.
+    :param session: Асинхронная сессия БД.
+    :return: Список связанных статей.
+    """
+
+    result = await session.execute(select(Project).where(Project.id == project_id))
+    project = result.scalars().first()
+    if not project:
+        return []
+    # Используем тот же LLM-подход, что и для общего семантического поиска,
+    # но без дополнительных ключевых наборов и с фиксированным фокусом на статьях/новостях.
+    base_prompt = (
+        "Ты помощник по поиску публикаций о строительных проектах. "
+        "Найди статьи и новости, которые явно связаны с указанным проектом, "
+        "и верни наиболее релевантные результаты."
+    )
+    perplexity_client = PerplexityClient()
+    raw_results = await perplexity_client.search(
+        project.name,
+        system_prompt=base_prompt,
+        keywords=[],
+        max_results=20,
+    )
+    claude_client = ClaudeClient()
+    ranked = await claude_client.rank_results(project.name, raw_results, keywords=[])
+    return ranked[:10]
+
+
+@router.get("/articles", response_model=list[ArticleRead], tags=["articles"])
+async def list_articles(
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_db_session),
+) -> list[ArticleRead]:
+    """Получить список статей с пагинацией.
+
+    :param limit: Максимальное количество записей в ответе.
+    :param offset: Смещение от начала выборки.
+    :param session: Асинхронная сессия БД.
+    :return: Список статей.
+    """
+
+    stmt = (
+        select(Article)
+        .order_by(nulls_last(Article.published_at.desc()), Article.id.desc())
+        .offset(offset)
+        .limit(limit)
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+@router.post("/articles", response_model=ArticleRead, tags=["articles"])
+async def create_article(
+    payload: ArticleCreate,
+    session: AsyncSession = Depends(get_db_session),
+) -> ArticleRead:
+    """Создать статью.
+
+    :param payload: Данные статьи для создания.
+    :param session: Асинхронная сессия БД.
+    :return: Созданная запись статьи.
+    """
+
+    article = Article(**payload.model_dump())
+    session.add(article)
+    await session.commit()
+    await session.refresh(article)
+    return article
+
+
+@router.get("/matches", response_model=list[MatchLinkRead], tags=["matches"])
+async def list_matches(
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_db_session),
+) -> list[MatchLinkRead]:
+    """Получить список связей тендер-статья с пагинацией.
+
+    :param limit: Максимальное количество записей в ответе.
+    :param offset: Смещение от начала выборки.
+    :param session: Асинхронная сессия БД.
+    :return: Список связей.
+    """
+
+    result = await session.execute(select(MatchLink).offset(offset).limit(limit))
+    return list(result.scalars().all())
+
+
+@router.get("/matches/pending", response_model=list[MatchLinkRead], tags=["matches"])
+async def list_pending_matches(
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_db_session),
+) -> list[MatchLinkRead]:
+    """Получить список неподтвержденных связей.
+
+    :param limit: Максимальное количество записей в ответе.
+    :param offset: Смещение от начала выборки.
+    :param session: Асинхронная сессия БД.
+    :return: Список неподтвержденных связей.
+    """
+
+    result = await session.execute(
+        select(MatchLink).where(MatchLink.approved.is_(False)).offset(offset).limit(limit)
+    )
+    return list(result.scalars().all())
+
+
+@router.post("/matches", response_model=MatchLinkRead, tags=["matches"])
+async def create_match(
+    payload: MatchLinkCreate,
+    session: AsyncSession = Depends(get_db_session),
+) -> MatchLinkRead:
+    """Создать связь между тендером и статьей.
+
+    :param payload: Данные связи для создания.
+    :param session: Асинхронная сессия БД.
+    :return: Созданная запись связи.
+    """
+
+    match = MatchLink(**payload.model_dump())
+    session.add(match)
+    await session.commit()
+    await session.refresh(match)
+    return match
+
+
+@router.post("/matches/{match_id}/approve", response_model=MatchLinkRead, tags=["matches"])
+async def approve_match(
+    match_id: int,
+    reviewer: str | None = None,
+    session: AsyncSession = Depends(get_db_session),
+) -> MatchLinkRead:
+    """Подтвердить связь оператором.
+
+    :param match_id: Идентификатор связи.
+    :param reviewer: Идентификатор оператора.
+    :param session: Асинхронная сессия БД.
+    :return: Обновленная связь.
+    """
+
+    result = await session.execute(select(MatchLink).where(MatchLink.id == match_id))
+    match = result.scalars().first()
+    if not match:
+        return {"error": "not_found"}
+    match.approved = True
+    match.reviewer = reviewer
+    match.reviewed_at = datetime.now(ZoneInfo("Europe/Moscow")).replace(tzinfo=None)
+    await session.commit()
+    await session.refresh(match)
+    return match
+
+
+@router.get("/sources", response_model=list[SourceRead], tags=["sources"])
+async def list_sources(
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_db_session),
+) -> list[SourceRead]:
+    """Получить список источников.
+
+    :param limit: Максимальное количество записей в ответе.
+    :param offset: Смещение от начала выборки.
+    :param session: Асинхронная сессия БД.
+    :return: Список источников.
+    """
+
+    stmt = select(Source).order_by(Source.created_at.desc()).offset(offset).limit(limit)
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+@router.get("/sources/count", tags=["sources"])
+async def count_sources(session: AsyncSession = Depends(get_db_session)) -> dict:
+    """Получить количество источников.
+
+    :param session: Асинхронная сессия БД.
+    :return: Количество источников.
+    """
+
+    result = await session.execute(select(Source.id))
+    return {"count": len(result.scalars().all())}
+
+
+@router.post("/sources", response_model=SourceRead, tags=["sources"])
+async def create_source(
+    payload: SourceCreate,
+    session: AsyncSession = Depends(get_db_session),
+) -> SourceRead:
+    """Создать источник.
+
+    :param payload: Данные источника для создания.
+    :param session: Асинхронная сессия БД.
+    :return: Созданная запись источника.
+    """
+
+    source = Source(**payload.model_dump())
+    session.add(source)
+    await session.commit()
+    await session.refresh(source)
+    return source
+
+
+@router.post("/sources/bootstrap", tags=["sources"])
+async def bootstrap_sources(session: AsyncSession = Depends(get_db_session)) -> dict:
+    """Загрузить источники из YAML конфигурации.
+
+    :param session: Асинхронная сессия БД.
+    :return: Количество добавленных источников.
+    """
+
+    items = load_sources_config()
+    created = 0
+    for item in items:
+        url = item.get("url")
+        if not url:
+            continue
+        exists = await session.execute(select(Source).where(Source.url == url))
+        if exists.scalars().first():
+            continue
+        session.add(
+            Source(
+                name=item.get("name"),
+                url=url,
+                kind=item.get("kind", "html"),
+                status=item.get("status", "active"),
+                auto_discovered=item.get("auto_discovered", False),
+            )
+        )
+        created += 1
+    await session.commit()
+    return {"created": created}
+
+
+@router.get("/sources/discover", tags=["sources"])
+async def discover_sources(
+    query: str = Query(..., min_length=2),
+) -> list[dict[str, str]]:
+    """Найти источники по ключевому слову.
+
+    :param query: Поисковая фраза.
+    :return: Список найденных источников.
+    """
+
+    service = DiscoveryService()
+    results = await service.search_sources(query)
+    mapped: list[dict[str, str]] = []
+    for item in results:
+        url = str(item.get("url") or item.get("link") or "")
+        name = str(item.get("title") or item.get("name") or url)
+        kind = "rss" if "rss" in url or "feed" in url else "html"
+        mapped.append({"name": name, "url": url, "kind": kind, "status": "candidate"})
+    return mapped
+
+
+@router.post("/sources/discover/run", tags=["sources"])
+async def run_discover_sources() -> dict:
+    """Запустить фоновое автообнаружение источников."""
+
+    from app.tasks.celery_app import celery_app
+
+    celery_app.send_task("tpis.discover_sources_cycle")
+    return {"queued": True}
+
+
+@router.get("/keywords", tags=["sources"])
+async def get_keywords() -> dict:
+    """Получить словари ключевых слов из YAML-конфига (для обратной совместимости).
+
+    :return: Словарь ключевых слов.
+    """
+
+    return load_keywords_config()
+
+
+@router.get(
+    "/keyword-sets",
+    response_model=list[SearchKeywordSetRead],
+    tags=["search"],
+)
+async def list_keyword_sets_endpoint(
+    session: AsyncSession = Depends(get_db_session),
+) -> list[SearchKeywordSetRead]:
+    """Получить все наборы ключевых слов/промптов.
+
+    При первом обращении автоматически инициализирует базовый набор
+    из config/keywords.yaml (construction_keywords), если в БД пусто.
+    """
+
+    await bootstrap_keyword_sets_from_yaml(session)
+    sets = await list_keyword_sets(session)
+    return [SearchKeywordSetRead.model_validate(item) for item in sets]
+
+
+@router.post(
+    "/keyword-sets",
+    response_model=SearchKeywordSetRead,
+    tags=["search"],
+)
+async def create_keyword_set_endpoint(
+    payload: SearchKeywordSetCreate,
+    session: AsyncSession = Depends(get_db_session),
+) -> SearchKeywordSetRead:
+    """Создать новый набор ключевых слов."""
+
+    keywords_payload = payload.keywords or []
+    keywords = [(item.text, item.weight) for item in keywords_payload]
+    created = await create_keyword_set(
+        session,
+        name=payload.name,
+        description=payload.description,
+        created_by=payload.created_by,
+        keywords=keywords,
+    )
+    return SearchKeywordSetRead.model_validate(created)
+
+
+@router.put(
+    "/keyword-sets/{set_id}",
+    response_model=SearchKeywordSetRead,
+    tags=["search"],
+)
+async def update_keyword_set_endpoint(
+    set_id: int,
+    payload: SearchKeywordSetUpdate,
+    session: AsyncSession = Depends(get_db_session),
+) -> SearchKeywordSetRead | dict:
+    """Обновить существующий набор ключевых слов."""
+
+    keywords = (
+        [(item.text, item.weight) for item in payload.keywords] if payload.keywords else None
+    )
+    updated = await update_keyword_set(
+        session,
+        set_id,
+        name=payload.name,
+        description=payload.description,
+        created_by=payload.created_by,
+        keywords=keywords,
+    )
+    if not updated:
+        return {"error": "not_found"}
+    return SearchKeywordSetRead.model_validate(updated)
+
+
+@router.delete(
+    "/keyword-sets/{set_id}",
+    tags=["search"],
+)
+async def delete_keyword_set_endpoint(
+    set_id: int,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Удалить набор ключевых слов."""
+
+    ok = await delete_keyword_set(session, set_id)
+    return {"deleted": ok}
+
+
+@router.get("/compare", tags=["compare"])
+async def compare_entities(
+    tender_id: str,
+    article_id: int,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Сравнить поля тендера и статьи.
+
+    :param tender_id: Идентификатор тендера (внешний).
+    :param article_id: Идентификатор статьи.
+    :param session: Асинхронная сессия БД.
+    :return: Словарь расхождений по полям.
+    """
+
+    tender_result = await session.execute(select(Tender).where(Tender.tender_id == tender_id))
+    article_result = await session.execute(select(Article).where(Article.id == article_id))
+    tender = tender_result.scalars().first()
+    article = article_result.scalars().first()
+    if not tender or not article:
+        return {"error": "not_found"}
+    diff = diff_fields(
+        {
+            "region": tender.region,
+            "budget": tender.budget,
+            "currency": tender.currency,
+            "status": tender.status,
+        },
+        {"title": article.title, "url": article.url},
+        ["region", "budget", "currency", "status", "title", "url"],
+    )
+    return {"diff": diff}
+
+
+@router.get("/search/semantic", tags=["search"])
+async def semantic_search_endpoint(
+    query: str,
+    scope: str = "articles",
+    limit: int = 10,
+    keyword_set_id: int | None = None,
+    mode: str = "generic",
+    perplexity_limit: int | None = None,
+    session: AsyncSession = Depends(get_db_session),
+) -> list[dict]:
+    """Поиск с использованием Perplexity и ранжированием Claude.
+
+    Perplexity отвечает за сбор релевантных результатов: проекты, тендеры, госзаказы и госзакупки
+    (журналы, СМИ, порталы закупок). Claude доранжирует и классифицирует.
+
+    :param query: Поисковый запрос (может быть сгенерирован автоматически).
+    :param scope: Область поиска (articles/tenders/projects/all) — влияет на промпт.
+    :param limit: Максимум результатов.
+    :param keyword_set_id: Идентификатор набора ключевых слов.
+    :param mode: Режим: generic/journals/media/tenders_projects/gov_orders.
+    :param session: Асинхронная сессия БД.
+    :return: Список совпадений.
+    """
+
+    keywords = await resolve_keywords_for_set(session, keyword_set_id)
+
+    base_prompt = (
+        "Ты помощник по поиску информации о строительных проектах, тендерах и госзаказах в русскоязычном интернете. "
+        "Ищи статьи, объявления и страницы с проектами, закупками (44-ФЗ, 223-ФЗ), госзаказами. "
+        "Указывай реальные ссылки и заголовки."
+    )
+    mode = (mode or "generic").lower()
+    if mode == "journals":
+        base_prompt += (
+            " Отдавай приоритет отраслевым журналам и изданиям по строительству и инфраструктуре."
+        )
+    elif mode == "media":
+        base_prompt += (
+            " Отдавай приоритет СМИ и региональным порталам с новостями о строительных проектах и торгах."
+        )
+    elif mode == "tenders_projects":
+        base_prompt += (
+            " Сфокусируйся на коммерческих тендерах, закупках и строительных проектах в России."
+        )
+    elif mode == "gov_orders":
+        base_prompt += (
+            " Сфокусируйся на госзаказах и госзакупках: ЕИС, 44-ФЗ, 223-ФЗ, закупки РФ, заказчики, подрядчики, контакты."
+        )
+
+    if scope == "articles":
+        base_prompt += " Особый фокус на новостных статьях и аналитических материалах."
+    elif scope == "tenders":
+        base_prompt += " Особый фокус на тендерах и закупочных процедурах."
+    elif scope == "projects":
+        base_prompt += " Особый фокус на описаниях проектов и инвестиционных планах."
+
+    # Вызов Perplexity для первичного поиска
+    perplexity_client = PerplexityClient()
+    max_results = max(limit, perplexity_limit or 0) if perplexity_limit else max(limit, 20)
+    raw_results = await perplexity_client.search(
+        query,
+        system_prompt=base_prompt,
+        keywords=keywords,
+        max_results=max_results,
+    )
+
+    # Ранжирование и возможная классификация через Claude
+    claude_client = ClaudeClient()
+    ranked = await claude_client.rank_results(query, raw_results, keywords=keywords)
+    # Обрезаем до запрошенного лимита, сохраняя порядок
+    return ranked[:limit]
+
+
+@router.get("/export/tenders", tags=["export"])
+async def export_tenders(
+    format: str = "csv",
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Выгрузить список тендеров в файл.
+
+    :param format: Формат выгрузки (csv, xlsx, parquet).
+    :param session: Асинхронная сессия БД.
+    :return: Файл с выгрузкой.
+    """
+
+    result = await session.execute(select(Tender))
+    records = [
+        {
+            "tender_id": t.tender_id,
+            "region": t.region,
+            "budget": t.budget,
+            "currency": t.currency,
+            "status": t.status,
+        }
+        for t in result.scalars().all()
+    ]
+    file_path = export_records(records, name="tenders", fmt=format)
+    return FileResponse(path=file_path)
+
+
+@router.get("/export/dossier/company/{company_id}", tags=["export"])
+async def export_company_dossier(
+    company_id: int,
+    format: str = "pdf",
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Сформировать досье компании.
+
+    :param company_id: Идентификатор компании.
+    :param format: Формат выгрузки (pdf, docx).
+    :param session: Асинхронная сессия БД.
+    :return: Файл с досье компании.
+    """
+
+    result = await session.execute(select(Company).where(Company.id == company_id))
+    company = result.scalars().first()
+    if not company:
+        return {"error": "not_found"}
+    sections = {
+        "Общие данные": [
+            f"Наименование: {company.name}",
+            f"ИНН: {company.inn or ''}",
+            f"Телефон: {company.phone or ''}",
+            f"Email: {company.email or ''}",
+            f"Адрес: {company.address or ''}",
+        ]
+    }
+    if format == "docx":
+        file_path = export_dossier_docx("Досье компании", sections, f"company_{company_id}")
+    else:
+        file_path = export_dossier_pdf("Досье компании", sections, f"company_{company_id}")
+    return FileResponse(path=file_path)
+
+
+@router.get("/automation/status", tags=["automation"])
+async def automation_status() -> dict:
+    """Получить состояние автоматизации.
+
+    :return: Состояние автоматизации.
+    """
+
+    return get_state()
+
+
+@router.post("/automation/start", tags=["automation"])
+async def automation_start() -> dict:
+    """Запустить цикл автоматизации вручную.
+
+    :return: Статус запуска.
+    """
+
+    from app.tasks.celery_app import celery_app
+
+    celery_app.send_task("tpis.update_cycle")
+    return {"queued": True}
+
+
+@router.post("/automation/enable", tags=["automation"])
+async def automation_enable() -> dict:
+    """Включить автоматизацию.
+
+    :return: Обновлённое состояние.
+    """
+
+    return set_enabled(True)
+
+
+@router.post("/automation/stop", tags=["automation"])
+async def automation_stop() -> dict:
+    """Отключить автоматизацию.
+
+    :return: Обновлённое состояние.
+    """
+
+    return set_enabled(False)
+
+
+@router.get("/search/settings", tags=["search"])
+async def search_settings() -> dict:
+    return get_search_settings()
+
+
+@router.put("/search/settings", tags=["search"])
+async def update_search_settings_endpoint(payload: SearchSettingsUpdate) -> dict:
+    return update_search_settings(payload.dict())
+
+
+@router.get("/export/dossier/tender/{tender_id}", tags=["export"])
+async def export_tender_dossier(
+    tender_id: str,
+    format: str = "pdf",
+    session: AsyncSession = Depends(get_db_session),
+):
+    """Сформировать досье тендера.
+
+    :param tender_id: Внешний идентификатор тендера.
+    :param format: Формат выгрузки (pdf, docx).
+    :param session: Асинхронная сессия БД.
+    :return: Файл с досье тендера.
+    """
+
+    result = await session.execute(select(Tender).where(Tender.tender_id == tender_id))
+    tender = result.scalars().first()
+    if not tender:
+        return {"error": "not_found"}
+    sections = {
+        "Параметры тендера": [
+            f"ID: {tender.tender_id}",
+            f"Название: {tender.title or ''}",
+            f"Регион: {tender.region or ''}",
+            f"Бюджет: {tender.budget or ''} {tender.currency or ''}",
+            f"Статус: {tender.status or ''}",
+            f"Заказчик: {tender.customer or ''}",
+            f"Победитель: {tender.winner or ''}",
+        ]
+    }
+    if format == "docx":
+        file_path = export_dossier_docx("Досье тендера", sections, f"tender_{tender_id}")
+    else:
+        file_path = export_dossier_pdf("Досье тендера", sections, f"tender_{tender_id}")
+    return FileResponse(path=file_path)
+
+
+@router.post("/nlp/extract", tags=["nlp"])
+async def nlp_extract(payload: TextRequestCreate) -> dict:
+    """Извлечь сущности из текста.
+
+    :param payload: Объект с текстом для обработки.
+    :return: Словарь с извлеченными сущностями.
+    """
+
+    entities = await extract_entities(payload.text)
+    return {
+        "projects": entities.projects,
+        "companies": entities.companies,
+        "persons": entities.persons,
+        "emails": entities.emails,
+        "phones": entities.phones,
+        "money": entities.money,
+        "dates": entities.dates,
+    }
+
+
+@router.post("/nlp/classify", tags=["nlp"])
+async def nlp_classify(payload: TextRequestCreate) -> dict:
+    """Классифицировать текст по типу контента.
+
+    :param payload: Объект с текстом для обработки.
+    :return: Словарь с меткой класса.
+    """
+
+    label = await classify_text(payload.text)
+    return {"label": label}
+
+
+@router.post("/ingest/seldon", tags=["ingest"])
+async def ingest_seldon(
+    limit: int = 100,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict:
+    """Импортировать данные из Seldon API.
+
+    :param limit: Максимальное количество тендеров.
+    :param session: Асинхронная сессия БД.
+    :return: Статистика по импорту.
+    """
+
+    client = SeldonClient()
+    return await ingest_tenders(session, client, limit=limit)
+
+
+@router.post("/ingest/sources", tags=["ingest"])
+async def ingest_sources_endpoint(session: AsyncSession = Depends(get_db_session)) -> dict:
+    """Импортировать данные из источников СМИ.
+
+    :param session: Асинхронная сессия БД.
+    :return: Статистика по импортированным статьям.
+    """
+
+    count = await ingest_sources(session)
+    return {"articles_processed": count}
+
+
+@router.post("/match/run", tags=["matching"])
+async def run_matching(session: AsyncSession = Depends(get_db_session)) -> dict:
+    """Запустить сопоставление тендеров и статей.
+
+    :param session: Асинхронная сессия БД.
+    :return: Количество созданных связей.
+    """
+
+    created = await match_tenders_and_articles(session)
+    return {"matches_created": created}
+
+
+@router.get("/ingest/diagnostics", tags=["ingest"])
+async def ingest_diagnostics(session: AsyncSession = Depends(get_db_session)) -> dict:
+    """Диагностика поиска и парсинга: почему мало тендеров/проектов.
+
+    Показывает: число источников, статей, тендеров, проектов; результат последнего цикла;
+    настроены ли Seldon и Perplexity. Парсер обрабатывает все источники без фильтра по статусу.
+    """
+    settings = get_settings()
+    state = get_state()
+    sources_total_r = await session.execute(select(func.count(Source.id)))
+    sources_total = (sources_total_r.scalar() or 0) or 0
+    articles_r = await session.execute(select(func.count(Article.id)))
+    articles_count = (articles_r.scalar() or 0) or 0
+    tenders_r = await session.execute(select(func.count(Tender.id)))
+    tenders_count = (tenders_r.scalar() or 0) or 0
+    projects_r = await session.execute(select(func.count(Project.id)))
+    projects_count = (projects_r.scalar() or 0) or 0
+    seldon_ok = bool(
+        settings.seldon_base_url
+        and settings.seldon_api_key
+        and "PASTE_SELDON_TOKEN_HERE" not in (settings.seldon_api_key or "")
+    )
+    perplexity_ok = bool(getattr(settings, "perplexity_api_key", None))
+    return {
+        "sources_total": sources_total,
+        "articles_count": articles_count,
+        "tenders_count": tenders_count,
+        "projects_count": projects_count,
+        "automation_enabled": state.get("enabled", True),
+        "last_run_at": state.get("last_run_at"),
+        "last_result": state.get("last_result"),
+        "seldon_configured": seldon_ok,
+        "perplexity_configured": perplexity_ok,
+    }
