@@ -1,6 +1,6 @@
-"""Схемы тендера для API.
+"""Tender schemes for the API.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -11,24 +11,24 @@ from pydantic import BaseModel, ConfigDict
 
 
 class TenderBase(BaseModel):
-    """Базовая схема тендера.
+    """Basic tender scheme.
 
-    Атрибуты:
-        tender_id: Внешний идентификатор тендера.
-        title: Наименование закупки.
-        region: Регион проведения.
-        budget: Бюджет тендера.
-        currency: Валюта бюджета.
-        status: Статус тендера.
-        stage: Стадия тендера/проекта.
-        customer: Наименование заказчика.
-        winner: Наименование победителя.
-        participants: Список участников.
-        contacts: Контактные данные контрагентов.
-        start_date: Плановая дата начала.
-        end_date: Плановая дата окончания.
-        source_url: Ссылка на первоисточник.
-        quality_flag: Признак качества данных.
+    Attributes:
+        tender_id: External tender identifier.
+        title: Purchase name.
+        region: Implementation region.
+        budget: Tender budget.
+        currency: Currency of the budget.
+        status: Bidding status.
+        stage: tender/project stage.
+        customer: Name of customer.
+        winner: Name of winner.
+        participants: List of participants.
+        contacts: Contact details of the counterparties.
+        start_date: Target date for commencement.
+        end_date: Target Date for Completion.
+        source_url: Reference to source.
+        quality_flag: Data quality sign.
     """
 
     tender_id: str
@@ -49,17 +49,17 @@ class TenderBase(BaseModel):
 
 
 class TenderCreate(TenderBase):
-    """Схема для создания тендера на входе API."""
+    'Scheme for the creation of a tender at the API entrance.'
 
     model_config = ConfigDict(extra="forbid")
 
 
 class TenderRead(TenderBase):
-    """Схема тендера для чтения из API.
+    """API reading tender scheme.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
-        created_at: Дата создания записи.
+    Attributes:
+        id: Internal record identifier.
+        created_at: Date of creation of the record.
     """
 
     id: int

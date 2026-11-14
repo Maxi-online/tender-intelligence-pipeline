@@ -1,4 +1,4 @@
-"""Настройки поиска и лимитов Perplexity."""
+'Search settings and Perplexity limits.'
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from pathlib import Path
 
 from app.core.config import get_settings
 
-# Глобальных лимитов на поиск нет. 0 = все ключевые слова, большие значения = без ограничения числа источников/лидов.
+# There are no global search limits. 0 = all key words, high values = no limit on the number of sources/lides.
 DEFAULT_SETTINGS = {
     "perplexity_limit_sources": 100_000,
     "perplexity_limit_leads": 100_000,

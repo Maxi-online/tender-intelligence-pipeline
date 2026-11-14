@@ -1,6 +1,6 @@
-"""Настройки приложения TPIS.
+"""TPIS application settings.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -12,52 +12,52 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Модель настроек, загружаемых из окружения.
+    """A model of settings downloaded from the environment.
 
-    Атрибуты:
-        app_name: Название приложения.
-        api_prefix: Префикс всех API-эндпоинтов.
-        log_level: Уровень логирования.
-        database_url: DSN для подключения к PostgreSQL.
-        celery_broker_url: URL брокера Celery.
-        celery_result_backend: Backend для результатов Celery.
-        update_cycles_per_day: Количество циклов обновления в сутки.
-        ingest_loop_interval_seconds: Пауза между проходами постоянного парсинга (сек).
-        ingest_recheck_after_seconds: Считать источник «необработанным» и парсить снова, если не проверяли столько секунд (0 = только никогда не проверенные).
-        seldon_base_url: Базовый URL Seldon Tenders API (https://apitorgi.myseldon.com).
-        seldon_api_key: Токен Seldon (если задан, Login не вызывается).
-        seldon_login: Логин для User/Login (если нужна авторизация по паролю).
-        seldon_password: Пароль для User/Login.
-        seldon_basis_url: Базовый URL Seldon Basis API (опционально, для контактов по ИНН).
-        seldon_validation_enabled: Включить проверку выгрузки через LLM (строительная тематика, мусор).
-        discovery_search_url: URL поиска источников (шаблон с {query}).
-        discovery_api_key: Ключ для сервиса поиска источников.
-        export_dir: Каталог для выгрузок.
-        http_proxy_url: Прокси URL для обхода блокировок.
-        user_agent: User-Agent для запросов к источникам.
-        request_delay_min: Минимальная задержка между запросами.
-        request_delay_max: Максимальная задержка между запросами.
-        matching_threshold: Порог уверенности для автоматической связки.
-        matching_min_threshold: Минимальный порог для постановки в очередь.
-        sources_config_path: Путь к конфигу источников.
-        keywords_config_path: Путь к конфигу ключевых слов.
-        perplexity_api_key: Ключ доступа к Perplexity API.
-        perplexity_base_url: Базовый URL Perplexity.
-        perplexity_model: Модель Perplexity для поиска.
-        anthropic_api_key: Ключ доступа к Anthropic Claude.
-        anthropic_base_url: Базовый URL Anthropic.
-        anthropic_model: Модель Claude для ранжирования.
-        openrouter_api_key: Ключ доступа к OpenRouter.
-        openrouter_base_url: Базовый URL OpenRouter.
-        openrouter_model: Модель Claude через OpenRouter.
-        openrouter_app_url: URL приложения для OpenRouter (опционально).
-        openrouter_app_name: Название приложения для OpenRouter (опционально).
-        openai_settings_path: Путь к settings.json для OpenAI.
-        openai_model: Модель OpenAI для fallback.
-        dadata_api_key: Ключ доступа к Dadata.
-        dadata_secret_key: Секретный ключ Dadata.
-        dadata_mcp_url: URL MCP-сервера Dadata.
-        rusprofile_base_url: Базовый URL Rusprofile (если используется API).
+    Attributes:
+        app_name: Name of application.
+        api_prefix: Prefix of all API-endpoints.
+        log_level: Logistical level.
+        database_url: DSN to connect to PostgreSQL.
+        celery_broker_url: URL Celery broker.
+        celery_result_backend: Backend for Celery results.
+        update_cycles_per_day: Number of updating cycles per day.
+        ingest_loop_interval_seconds: Pause between Permanent Parsing Passages (sec)).
+        ingest_recheck_after_seconds: Consider the source “unprocessed” and break again if you have not checked so many seconds (0 = only never checked).
+        seldon_base_url: Basic URL Seldon Tenders API (https://apitorgi.myseldon.com)).
+        seldon_api_key: Seldon Token (if checked, Login is not called).
+        seldon_login: Login for User/Login (if password authorization is needed)).
+        seldon_password: The password for User/Login.
+        seldon_basis_url: Basic URL Seldon Base API (optimal, for INS contact)).
+        seldon_validation_enabled: Insert a check of discharge through LLM (construction subject, garbage)).
+        discovery_search_url: URL Source Search (Sable from {query)}).
+        discovery_api_key: The key for the source search service.
+        export_dir: Unload Catalogue.
+        http_proxy_url: Proxie URL to bypass blocks.
+        user_agent: User-Agent for source requests.
+        request_delay_min: Minimum delay between requests.
+        request_delay_max: Maximum delay between requests.
+        matching_threshold: Confidence threshold for automatic ligament.
+        matching_min_threshold: Minimum threshold for placing in line.
+        sources_config_path: Path to source confiscation.
+        keywords_config_path: Path to the confiscation of key words.
+        perplexity_api_key: The access key to Perplexity API.
+        perplexity_base_url: Basic URL Perplexity.
+        perplexity_model: Perplexity model for search.
+        anthropic_api_key: Key to Anthropic Claude.
+        anthropic_base_url: Basic URL Anthropic.
+        anthropic_model: Claude's ranking model.
+        openrouter_api_key: OpenRouter access key.
+        openrouter_base_url: Basic URL OpenRouter.
+        openrouter_model: Claude model via OpenRouter.
+        openrouter_app_url: URL application for OpenRouter).
+        openrouter_app_name: OpenRouter application name).
+        openai_settings_path: Path to settings.json for OpenAI.
+        openai_model: OpenAI model for Fallback.
+        dadata_api_key: The key to Dadata's access.
+        dadata_secret_key: Dadata's secret key.
+        dadata_mcp_url: URL MCP server of Dadata.
+        rusprofile_base_url: Basic URL Rusprofile (if API is used)).
     """
 
     model_config = SettingsConfigDict(
@@ -93,7 +93,7 @@ class Settings(BaseSettings):
     sources_config_path: str = "config/sources.yaml"
     keywords_config_path: str = "config/keywords.yaml"
 
-    # Внешние LLM/поисковые сервисы
+    # External LLM/search services
     perplexity_api_key: str | None = None
     perplexity_base_url: str = "https://api.perplexity.ai"
     perplexity_model: str = "sonar-small-online"
@@ -118,9 +118,9 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """Вернуть кэшированный экземпляр настроек приложения.
+    """Return a cached copy of the application settings.
 
-    :return: Конфигурация приложения, загруженная из окружения и .env.
+    :return: Application configuration loaded from environment and .env.
     """
 
     return Settings()

@@ -1,6 +1,6 @@
-"""Импорт моделей данных.
+"""Import data models.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from app.models.article import Article

@@ -1,6 +1,6 @@
-"""Клиент Anthropic Claude Sonnet 4.5 для ранжирования и классификации.
+"""Anthropic Claude Sonnet 4.5 client for ranking and classification.
 
-Автор: адаптация под TPIS.
+Author: Adaptation to TPIS.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ ClaudeModel = Literal["claude-3-5-sonnet-20241022"]
 
 
 class ClaudeClient:
-    """Простой клиент Anthropic Messages API под задачи ранжирования и классификации."""
+    'A simple client of Anthropic Messages API for ranking and classification tasks.'
 
     def __init__(self) -> None:
         settings = get_settings()
@@ -52,7 +52,7 @@ class ClaudeClient:
         self._openrouter_backoff_seconds = 600.0
         self._force_openai = True
         if not self._openrouter_api_key:
-            logger.warning("OPENROUTER_API_KEY не задан, включен fallback на OpenAI.")
+            logger.warning('OPENROUTER_API_KEY is not specified, and fallsback is on OpenAI.')
 
     async def _call_messages_api(
         self,
@@ -140,7 +140,7 @@ class ClaudeClient:
         prompt: str | None = None,
         max_tokens: int = 2048,
     ) -> str:
-        """Извлечь текст из изображений через Claude Vision."""
+        'Extraction of text from images through Claude Vision.'
 
         if not images:
             return ""
@@ -168,13 +168,13 @@ class ClaudeClient:
                 )
 
         text_prompt = prompt or (
-            "Ты распознаешь текст в сканах PDF. "
-            "Верни только извлеченный текст без комментариев и форматирования."
+            'You recognize the text in PDF scans. '
+            'Return only extracted text without comments and formatting.'
         )
         content_blocks.append({"type": "text", "text": text_prompt})
 
         response = await self._call_messages_api(
-            system="Ты помощник для OCR и извлечения текста.",
+            system='You are an OCR and text extraction assistant.',
             messages=[{"role": "user", "content": content_blocks}],
             max_tokens=max_tokens,
             temperature=0.0,
@@ -191,25 +191,25 @@ class ClaudeClient:
         *,
         keywords: list[str] | None = None,
     ) -> list[dict[str, Any]]:
-        """Отранжировать результаты поиска по релевантности.
+        """Land the search results according to relevance.
 
-        :param query: Пользовательский запрос.
-        :param candidates: Список кандидатов от Perplexity или других источников.
-        :param keywords: Необязательный список доменных ключевых слов.
-        :return: Тот же список, но с полем score и сортировкой по убыванию.
+        :param query: User request.
+        :param profiles: List of candidates from Perplexity or other sources.
+        :param keywords: Non-mandatory list of domain key words.
+        :Return: Same list, but with score field and sorting.
         """
 
         if not candidates:
             return []
 
         system = (
-            "Ты эксперт по строительным тендерам, проектам и компаниям. "
-            "Твоя задача — ранжировать результаты поиска по релевантности запросу. "
-            "Оценивай только по смысловой близости текста кандидатов к запросу, "
-            "не опираясь на какие-либо внешние списки ключевых слов."
+            "You're an expert on construction tenders, projects and companies. "
+            'Your job is to rank the search results according to the relevance of the request. '
+            'Assess only by the logical proximity of the text of the candidates to the request, '
+            'without relying on any external lists of key words.'
         )
 
-        # Формируем компактное JSON-представление кандидатов.
+        # Form a compact JSON nomination.
         items_for_llm: list[dict[str, Any]] = []
         for idx, item in enumerate(candidates, start=1):
             items_for_llm.append(
@@ -223,13 +223,13 @@ class ClaudeClient:
             )
 
         user_content = (
-            "Запрос:\n"
+            'Request:\n'
             f"{query}\n\n"
-            "Кандидаты (список JSON-объектов):\n"
+            'Candidates (JSON List):\n'
             f"{items_for_llm}\n\n"
-            "Верни JSON со списком объектов вида "
-            '{"id": <id>, "relevance": <от 0 до 1>, "labels": [<классы>]} '
-            "без какого-либо дополнительного текста."
+            'Return JSON with the species list '
+            '{"id": <id>, "relevance": <from 0 up to 1>, "labels": [<Grades>]} '
+            'without any additional text.'
         )
 
         response = await self._call_messages_api(
@@ -289,24 +289,24 @@ class ClaudeClient:
         return None
 
     async def normalize_project_titles(self, titles: list[str]) -> dict[str, str]:
-        """Нормализовать список названий проектов для дедупликации."""
+        'Normalize the list of projects names for deduplication.'
 
         unique_titles = [t.strip() for t in titles if t and t.strip()]
         if not unique_titles:
             return {}
         system = (
-            "Ты нормализуешь названия строительных проектов для дедупликации. "
-            "Оценивай смысл, своди разные формулировки одного и того же проекта "
-            "к одному каноническому названию. "
-            "Верни JSON-массив объектов вида "
-            '{"input": "<исходное>", "canonical": "<каноническое>"} без текста вне JSON. '
-            "Каноническое имя должно сохранять объект, локации, номера и уникальные признаки. "
-            "Не добавляй выдуманные данные."
+            'You normalize the names of construction projects for deduplication. '
+            'Assess the meaning, sum up the different language of the same draft '
+            'to one canonical name. '
+            'Return the JSON massage of objects of the species '
+            '{"input": "<reference>", "canonical": "<canonical>} without text outside JSON. '
+            'Canon name should keep object, location, numbers and unique features. '
+            "Don't add fake data."
         )
         user_content = (
-            "Список названий (JSON-массив строк):\n"
+            'List of names:\n'
             f"{json.dumps(unique_titles, ensure_ascii=False)}\n\n"
-            "Верни только JSON-массив объектов."
+            'Just return the JSON massage of the objects.'
         )
         response = await self._call_messages_api(
             system=system,
@@ -332,7 +332,7 @@ class ClaudeClient:
         return result
 
     async def normalize_project_title(self, title: str) -> str:
-        """Нормализовать название проекта для дедупликации."""
+        'Normalization of the project name for deduplication.'
 
         mapping = await self.normalize_project_titles([title])
         canonical = mapping.get(title, "").strip()
@@ -343,22 +343,22 @@ class ClaudeClient:
         return canonical
 
     async def classify_project_titles(self, titles: list[str]) -> dict[str, bool]:
-        """Определить шумные/непроектные названия через LLM."""
+        'Identify noisy/non-project names via LLM.'
 
         unique_titles = [t.strip() for t in titles if t and t.strip()]
         if not unique_titles:
             return {}
         system = (
-            "Ты классифицируешь строки как реальные названия строительных проектов/тендеров "
-            "или шум (анонсы мероприятий, реклама, общие фразы без объекта). "
-            "Верни JSON-массив объектов вида "
-            '{"input": "<строка>", "is_noise": true/false} без текста вне JSON. '
-            "Если сомневаешься — помечай is_noise=false (оставляй в списке); отсекай только явный шум."
+            'You classify the lines as real names of construction projects/tenders '
+            'or noise (events of events, advertising, general phrases without object)). '
+            'Return the JSON massage of objects of the species '
+            '{"Input": "<string>", "is_noise": trie/false} without text outside JSON. '
+            'If you doubt it, mark is_noise=false; cut off only the clear noise.'
         )
         user_content = (
-            "Список строк (JSON-массив строк):\n"
+            'List of rows:\n'
             f"{json.dumps(unique_titles, ensure_ascii=False)}\n\n"
-            "Верни только JSON-массив объектов."
+            'Just return the JSON massage of the objects.'
         )
         response = await self._call_messages_api(
             system=system,
@@ -383,21 +383,21 @@ class ClaudeClient:
         return result
 
     async def summarize_project(self, title: str, text: str) -> str:
-        """Сформировать краткое описание проекта на основе текста."""
+        'Formulate a brief description of the draft on the basis of the text.'
 
         if not text.strip():
             return ""
         system = (
-            "Ты системный аналитик строительных проектов. "
-            "Сформируй краткое описание проекта (2-4 предложения) строго по смыслу текста: "
-            "объект, локация, стадия, бюджет, заказчик/подрядчик. "
-            "Если данных нет, не выдумывай."
+            "You're a systems analyst for construction projects. "
+            'Form a brief description of the draft (2-4 sentences) strictly within the meaning of the text: '
+            'Subject matter, location, stage, budget, employer/contractor. '
+            "If there's no data, don't make it up."
         )
         user = (
-            f"Название: {title}\n"
-            "Текст:\n"
+            f"Name: {title}\n"
+            'Text:\n'
             f"{text}\n\n"
-            "Верни только описание без списков и без лишней воды."
+            'Just give me the description without the lists and no more water.'
         )
         response = await self._call_messages_api(
             system=system,

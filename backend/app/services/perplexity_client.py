@@ -1,13 +1,13 @@
-"""Клиент Perplexity API для текстового/web-поиска.
+"""Perplexity API client for text/web search.
 
-В системе Perplexity используется для:
-- Поиска информации о проектах, тендерах и госзаказах (ingest_perplexity_leads): по ключевым словам
-  и запросам типа «госзакупки 44-ФЗ 223-ФЗ» находит ссылки на статьи/страницы, по ним парсим и пишем в БД.
-- Автопоиска источников (DiscoveryService): поиск новых RSS/порталов по ключевым словам.
-- Пользовательского поиска (semantic_search): первичный сбор результатов, затем ранжирование Claude.
-- Обогащения компаний: поиск данных о компаниях (Rusprofile и др.).
+Perplexity is used for:
+- Searching for projects, tenders and state orders (ingest_perplexity_leads): Key words
+  and "44-FZ 223-FZ" requests refer to articles/pages, parsim and database.
+- Search for Sources (DiscoveryService): Search for new RSS/portals according to key words.
+- User search (semantic_search): Primary collection of results, then ranking of Claude.
+- Company Enrichment: Searching for Companies (Rusprofile et al.).).
 
-Автор: Maxi-online (адаптация под LLM-поиск).
+Author: Maxi-online (adaptation to LLM search).
 """
 
 from __future__ import annotations
@@ -24,11 +24,11 @@ logger = logging.getLogger(__name__)
 
 
 class PerplexityClient:
-    """Клиент Perplexity Chat Completions API.
+    """The client Perplexity Chat Compilations API.
 
-    ВАЖНО: Perplexity всегда использует СВОИ модели (семейство Sonar).
-    Claude в Perplexity запускать нельзя — для Claude Sonnet 4.5
-    у нас отдельный клиент Anthropic (`ClaudeClient`).
+    IMPORTANT: Perplexity always uses SWI models (Sonar family)).
+    Claude in Perplexity cannot be launched for Claude Sonnet 4.5
+    We have a separate client, Anthropic (`ClaudeClient`).
     """
 
     def __init__(self) -> None:
@@ -41,18 +41,18 @@ class PerplexityClient:
             "https://api.perplexity.ai",
         ).rstrip("/")
         self._root_url: str = root
-        # По docs Perplexity все Chat Completions ходят на /v2
+        # On docs perplexity, all Chat Compilations go to /v2
         # https://docs.perplexity.ai/docs/grounded-llm/openai-compatibility
         self._base_url: str = f"{root}/v2"
-        # Модель: используем sonar-pro (рекомендуемую в доках) по умолчанию.
-        # Claude Sonnet 4.5 вызывается ДРУГИМ клиентом (Anthropic), а не через Perplexity.
+        # Model: use Sonar-pro (recommended in docks) default.
+        # Claude Sonnet 4.5 is called by another client (Anthropic) rather than via Perplexity.
         self._model: str = getattr(
             settings,
             "perplexity_model",
             "sonar-pro",
         )
         if not self._api_key:
-            raise RuntimeError("PERPLEXITY_API_KEY не задан в окружении.")
+            raise RuntimeError('PERPLEXITY_API_KEY is not set in the environment.')
 
     async def search(
         self,
@@ -62,33 +62,33 @@ class PerplexityClient:
         keywords: list[str] | None = None,
         max_results: int = 10,
     ) -> list[dict[str, Any]]:
-        """Выполнить поиск через Perplexity и вернуть нормализованный список результатов.
+        """Run a search through Perplexity and return the normalized results list.
 
-        :param query: Пользовательский запрос.
-        :param system_prompt: Дополнительный system-промпт для настройки поведения модели.
-        :param keywords: Список ключевых слов/фраз для фокусировки поиска.
-        :param max_results: Желаемое число результатов (best-effort).
-        :return: Список документов с полями title, url, snippet, score.
+        :param query: User request.
+        :Param system_prompt: Additional system-prompt for model behaviour settings.
+        :Param keywords: Keywords/List to focus search.
+        :Paragraph max_results: Number of results desired (best-effort)).
+        :Retorn: List of documents with field, url, snippet, score.
         """
 
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
         }
-        # Строим подсказку для модели с учётом ключевых слов.
+        # We're building a clue for a model that takes key words into account.
         keywords_text = ""
         if keywords:
             joined = ", ".join(sorted(set(k for k in keywords if k)))
             if joined:
                 keywords_text = (
-                    " Фокусируйся на следующих ключевых темах и терминах: " + joined + "."
+                    ' Focus on the following key themes and terms: ' + joined + "."
                 )
 
         system = (
             system_prompt
             or (
-                "Ты помощник для поиска информации по строительным проектам, тендерам "
-                "и компаниям. Отбирай только релевантные результаты и не добавляй выдуманных ссылок."
+                "You're an assistant for research on construction projects, tenders "
+                'and companies. Select only relevant results and do not add fictional references.'
             )
         ) + keywords_text
 
@@ -118,7 +118,7 @@ class PerplexityClient:
                 headers=headers,
                 json=payload,
             )
-            # Если Perplexity вернул подробную ошибку в JSON — добавим её в сообщение исключения.
+            # If Perplexity returned a detailed error to JSON, add it to the exception message.
             try:
                 response.raise_for_status()
             except httpx.HTTPStatusError as exc:  # noqa: TRY301
@@ -137,7 +137,7 @@ class PerplexityClient:
 
         results: list[dict[str, Any]] = []
 
-        # Основной источник ссылок по документации: top-level search_results.
+        # Main source of documentation references: top-pel search_results.
         search_results = data.get("search_results") or []
         logger.info("Perplexity results: %s", len(search_results))
         for idx, item in enumerate(search_results):
@@ -157,7 +157,7 @@ class PerplexityClient:
                 }
             )
 
-        # Если по какой-то причине search_results пуст, пробуем вытащить хотя бы текст ответа.
+        # If search_results is empty for some reason, let's try to pull out the text of the answer.
         if not results:
             choices = data.get("choices") or []
             if choices:
@@ -167,7 +167,7 @@ class PerplexityClient:
                 results.append(
                     {
                         "rank": 1,
-                        "title": "Ответ Perplexity",
+                        "title": 'Response Perplexity',
                         "url": "",
                         "snippet": content,
                         "score": 1.0,
@@ -190,20 +190,20 @@ class PerplexityClient:
         search_before_date_filter: str | None = None,
         country: str | None = None,
     ) -> list[dict[str, Any]]:
-        """Выполнить поиск через Perplexity Search API.
+        """Run a search through Perplexity Search API.
 
-        :param query: Поисковый запрос.
-        :param max_results: Количество результатов.
-        :param max_tokens: Общий лимит токенов ответа.
-        :param max_tokens_per_page: Лимит токенов на страницу.
-        :param search_domain_filter: Фильтр доменов.
-        :param search_language_filter: Фильтр языков.
-        :param search_recency_filter: Окно свежести (hour/day/week/month/year).
-        :param search_after_date_filter: Дата начала окна (YYYY-MM-DD).
-        :param search_before_date_filter: Дата конца окна (YYYY-MM-DD).
-        :param search_mode: Режим поиска (web/academic/sec).
-        :param country: Геофильтр (например, RU).
-        :return: Список документов с полями title, url, snippet, score.
+        :param query: Search request.
+        :param max_results: Number of results.
+        :param max_tokens: Total response current limit.
+        :param max_tokens_per_page: Distillation of currents onto the page.
+        :param search_domain_filter: Domain filter.
+        :param search_language_filter: Language filter.
+        :Param search_recency_filter: Freshness Window (hur/day/week/month/year)).
+        :Paragraph search_after_date_filter: Start date of the window (YYYY-MM-DD)).
+        :Paragraph search_before_date_filter: Date of window end (YYYY-MM-DD)).
+        :param search_mode: Search mode (web/academic/sec).
+        :param country: Geofilter (e.g. RU).
+        :Retorn: List of documents with field, url, snippet, score.
         """
 
         headers = {

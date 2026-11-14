@@ -1,6 +1,6 @@
-"""Модель компании.
+"""The company model.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -12,18 +12,18 @@ from app.models.base import Base
 
 
 class Company(Base):
-    """Сущность компании с основными контактными данными.
+    """The nature of the company with the basic contact details.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
-        inn: ИНН компании.
-        name: Наименование компании.
-        normalized_name: Нормализованное наименование для защиты от дублей.
-        phone: Контактный телефон.
-        email: Контактный email.
-        address: Адрес компании.
-        contacts: Дополнительные контакты.
-        source_refs: Ссылки на источники данных.
+    Attributes:
+        id: Internal record identifier.
+        inn: INN company.
+        name: Name of company.
+        normalized_name: Normalized name to protect against duplicates.
+        phone: Contact number.
+        email: Contact email.
+        address: Address of the company.
+        contacts: Additional contacts.
+        source_refs: References to data sources.
     """
 
     __tablename__ = "companies"

@@ -1,4 +1,4 @@
-"""LLM модуль: извлечение сущностей и классификация (OpenAI)."""
+'LLM Module: Extraction and Classification (OpenAI)).'
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def _strip_json_markdown(raw: str) -> str:
-    """Убрать обёртку ```json ... ``` из ответа LLM."""
+    "Remove the wrapping ```json ... `'' from LLM's response."
     s = (raw or "").strip()
     s = re.sub(r"^```(?:json)?\s*", "", s)
     s = re.sub(r"\s*```\s*$", "", s)
@@ -23,7 +23,7 @@ def _strip_json_markdown(raw: str) -> str:
 
 @dataclass
 class ExtractedEntities:
-    """Результат извлечения сущностей."""
+    'Results of Essentials.'
 
     projects: list[str]
     companies: list[str]
@@ -85,26 +85,26 @@ async def _call_json_with_retry(
 
 
 async def select_primary_roles(text: str, entities: ExtractedEntities) -> dict[str, object]:
-    """Выбрать основные роли и кандидатов для обогащения через OpenAI."""
+    'Select key roles and candidates for enrichment through OpenAI.'
 
     client = OpenAIClient()
     system = (
-        "Ты анализируешь текст и уже извлеченные сущности. "
-        "Нужно выбрать ОСНОВНЫЕ роли (заказчик, подрядчик/исполнитель, инвестор, победитель) "
-        "и список кандидатов компаний для обогащения. "
-        "Если роли не очевидны, используй список companies как источник кандидатов. "
-        "Если в сущностях есть компании, candidates не должен быть пустым. "
-        "Верни только проверяемые факты, ничего не выдумывай. "
-        "Верни ТОЛЬКО JSON вида: "
+        'You analyze the text and the already extracted essences. '
+        'Key roles (contractor, contractor/implementer, investor, winner) should be selected) '
+        'And a list of company candidates for enrichment. '
+        "If the roles aren't obvious, use the companies list as the source of the candidates. "
+        "If there's a company in the entities, candidates shouldn't be empty. "
+        "Just give me the facts you've checked, don't make anything up. "
+        'Just give JSON back the species: '
         "{\"customer\": string|null, \"contractor\": string|null, \"investor\": string|null, "
         "\"winner\": string|null, \"candidates\": [string]}."
     )
     user_content = (
-        "Текст:\n"
+        'Text:\n'
         f"{text}\n\n"
-        "Сущности (JSON):\n"
+        'Material (JSON):\n'
         f"{json.dumps(entities.__dict__, ensure_ascii=False)}\n\n"
-        "Верни только JSON."
+        'Just give it back to JSON.'
     )
     data = await _call_json_with_retry(
         client,
@@ -127,28 +127,28 @@ async def select_primary_roles(text: str, entities: ExtractedEntities) -> dict[s
 
 
 async def extract_entities(text: str) -> ExtractedEntities:
-    """Извлечь сущности из текста с помощью OpenAI."""
+    'Extract Essentials from Text with OpenAI.'
 
     client = OpenAIClient()
     system = (
-        "Ты системный аналитик строительных проектов и тендеров. "
-        "Твоя задача — строго и полно извлечь роли (заказчик, подрядчик/исполнитель, инвестор, "
-        "победитель, заявитель) и их контакты из текста. "
-        "Если в тексте явно указан заказчик или подрядчик — ОБЯЗАТЕЛЬНО верни их в соответствующих полях. "
-        "Сопоставляй контакты с ближайшей ролью. "
-        "Верни только проверяемые факты, ничего не выдумывай. "
-        "Верни ТОЛЬКО валидный JSON одного объекта со строго фиксированными полями "
-        "и массивами строк. Никаких комментариев, пояснений и текста вне JSON."
+        "You're a systems analyst for construction projects and tenders. "
+        'Your task is to strictly and fully extract the roles (order, contractor/executive, investor), '
+        'The author, the applicant) and their contacts from the text. '
+        'If the text clearly indicates the employer or contractor - Reimbursably return them in the relevant fields. '
+        'Compare contacts with the immediate role. '
+        "Just give me the facts you've checked, don't make anything up. "
+        'Give back the only JSON with fixed fields '
+        'and row arrays. No comment, no explanation, and no text outside JSON.'
     )
     user_content = (
-        "Текст для анализа (на русском):\n\n"
+        'Analysis text (Russian):\n\n'
         f"{text}\n\n"
-        "Верни только один JSON-объект со следующими полями "
-        "и массивами строк (если чего-то нет — верни пустой список):\n"
+        'Give back only one JSON object with the next fields. '
+        'And the string arrays (if anything is missing, give me back the blank list)):\n'
         "projects, companies, persons, emails, phones, money, dates, "
         "winners, applicants, contractors, subcontractors, customers, investors.\n"
-        "Важно: роли и контакты должны быть максимально полными и точными. "
-        "Обязательно выделяй заказчика и подрядчика/исполнителя, если они указаны."
+        'Important: roles and contacts should be as complete and accurate as possible. '
+        'Make mandatory the assignment of the employer and contractor/operator if specified.'
     )
 
     data = await _call_json_with_retry(
@@ -201,27 +201,27 @@ async def extract_entities(text: str) -> ExtractedEntities:
 
 
 async def classify_text(text: str) -> str:
-    """Классифицировать текст по типу контента с помощью OpenAI."""
+    'Classify text by content type using OpenAI.'
 
     client = OpenAIClient()
     system = (
-        "Ты строго классифицируешь русскоязычные тексты по тематике строительных тендеров и проектов. "
-        "Тебе нужно выбрать ОДНУ метку из набора: "
+        'You strictly classify Russian-language texts on construction tenders and projects. '
+        'You need to choose a single tag from the set: '
         '"project", "tender", "results", "insight", "analysis". '
-        "МЕТКИ \"project\" и \"tender\" ставь ТОЛЬКО если текст явно описывает "
-        "конкретный строительный/инфраструктурный объект, проект, стройку, реконструкцию, "
-        "капитальный ремонт, линейный объект, инженерные сети, дороги, мосты, развязки, "
-        "социальные объекты (школа, садик, больница и т.п.). "
-        "Если текст касается продажи сырья/лома/оборудования, макулатуры, металлолома, "
-        "услуг площадок, форм обратной связи, справочной информации, рекламы и т.п. — "
-        "НИКОГДА не ставь \"project\" или \"tender\", используй \"results\", \"insight\" или \"analysis\". "
-        "Ответь ТОЛЬКО валидным JSON вида {\"label\": \"...\"} без комментариев и пояснений."
+        '"project" and "tender" METHS only if the text clearly describes '
+        'specific construction/infrastructure facility, project, construction, reconstruction, '
+        'Major maintenance, line object, engineering networks, roads, bridges, interchanges, '
+        'Social facilities (schools, day care, hospital, etc.). '
+        'If the text relates to the sale of raw materials/refills/equipment, paperwork, scrap metal, '
+        'Site services, feedback forms, background information, advertising, etc. — '
+        'Never put "project" or "tender", use "results", "insight" or "analysis"". '
+        'Answer the {"label": "..."} type with no comment or explanation.'
     )
     user_content = (
-        "Текст для классификации (на русском):\n\n"
+        'Classification text (Russian):\n\n'
         f"{text}\n\n"
-        "Верни только JSON-объект {\"label\": \"project|tender|results|insight|analysis\"}. "
-        "Помни: метки \"project\"/\"tender\" допустимы только для строительных/инфраструктурных объектов."
+        'Only return the JSON object {"label": "project\\tender\\effects\\insight\\analysis""}. '
+        'Remember: "project"/ "tender" labels are only allowed for construction/infrastructure facilities.'
     )
 
     data = await _call_json_with_retry(
@@ -240,25 +240,25 @@ async def classify_text(text: str) -> str:
 
 
 async def normalize_project_titles(titles: list[str]) -> dict[str, str]:
-    """Нормализовать названия проектов для дедупликации через OpenAI."""
+    'Normalize the names of projects for deduplying through OpenAI.'
 
     unique_titles = [t.strip() for t in titles if t and t.strip()]
     if not unique_titles:
         return {}
     client = OpenAIClient()
     system = (
-        "Ты нормализуешь названия строительных проектов для дедупликации. "
-        "Оценивай смысл, своди разные формулировки одного и того же проекта "
-        "к одному каноническому названию. "
-        "Верни JSON-объект вида {\"items\": [{\"input\": \"<исходное>\", "
-        "\"canonical\": \"<каноническое>\"}]} без текста вне JSON. "
-        "Каноническое имя должно сохранять объект, локации, номера и уникальные признаки. "
-        "Не добавляй выдуманные данные."
+        'You normalize the names of construction projects for deduplication. '
+        'Assess the meaning, sum up the different language of the same draft '
+        'to one canonical name. '
+        'Give it back JSON-object of the species {"items": [{"input": "<Baseline>", '
+        '"canonical": "<canonical>"}]} without text outside JSON. '
+        'Canon name should keep object, location, numbers and unique features. '
+        "Don't add fake data."
     )
     user_content = (
-        "Список названий (JSON-массив строк):\n"
+        'List of names:\n'
         f"{json.dumps(unique_titles, ensure_ascii=False)}\n\n"
-        "Верни только JSON-объект с ключом items."
+        'Only return the JSON object with the key items.'
     )
     data = await _call_json_with_retry(
         client,
@@ -281,23 +281,23 @@ async def normalize_project_titles(titles: list[str]) -> dict[str, str]:
 
 
 async def classify_project_titles(titles: list[str]) -> dict[str, bool]:
-    """Определить шумные/непроектные названия через OpenAI."""
+    'Identify noisy/non-project names via OpenAI.'
 
     unique_titles = [t.strip() for t in titles if t and t.strip()]
     if not unique_titles:
         return {}
     client = OpenAIClient()
     system = (
-        "Ты классифицируешь строки как реальные названия строительных проектов/тендеров "
-        "или шум (анонсы мероприятий, реклама, общие фразы без объекта). "
-        "Верни JSON-объект вида {\"items\": [{\"input\": \"<строка>\", "
-        "\"is_noise\": true/false}]} без текста вне JSON. "
-        "Если сомневаешься — помечай is_noise=false (оставляй в списке); отсекай только явный шум."
+        'You classify the lines as real names of construction projects/tenders '
+        'or noise (events of events, advertising, general phrases without object)). '
+        'Give it back JSON-object of the species {"items": [{"input": "<Line>", '
+        '"is_noise": true/false}]} without text outside JSON. '
+        'If you doubt it, mark is_noise=false; cut off only the clear noise.'
     )
     user_content = (
-        "Список строк (JSON-массив строк):\n"
+        'List of rows:\n'
         f"{json.dumps(unique_titles, ensure_ascii=False)}\n\n"
-        "Верни только JSON-объект с ключом items."
+        'Only return the JSON object with the key items.'
     )
     data = await _call_json_with_retry(
         client,
@@ -320,20 +320,20 @@ async def classify_project_titles(titles: list[str]) -> dict[str, bool]:
 
 
 async def choose_best_project(candidates: list[dict[str, object]]) -> int | None:
-    """Выбрать наиболее полную запись проекта через OpenAI."""
+    'Select the most complete recording of the project via OpenAI.'
 
     if not candidates:
         return None
     client = OpenAIClient()
     system = (
-        "Ты выбираешь одну запись проекта, которую нужно оставить при дедупликации. "
-        "Оцени заполненность и полезность: наличие заказчика/подрядчика, контактов, бюджета, "
-        "описания и источников. Верни ТОЛЬКО JSON вида {\"keep_id\": <id>}."
+        'You choose one project record that you need to leave when deduplying. '
+        'Assess occupancy and usefulness: customer/contractor, contact, budget, '
+        'Descriptions and sources. Give JSON back the species {"keep_id": <id>}.'
     )
     user_content = (
-        "Кандидаты (JSON):\n"
+        'Candidates (JSON):\n'
         f"{json.dumps(candidates, ensure_ascii=False)}\n\n"
-        "Верни только JSON."
+        'Just give it back to JSON.'
     )
     data = await _call_json_with_retry(
         client,
@@ -348,32 +348,32 @@ async def choose_best_project(candidates: list[dict[str, object]]) -> int | None
 
 
 async def find_duplicate_project_groups(candidates: list[dict[str, object]]) -> list[list[int]]:
-    """Найти группы дубликатов проектов по доказательствам (один и тот же проект из разных источников).
+    """Find duplicate evidence project teams (same project from different sources)).
 
-    Один проект может по-разному описываться разными источниками. Важно искать доказательства:
-    один регион, одна цена/бюджет, один заказчик, один исполнитель/подрядчик и т.д.
-    :param candidates: Список записей проектов с полями id, name, region, budget, customer, contractor, investor, ...
-    :return: Список групп: каждая группа — список id записей, которые описывают один и тот же проект.
+    One project can be described differently by different sources. It's important to find evidence:
+    One region, one price/budget, one employer, one executing agent/contractor, etc.
+    :Param candidates: List of project entries with fields id, name, region, budget, constomer, controller, promoter, ...
+    :Return: List of groups: each group is a list of id records that describe the same project.
     """
 
     if not candidates or len(candidates) < 2:
         return []
     client = OpenAIClient()
     system = (
-        "Ты аналитик строительных проектов и тендеров. Тебе дают список записей проектов из разных источников. "
-        "Один и тот же проект часто описывается по-разному: другие формулировки названия, но те же сущности. "
-        "Твоя задача: определить, какие записи относятся к ОДНОМУ И ТОМУ ЖЕ проекту. "
-        "Ищи доказательства: один регион, одна цена/бюджет (или близкие значения), один заказчик, один подрядчик/исполнитель, "
-        "одна и та же стадия/объект. Названия могут отличаться — ориентируйся на регион, бюджет, заказчика, подрядчика. "
-        "Верни ТОЛЬКО JSON вида {\"groups\": [[id1, id2, ...], [id3, id4], ...]}. "
-        "Каждая внутренняя группа — список id записей, которые ты считаешь одним проектом. "
-        "Записи с уникальным сочетанием доказательств не объединяй ни с кем (не включай в groups или группа из одного id). "
-        "В groups включай только группы размером 2 и больше. Id брать из поля \"id\" каждой записи."
+        "You're an analyst of construction projects and tenders. They give you a list of projects from different sources. "
+        'The same draft is often described in different ways: different wordings of the title but the same substance. '
+        'Your job is to determine which records are relevant to one project. '
+        'Search for evidence: one region, one price/budget (or close values), one customer, one contractor/executive, '
+        'same stage/site. Names may differ — focus on the region, budget, customer, contractor. '
+        'Just give it back JSON species {"groups": [[id1, id2, ...], [id3, id4], ...]}. '
+        'Each in-house group is a list of id records that you consider to be one project. '
+        'Records with a unique combination of evidence do not combine with anyone (not to be included in groups or group of id)). '
+        'In groups, only groups 2 and more are included. Id take from the "id" field of each record.'
     )
     user_content = (
-        "Записи проектов (JSON):\n"
+        'Project records (JSON):\n'
         f"{json.dumps(candidates, ensure_ascii=False)}\n\n"
-        "Верни только JSON с ключом groups."
+        'Just give it back to JSON with the group key.'
     )
     try:
         data = await _call_json_with_retry(
@@ -403,38 +403,38 @@ async def find_duplicate_project_groups(candidates: list[dict[str, object]]) -> 
 
 
 async def summarize_project(title: str, text: str) -> str:
-    """Сформировать краткое описание проекта через OpenAI."""
+    'Create a brief description of the project through OpenAI.'
 
     client = OpenAIClient()
     system = (
-        "Ты аналитик строительных проектов. "
-        "Сформируй краткое описание проекта (2-4 предложения) строго по смыслу текста: "
-        "объект, локация, стадия, бюджет, заказчик/подрядчик. "
-        "Если данных нет, не выдумывай."
+        "You're an analyst of construction projects. "
+        'Form a brief description of the draft (2-4 sentences) strictly within the meaning of the text: '
+        'Subject matter, location, stage, budget, employer/contractor. '
+        "If there's no data, don't make it up."
     )
     user_content = (
-        f"Название проекта: {title}\n\n"
-        f"Текст: {text}\n\n"
-        "Верни только текст описания без лишних вводных."
+        f"Project title: {title}\n\n"
+        f"Text: {text}\n\n"
+        'Just return the description without the input.'
     )
     response = await client.chat(system, [{"role": "user", "content": user_content}])
     return _merge_content(response).strip()
 
 
 async def extract_contacts_from_snippets(snippets: list[str]) -> dict[str, str | None]:
-    """Извлечь email/телефон/ИНН/ОГРН из сниппетов через OpenAI."""
+    'Extract email/telephone/INN/OGRN from Snippets via OpenAI.'
 
     client = OpenAIClient()
     system = (
-        "Ты извлекаешь контакты и реквизиты компании из фрагментов текста. "
-        "Верни ТОЛЬКО JSON вида "
+        'You extract contacts and company requests from text fragments. '
+        'Give me back the JSON view. '
         "{\"email\": string|null, \"phone\": string|null, \"inn\": string|null, \"ogrn\": string|null}. "
-        "Ничего не выдумывай."
+        "Don't make it up."
     )
     user_content = (
-        "Фрагменты:\n"
+        'Fragments:\n'
         f"{json.dumps(snippets, ensure_ascii=False)}\n\n"
-        "Верни только JSON."
+        'Just give it back to JSON.'
     )
     data = await _call_json_with_retry(
         client,
@@ -451,20 +451,20 @@ async def extract_contacts_from_snippets(snippets: list[str]) -> dict[str, str |
 
 
 async def extract_contacts_from_mcp_payload(payload: object) -> dict[str, str | None]:
-    """Извлечь контакты из MCP-полезной нагрузки Dadata через OpenAI."""
+    'Extract contacts from the MCP useful load of Dadata through OpenAI.'
 
     client = OpenAIClient()
     system = (
-        "Ты извлекаешь контакты и реквизиты компании из JSON-полезной нагрузки MCP. "
-        "Верни ТОЛЬКО JSON вида "
+        'You extract company contacts and requests from the JSON MCP useful load. '
+        'Give me back the JSON view. '
         "{\"email\": string|null, \"phone\": string|null, \"inn\": string|null, "
         "\"ogrn\": string|null, \"name\": string|null, \"address\": string|null}. "
-        "Ничего не выдумывай."
+        "Don't make it up."
     )
     user_content = (
-        "JSON-полезная нагрузка:\n"
+        'JSON Useful Load:\n'
         f"{json.dumps(payload, ensure_ascii=False)}\n\n"
-        "Верни только JSON."
+        'Just give it back to JSON.'
     )
     data = await _call_json_with_retry(
         client,
@@ -483,24 +483,24 @@ async def extract_contacts_from_mcp_payload(payload: object) -> dict[str, str | 
 
 
 async def extract_tender_blocks_llm(text: str, *, max_chars: int = 7000) -> list[dict]:
-    """Извлечь блоки тендеров/закупок из текста через LLM. Вызывать при нехватке блоков от regex/ключевых слов.
+    """Extract tender/buy blocks from the text through LLM. Call for lack of regex/keyword blocks.
 
-    :param text: Текст статьи/страницы (обрезается до max_chars).
-    :param max_chars: Максимум символов для отправки в LLM.
-    :return: Список словарей с полями title, winner, budget, status (какие есть).
+    :param text: Text of article/page (cut to max_chars)).
+    :param max_chars: Maximum symbol value to be sent to LLM.
+    :Return: List of dictionaries with fields of title, winner, budget, status).
     """
     snippet = (text or "").strip()[:max_chars]
     if len(snippet) < 200:
         return []
     client = OpenAIClient()
     system = (
-        "Ты извлекаешь из текста перечень тендеров, закупок, контрактов (44-ФЗ, 223-ФЗ). "
-        "Для каждой сущности верни объект с полями: title (название/предмет), winner (победитель/подрядчик/исполнитель), "
-        "budget (число в рублях, если есть), status (тип закупки/статус, если есть). "
-        "Если в тексте нет тендеров/закупок — верни пустой массив []. "
-        "Верни ТОЛЬКО JSON — массив объектов, без markdown и пояснений."
+        'You extract from the text a list of tender, purchases, contracts (44-FZ, 223-FZ)). '
+        'For each entity, return the object with fields: title/subject, Winner (winner/contractor/operator)), '
+        'budget (number of rubles, if any), status (type of purchase/status, if any)). '
+        'If there are no tenders/purchases in the text, return the empty array []. '
+        'Give back JSON alone, the array of objects, without markdown and explanations.'
     )
-    user_content = f"Текст:\n{snippet}\n\nВерни JSON-массив объектов (тендеры/закупки)."
+    user_content = f"Text:\n{snippet}\n\n Return the JSON mass of the objects (tenders/purchases)."
     try:
         response = await client.chat(system, [{"role": "user", "content": user_content}])
         raw = _strip_json_markdown(_merge_content(response))
@@ -533,24 +533,24 @@ async def extract_tender_blocks_llm(text: str, *, max_chars: int = 7000) -> list
 
 
 async def extract_project_blocks_llm(text: str, *, max_chars: int = 7000) -> list[dict]:
-    """Извлечь блоки проектов (строительство, реконструкция, объекты) из текста через LLM.
+    """Extract blocks of projects (building, reconstruction, objects) from the text through the LLM.
 
-    :param text: Текст статьи/страницы (обрезается до max_chars).
-    :param max_chars: Максимум символов для отправки в LLM.
-    :return: Список словарей с полями name, customer_name, contractor_name, investor_name, budget.
+    :param text: Text of article/page (cut to max_chars)).
+    :param max_chars: Maximum symbol value to be sent to LLM.
+    :return: List of field dictionariesname, customer_name, contractor_name, investor_name, budget.
     """
     snippet = (text or "").strip()[:max_chars]
     if len(snippet) < 200:
         return []
     client = OpenAIClient()
     system = (
-        "Ты извлекаешь из текста перечень проектов: строительство, реконструкция, капремонт, объекты, инвестиционные проекты. "
-        "Для каждого проекта верни объект с полями: name (название проекта/объекта), customer_name (заказчик), "
-        "contractor_name (подрядчик/генподрядчик), investor_name (инвестор), budget (число в рублях, если есть). "
-        "Если в тексте нет проектов — верни пустой массив []. "
-        "Верни ТОЛЬКО JSON — массив объектов, без markdown и пояснений."
+        'You extract from the text a list of projects: construction, reconstruction, capremont, objects, investment projects. '
+        'For each project, return the object with fields: name (project/site name), customer_name (contractor)), '
+        'contractor_name (contractor/contractor), investor_name (investor), budget (number of rubles, if any)). '
+        'If there are no projects in the text, return the empty array []. '
+        'Give back JSON alone, the array of objects, without markdown and explanations.'
     )
-    user_content = f"Текст:\n{snippet}\n\nВерни JSON-массив объектов (проекты)."
+    user_content = f"Text:\n{snippet}\n\n"
     try:
         response = await client.chat(system, [{"role": "user", "content": user_content}])
         raw = _strip_json_markdown(_merge_content(response))

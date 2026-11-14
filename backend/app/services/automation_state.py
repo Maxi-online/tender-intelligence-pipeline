@@ -1,6 +1,6 @@
-"""Состояние автоматизации и история запусков.
+"""Automation status and launch history.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,9 +14,9 @@ from app.core.config import get_settings
 
 
 def _state_path() -> Path:
-    """Получить путь к файлу состояния автоматизации.
+    """Get a path to the automation status file.
 
-    :return: Путь к JSON файлу состояния.
+    :return: The way to JSON's status file.
     """
 
     settings = get_settings()
@@ -26,9 +26,9 @@ def _state_path() -> Path:
 
 
 def _lock_path() -> Path:
-    """Получить путь к файлу блокировки.
+    """Get a way to lockdown file.
 
-    :return: Путь к файлу блокировки.
+    :return: Path to the lockdown file.
     """
 
     settings = get_settings()
@@ -38,9 +38,9 @@ def _lock_path() -> Path:
 
 
 def _enrich_lock_path() -> Path:
-    """Получить путь к файлу блокировки дозаполнения.
+    """Get a way to the refill lock file.
 
-    :return: Путь к JSON файлу блокировки дозаполнения.
+    :return: JSON's road to the refill lock file.
     """
 
     settings = get_settings()
@@ -50,9 +50,9 @@ def _enrich_lock_path() -> Path:
 
 
 def get_state() -> dict:
-    """Получить текущее состояние автоматизации.
+    """Get the current status of automation.
 
-    :return: Словарь состояния.
+    :return: Status dictionary.
     """
 
     path = _state_path()
@@ -62,10 +62,10 @@ def get_state() -> dict:
 
 
 def set_enabled(enabled: bool) -> dict:
-    """Установить флаг автоматизации.
+    """Set up the automation flag.
 
-    :param enabled: Новый флаг включения.
-    :return: Обновлённое состояние.
+    :param enabled: New flag of activation.
+    :return: Updated state.
     """
 
     state = get_state()
@@ -75,10 +75,10 @@ def set_enabled(enabled: bool) -> dict:
 
 
 def update_last_run(result: dict) -> dict:
-    """Обновить информацию о последнем запуске.
+    """Update the latest launch information.
 
-    :param result: Результат последнего цикла.
-    :return: Обновлённое состояние.
+    :param results: Results of the last cycle.
+    :return: Updated state.
     """
 
     state = get_state()
@@ -89,19 +89,19 @@ def update_last_run(result: dict) -> dict:
 
 
 def is_enabled() -> bool:
-    """Проверить, включена ли автоматизация.
+    """Check if the automation is on.
 
-    :return: True, если автоматизация включена.
+    :return:True, if automation is on.
     """
 
     return bool(get_state().get("enabled", True))
 
 
 def acquire_lock(ttl_seconds: int = 900) -> bool:
-    """Захватить блокировку для запуска цикла.
+    """Grab the lock to start the cycle.
 
-    :param ttl_seconds: Время жизни блокировки в секундах.
-    :return: True если блокировка получена.
+    :param ttl_seconds: Lifetime lock in seconds.
+    :return:True if lock is received.
     """
 
     path = _lock_path()
@@ -120,7 +120,7 @@ def acquire_lock(ttl_seconds: int = 900) -> bool:
 
 
 def release_lock() -> None:
-    """Снять блокировку цикла.
+    """Unlock the cycle.
 
     :return: None.
     """
@@ -131,10 +131,10 @@ def release_lock() -> None:
 
 
 def acquire_enrich_lock(ttl_seconds: int = 300) -> bool:
-    """Захватить блокировку для дозаполнения проектов.
+    """Grab a block to refill the projects.
 
-    :param ttl_seconds: Время жизни блокировки в секундах.
-    :return: True если блокировка получена.
+    :param ttl_seconds: Lifetime lock in seconds.
+    :return:True if lock is received.
     """
 
     path = _enrich_lock_path()
@@ -153,7 +153,7 @@ def acquire_enrich_lock(ttl_seconds: int = 300) -> bool:
 
 
 def release_enrich_lock() -> None:
-    """Снять блокировку дозаполнения.
+    """Unlock the refilling lock.
 
     :return: None.
     """

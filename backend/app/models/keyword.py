@@ -1,6 +1,6 @@
-"""Модели наборов ключевых слов для поиска.
+"""Models of keyword sets to search for.
 
-Автор: адаптация под TPIS.
+Author: Adaptation to TPIS.
 """
 
 from __future__ import annotations
@@ -14,15 +14,15 @@ from app.models.base import Base
 
 
 class SearchKeywordSet(Base):
-    """Набор ключевых слов/промптов для поисковых сценариев.
+    """Set of key words/prompts for search scenarios.
 
-    Атрибуты:
-        id: Внутренний идентификатор набора.
-        name: Человеко-читаемое название.
-        description: Описание назначения набора.
-        created_by: Идентификатор автора (произвольная строка).
-        created_at: Дата/время создания.
-        updated_at: Дата/время последнего обновления.
+    Attributes:
+        id: Internal recruitment identifier.
+        name: Human-readable name.
+        description: Description of the purpose of the kit.
+        created_by: Author &apos; s Identifier (arbitrary line).
+        created_at: Date/time of creation.
+        updated_at: Date/time of last update.
     """
 
     __tablename__ = "search_keyword_sets"
@@ -49,13 +49,13 @@ class SearchKeywordSet(Base):
 
 
 class SearchKeyword(Base):
-    """Конкретное ключевое слово/промпт в составе набора.
+    """Specific key word/prompt in the selection.
 
-    Атрибуты:
-        id: Внутренний идентификатор.
-        set_id: Идентификатор набора.
-        text: Текст ключевого слова или промпта.
-        weight: Вес/приоритет (по умолчанию 1.0).
+    Attributes:
+        id: Internal identifier.
+        set_id: Set Identifier.
+        text: Keyword or propt.
+        weight: Weight/priority (default 1.0).
     """
 
     __tablename__ = "search_keywords"

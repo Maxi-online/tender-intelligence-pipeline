@@ -21,5 +21,5 @@ setuptools==69.5.1
 pdfplumber==0.11.4
 python-multipart==0.0.9
 openai==2.7.1
-# Для нестандартного парсинга (страница → PDF при JS-контенте). После pip install: playwright install chromium
+# For non-standard parsing (page \PDF with JS content)). After pip install: playwright install chromium
 playwright==1.49.0

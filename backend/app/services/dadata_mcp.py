@@ -1,10 +1,10 @@
-"""Dadata через OpenAI Responses API + MCP (одна точка настроек: gpt-5-nano, прокси).
+"""Dadata via OpenAI Responses API + MCP (one configuration point: gpt-5-nano, Proxi)).
 
-По документации https://dadata.ru/mcp/:
+Documentation: https://dadata.ru/mcp/:
 - server_url: https://mcp.dadata.ru/mcp
-- Авторизация: в headers передаётся authorization: "Bearer ${API_KEY}:${SECRET_KEY}"
-- OpenAI при вызове MCP передаёт токен на сервер Dadata; 424 = OpenAI не смог получить
-  список инструментов с сервера (таймаут, сеть или ответ сервера).
+- Authorization: in headers, authoration: "Bearer ${API_KEY}: $ {SECRET_KEY}"
+- OpenAI on call MCP transmits the current to the Dadata server; 424 = OpenAI failed to obtain
+  server list (timeout, network or server response)).
 """
 
 from __future__ import annotations
@@ -22,23 +22,23 @@ logger = logging.getLogger(__name__)
 
 DADATA_MCP_SERVER_URL = "https://mcp.dadata.ru/mcp"
 
-# MCP Streamable HTTP: клиент шлёт JSON-RPC (initialize, затем tools/list).
-# Dadata может поддерживать 2024-11-05 или 2025-03-26 — при 400 пробуем другую версию.
+# MCP Streamable HTTP: client sends JSON-RPC (initialize, then tools/list)).
+# Dadata can support 2024-11-05 or 2025-03-26, with 400 samples.
 MCP_PROTOCOL_VERSION = "2024-11-05"
 
 
 def _parse_mcp_response(resp: httpx.Response) -> dict | None:
-    """Разобрать ответ MCP: либо application/json, либо SSE (event/data: {...})."""
+    'Select Response MCP: eitherapplication/json, eitherSSE (event/data: {...}).'
     text = resp.text or ""
     if not text.strip():
         return None
-    # Попытка как JSON
+    # Attempted as JSON
     if resp.headers.get("content-type", "").startswith("application/json"):
         try:
             return resp.json()
         except json.JSONDecodeError:
             pass
-    # SSE: строки "data: {...}" — склеиваем все data и парсим
+    # SSE: rows "data: {...}" — We're gonna stick it all together data And we're freaking out
     data_parts = []
     for line in text.splitlines():
         s = line.strip()
@@ -59,7 +59,7 @@ def _parse_mcp_response(resp: httpx.Response) -> dict | None:
 
 
 def _get_dadata_credentials() -> tuple[str | None, str | None]:
-    """Ключи Dadata: сначала из settings.json (как и OpenAI), затем из env через get_settings()."""
+    'Dadata keys: first from settings.json (like OpenAI), then from env through get_settings().'
     settings = get_settings()
     try:
         cfg = _load_openai_settings(settings.openai_settings_path)
@@ -71,18 +71,18 @@ def _get_dadata_credentials() -> tuple[str | None, str | None]:
 
 
 async def check_dadata_mcp_server() -> dict[str, Any]:
-    """Проверить доступность MCP-сервера Dadata напрямую (без OpenAI).
+    """Check direct access to the MPData server (without OpenAI)).
 
-    Отправляет initialize и tools/list по спецификации MCP Streamable HTTP.
-    Успех: сервер отвечает и возвращает список инструментов.
-    Ключи берутся из settings.json или env (как и для enrich_company_with_mcp).
+    Sends initialise and tools/list on the MCP Streamable HTTP specification.
+    Success: The server answers and returns the list of tools.
+    Keys are taken from settings.json or env (as for enrich_company_with_mcp)).
     :return: {"ok": bool, "message": str, "tools_count": int | None, "error": str | None}
     """
     dadata_api_key, dadata_secret_key = _get_dadata_credentials()
     if not dadata_api_key or not dadata_secret_key:
         return {
             "ok": False,
-            "message": "Задайте dadata_api_key и dadata_secret_key в config/settings.json или DADATA_API_KEY и DADATA_SECRET_KEY в env",
+            "message": 'Apply dadata_api_key and dadata_secret_key to config/settings.json or DADATA_API_KEY and DADATA_SECRET_KEY in env',
             "tools_count": None,
             "error": None,
         }
@@ -122,14 +122,14 @@ async def check_dadata_mcp_server() -> dict[str, Any]:
             if data is None:
                 return {
                     "ok": False,
-                    "message": "MCP initialize: не удалось разобрать ответ",
+                    "message": 'MCP initialize: Could not debrief the answer',
                     "tools_count": None,
                     "error": (resp.text or "")[:500],
                 }
             if "result" not in data and "error" in data:
                 return {
                     "ok": False,
-                    "message": "MCP initialize: ошибка от сервера",
+                    "message": 'MCP initialize: error from the server',
                     "tools_count": None,
                     "error": str(data.get("error")),
                 }
@@ -155,56 +155,56 @@ async def check_dadata_mcp_server() -> dict[str, Any]:
             if data2 is None:
                 return {
                     "ok": False,
-                    "message": "MCP tools/list: не удалось разобрать ответ",
+                    "message": 'MCP tools/list: Could not debrief the answer',
                     "tools_count": None,
                     "error": (resp2.text or "")[:500],
                 }
             if "error" in data2:
                 return {
                     "ok": False,
-                    "message": "MCP tools/list: ошибка от сервера",
+                    "message": 'MCP tools/list: server error',
                     "tools_count": None,
                     "error": str(data2.get("error")),
                 }
             tools = data2.get("result", {}).get("tools") or []
             return {
                 "ok": True,
-                "message": "MCP-сервер Dadata доступен, список инструментов получен",
+                "message": 'MCP Datata server available, list of tools received',
                 "tools_count": len(tools),
                 "error": None,
             }
     except httpx.TimeoutException as e:
         return {
             "ok": False,
-            "message": "Таймаут при обращении к MCP Dadata",
+            "message": 'Timeout to MCP Datata',
             "tools_count": None,
             "error": str(e),
         }
     except Exception as e:
         return {
             "ok": False,
-            "message": "Ошибка при проверке MCP Dadata",
+            "message": 'Error in verifying MCP Dadata',
             "tools_count": None,
             "error": str(e),
         }
 
 
 async def enrich_company_with_mcp(query: str) -> dict[str, Any] | None:
-    """Получить данные о компании по ИНН/ОГРН через Dadata MCP по документации.
+    """Get INN/EDP company data through Datata MCP on documentation.
 
-    Используется OpenAI Responses API с инструментом type=mcp (server_url Dadata).
-    Модель сама вызывает MCP Dadata; результат берётся из output mcp_call.
-    Ключи Dadata берутся из того же settings.json, что и OpenAI, с fallback на env.
+    OpenAI Responsions API with type=mcp (server_url Dadata)).
+    The model itself calls MCP Datata; the result comes from output mcp_call.
+    The dadata keys are taken from the same settings.json as OpenAI from fallback to env.
     """
     settings = get_settings()
     dadata_api_key, dadata_secret_key = _get_dadata_credentials()
     if not dadata_api_key or not dadata_secret_key:
         logger.warning(
-            "Dadata MCP skipped: задайте dadata_api_key и dadata_secret_key в config/settings.json или DADATA_* в env"
+            'Dadata MCP skipped: send dadata_api_key and dadata_secret_key to config/settings.json or DADATA_* to env'
         )
         return None
     if not settings.http_proxy_url:
-        logger.warning("Dadata MCP skipped: HTTP_PROXY_URL обязателен для OpenAI")
+        logger.warning('Dadata MCP skipped: HTTP_PROXY_URL mandatory for OpenAI')
         return None
 
     try:
@@ -214,11 +214,11 @@ async def enrich_company_with_mcp(query: str) -> dict[str, Any] | None:
         return None
 
     model = settings.openai_model or openai_cfg.get("model") or "gpt-5-nano"
-    # Dadata: "Bearer ${API_KEY}:${SECRET_KEY}" — см. https://dadata.ru/mcp/
+    # Dadata: "Bearer ${API_KEY}:${SECRET_KEY}" - see https://dadata.ru/mcp/
     dadata_token = f"Bearer {dadata_api_key}:{dadata_secret_key}"
 
-    # По документации Dadata https://dadata.ru/mcp/ передаётся "headers": {"authorization": "Bearer KEY:SECRET"}.
-    # OpenAI передаёт эти заголовки при вызове tools/list и вызовах инструментов на MCP-сервере.
+    # DocumentationDadata https://dadata.ru/mcp/ Transmitted by"headers": {"authorization": "Bearer KEY:SECRET"}.
+    # OpenAI transmits these headlines when called tools/list and tool calls on the MCP server.
     body = {
         "model": model,
         "tools": [
@@ -231,9 +231,9 @@ async def enrich_company_with_mcp(query: str) -> dict[str, Any] | None:
             }
         ],
         "input": (
-            f"Получи данные о компании по ИНН или ОГРН: {query}. "
-            "Нужны: полное название, ИНН, ОГРН, юридический адрес, "
-            "контакты (email, телефон), статус. Верни только факты."
+            f"Get data on the OIN or OGN company: {query}. "
+            'Needed: full name, INN, DEA, legal address, '
+            'Contacts (email, telephone), status. Give me back the facts.'
         ),
     }
 
@@ -254,10 +254,10 @@ async def enrich_company_with_mcp(query: str) -> dict[str, Any] | None:
     except httpx.HTTPStatusError as e:
         if e.response.status_code == 424:
             logger.warning(
-                "Dadata MCP 424 Failed Dependency for %s: OpenAI не смог получить список инструментов "
-                "с сервера Dadata (таймаут или недоступность с серверов OpenAI). Проверьте: 1) ключи Dadata, "
-                "2) доступность https://mcp.dadata.ru/mcp (вызов GET /api/dadata-mcp/check). "
-                "Обогащение по ИНН продолжается через REST API Dadata.",
+                'Dadata MCP 424 Failed Dependency for %s: OpenAI failed to obtain a list of tools '
+                "Dadata server (timeout or non-access from OpenAI servers)). Check: 1) Dadata's Keys, "
+                '(2) Availability of https://mcp.dadata.ru/mcp (GET call /api/dadata-mcp/check)). '
+                'Enrichment by INN continues through REST API Dadata.',
                 query,
             )
         else:
@@ -267,7 +267,7 @@ async def enrich_company_with_mcp(query: str) -> dict[str, Any] | None:
         logger.warning("Dadata MCP request error for %s: %s", query, e)
         return None
 
-    # Ответ Responses API: output — массив элементов; mcp_call содержит output от MCP
+    # Responsions API response: output is an array of elements; mcp_call contains an output from MCP
     output_items = data.get("output") or []
     for item in output_items:
         if item.get("type") == "mcp_call" and item.get("output") is not None:
@@ -281,7 +281,7 @@ async def enrich_company_with_mcp(query: str) -> dict[str, Any] | None:
                 return out
             return {"raw": str(out)}
 
-    # Если модель ответила текстом без вызова MCP
+    # If the model responded by text without calling MCP
     output_text = data.get("output_text") or ""
     if output_text.strip():
         return {"raw": output_text.strip()}

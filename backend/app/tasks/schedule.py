@@ -1,6 +1,6 @@
-"""Расписание задач Celery Beat.
+"""Celery Beat's task schedule.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations

@@ -1,6 +1,6 @@
-"""Загрузка конфигурационных файлов YAML.
+"""Uploading of YAML configuration files.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ def _resolve_settings_env(value):
 
 
 def _resolve_config_path(path: str) -> Path:
-    """Найти конфиг: сначала относительно cwd, затем /app (Docker)."""
+    'Find Confosion: First relative cwd, then /app (Docker)).'
     p = Path(path)
     if p.is_absolute() and p.is_file():
         return p
@@ -53,14 +53,14 @@ def _resolve_config_path(path: str) -> Path:
     docker_path = Path("/app") / path
     if docker_path.is_file():
         return docker_path
-    raise FileNotFoundError(f"Файл не найден: {path} (проверены cwd и /app)")
+    raise FileNotFoundError(f"File not found: {path} (checked cwd and /app)")
 
 
 def load_yaml(path: str) -> dict[str, Any]:
-    """Загрузить YAML файл и вернуть словарь.
+    """Load YAML file and return the dictionary.
 
-    :param path: Путь к YAML файлу.
-    :return: Содержимое YAML в виде словаря.
+    :param path: Path to YAML file.
+    :return: YAML content as a dictionary.
     """
 
     resolved = _resolve_config_path(path)
@@ -69,9 +69,9 @@ def load_yaml(path: str) -> dict[str, Any]:
 
 
 def load_sources_config() -> list[dict[str, Any]]:
-    """Загрузить список источников из конфигурации.
+    """Load the list of sources from the configuration.
 
-    :return: Список источников.
+    List of sources.
     """
 
     settings = get_settings()
@@ -80,9 +80,9 @@ def load_sources_config() -> list[dict[str, Any]]:
 
 
 def load_keywords_config() -> dict[str, list[str]]:
-    """Загрузить словари ключевых слов.
+    """Load key word dictionaries.
 
-    :return: Словарь ключевых слов.
+    :return: Keyword dictionary.
     """
 
     settings = get_settings()

@@ -1,6 +1,6 @@
-"""Фоновые задания Celery.
+"""Celery's background assignments.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -60,11 +60,11 @@ MEDIA_KEYWORDS = (
 
 
 def _is_media_source(name: str, url: str) -> bool:
-    """Проверить, что источник похож на СМИ/журнал.
+    """Check that the source looks like a media/journal.
 
-    :param name: Название источника.
-    :param url: URL источника.
-    :return: True, если это СМИ.
+    :paramname: Source name.
+    :param url: URL source.
+    True, if it's the media.
     """
 
     text = f"{name} {url}".lower()
@@ -72,11 +72,11 @@ def _is_media_source(name: str, url: str) -> bool:
 
 
 def _extract_feed_links(html: str, base_url: str) -> list[str]:
-    """Извлечь RSS/Atom ссылки из HTML.
+    """Extract RSS/Atom links from HTML.
 
-    :param html: HTML страницы.
-    :param base_url: Базовый URL для относительных ссылок.
-    :return: Список RSS/Atom ссылок.
+    :param html: HTML page.
+    :param base_url: Basic URL for relative references.
+    :return: RSS/Atom Reference List.
     """
 
     pattern = re.compile(
@@ -90,10 +90,10 @@ def _extract_feed_links(html: str, base_url: str) -> list[str]:
 
 
 def _base_domain_url(url: str) -> str:
-    """Получить базовый URL домена.
+    """Get a basic URL domain.
 
-    :param url: Любой URL.
-    :return: Базовый URL домена.
+    :param url: Any Url.
+    :return: Basic URL domain.
     """
 
     parsed = urlparse(url)
@@ -101,7 +101,7 @@ def _base_domain_url(url: str) -> str:
 
 
 def _normalize_source_url(url: str) -> str:
-    """Нормализовать URL источника для дедупликации."""
+    'Standardize the source URL for deduplying.'
 
     cleaned = url.strip()
     if cleaned.endswith("/") and len(cleaned) > 8:
@@ -116,15 +116,15 @@ async def _discover_sources(
     probe_feeds: bool = True,
     max_results: int = 1000,
 ) -> dict[str, int]:
-    """Автообнаружение источников по ключевым словам."""
+    'Auto-detection of sources according to key words.'
 
     keywords = load_keywords_config().get("construction_keywords", [])
     search_settings = get_search_settings()
     query_limit = int(search_settings.get("perplexity_query_limit", 0) or 0)
-    # Ограничиваем число запросов только если лимит задан; иначе берём все ключевые слова (больше источников и лидов).
+    # We limit the number of requests only if the limit is given; otherwise we take all the key words (more sources and leads)).
     if query_limit > 0:
         keywords = list(keywords)[:query_limit]
-    # Если лимит не задан или 0 — используем все ключевые слова из config/keywords.yaml
+    # If no limit is given or 0, use all key words from config/keywords.yaml
     service = DiscoveryService()
     client = HttpClient()
     created = 0
@@ -210,17 +210,17 @@ async def _discover_sources(
             known_urls.add(normalized_url)
             if inserted:
                 created += 1
-        # Коммитим по ключевому слову, чтобы прогресс был виден сразу
+        # Communicate by the key word, so that progress can be seen at once
         await session.commit()
     return {"created": created, "found": found}
 
 
 async def _probe_feed_urls(client: HttpClient, base_url: str) -> list[str]:
-    """Проверить стандартные URL RSS/Atom.
+    """Check the standard URL RSS/Atom.
 
-    :param client: HTTP клиент.
-    :param base_url: Базовый URL домена.
-    :return: Найденные RSS/Atom ссылки.
+    :param client: HTTP client.
+    :param base_url: Basic URL domain.
+    :return: RSS/Atom links found.
     """
 
     candidates = ("rss", "rss.xml", "feed", "feed.xml", "atom.xml")
@@ -239,9 +239,9 @@ async def _probe_feed_urls(client: HttpClient, base_url: str) -> list[str]:
 
 @celery_app.task(name="tpis.update_cycle")
 def update_cycle() -> str:
-    """Запустить полный цикл обновления данных.
+    """Start a complete update cycle.
 
-    :return: Статус выполнения задачи.
+    :return: Status of the task.
     """
 
     logger.info("Update cycle started")
@@ -257,7 +257,7 @@ def update_cycle() -> str:
                     logger.warning("Cycle skipped: automation_disabled")
                     return {"skipped": True, "reason": "automation_disabled"}
                 if not acquire_lock():
-                    logger.warning("Cycle skipped: cycle_locked (другой цикл ещё выполняется)")
+                    logger.warning('Cycle skipped: cycle_locked)')
                     return {"skipped": True, "reason": "cycle_locked"}
                 seldon_stats: dict = {"skipped": True}
                 if (
@@ -298,11 +298,11 @@ def update_cycle() -> str:
                     discovered_stats = {"created": 0, "found": 0}
                     leads_stats = {"projects": 0, "tenders": 0}
                 try:
-                    logger.info("Cycle step: ingest_sources (парсинг всех активных RSS/sitemap, без лимитов)")
+                    logger.info('Cycle step: ingest_sources)')
                     sources_count = await ingest_sources(session)
                     logger.info("Cycle step: ingest_sources done, articles_processed=%s", sources_count)
                 except Exception as e:
-                    logger.exception("Cycle step ingest_sources failed (основа системы): %s", e)
+                    logger.exception('Cycle step ingest_sources valided: %s', e)
                     raise
                 try:
                     logger.info("Cycle step: enrich_projects_missing, dedupe, companies, match")
@@ -342,7 +342,7 @@ def update_cycle() -> str:
                     "matches": matches_count,
                 }
         except Exception as e:
-            logger.exception("Update cycle failed (исключение в _run_cycle): %s", e)
+            logger.exception('Update cycle failed (delete at _run_cycle): %s', e)
             raise
         finally:
             release_lock()
@@ -359,10 +359,10 @@ def update_cycle() -> str:
 
 @celery_app.task(name="tpis.enrich_projects_now")
 def enrich_projects_now(limit: int = 200) -> str:
-    """Запустить дозаполнение проектов вне основного цикла.
+    """Start refilling projects outside the main cycle.
 
-    :param limit: Лимит проектов за проход.
-    :return: Статус выполнения задачи.
+    :param limit: Limited projects behind the aisle.
+    :return: Status of the task.
     """
 
     logger.info("Enrich projects now started")
@@ -390,9 +390,9 @@ def enrich_projects_now(limit: int = 200) -> str:
 
 @celery_app.task(name="tpis.discover_sources_cycle")
 def discover_sources_cycle() -> str:
-    """Запустить цикл автообнаружения источников.
+    """Start the auto-detection cycle.
 
-    :return: Статус выполнения задачи.
+    :return: Status of the task.
     """
 
     logger.info("Discover sources cycle started")

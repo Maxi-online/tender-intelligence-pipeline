@@ -1,6 +1,6 @@
-"""Сопоставление сущностей между источниками.
+"""Comparison of entities between sources.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from difflib import SequenceMatcher
 
 
 def _token_set_ratio(left: str, right: str) -> float:
-    """Приближенный аналог token_set_ratio без внешних зависимостей."""
+    'token_set_ratio parallel without external dependence.'
 
     tokens_left = set(re.findall(r"\w+", left.lower()))
     tokens_right = set(re.findall(r"\w+", right.lower()))
@@ -22,12 +22,12 @@ def _token_set_ratio(left: str, right: str) -> float:
 
 
 def compute_confidence(tender_title: str, article_title: str, region: str | None = None) -> float:
-    """Вычислить уровень уверенности сопоставления.
+    """Calculate the level of confidence of the comparison.
 
-    :param tender_title: Название тендера.
-    :param article_title: Заголовок статьи.
-    :param region: Регион, если известен.
-    :return: Значение confidence_score от 0 до 1.
+    :param tender_title: Name of tender.
+    :param article_title: Title of the article.
+    :param region: Region, if known.
+    :return: value of confidence_score between 0 and 1.
     """
 
     title_score = _token_set_ratio(tender_title, article_title)
@@ -37,12 +37,12 @@ def compute_confidence(tender_title: str, article_title: str, region: str | None
 
 
 def diff_fields(left: dict, right: dict, fields: list[str]) -> dict[str, dict[str, str]]:
-    """Сравнить набор полей двух источников.
+    """Compare the set of fields of the two sources.
 
-    :param left: Поля из первого источника.
-    :param right: Поля из второго источника.
-    :param fields: Список ключей для сравнения.
-    :return: Словарь расхождений по полям.
+    :param left: Fields from the first source.
+    :param right: Fields from second source.
+    :param fields: A list of keys for comparison.
+    :return: Vocabulary of Field Discrepancies.
     """
 
     diff: dict[str, dict[str, str]] = {}

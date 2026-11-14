@@ -1,57 +1,57 @@
-Отчет для заказчика: Tender & Project Intelligence System (TPIS)
+Customer Report: Tender & Project Intelligence System (TPIS))
 ===============================================================
-Автор: Maxi-online
-Дата: 2026-02-04
+Author: Maxi-online
+Date: 2026-02-04
 
-1) Цель и назначение
-TPIS — промышленная система, которая автоматически собирает, анализирует и
-структурирует данные о строительных проектах и тендерах. Результат — единая
-таблица по проектам с ключевыми параметрами и контактами, готовая к экспорту
-и последующему анализу в BI.
+1) Purpose and purpose
+TPIS is an industrial system that automatically collects, analyses and
+Structures data on construction projects and tenders. Results — One
+Key parameters and contacts project table ready for export
+and follow-up analysis in the BI.
 
-2) Архитектура и логика работы (по шагам)
-2.1 Автоматическое обнаружение источников
-- По ключевым строительным тематикам выполняется поиск новых источников через SerpAPI.
-- Источники автоматически добавляются в список обработки.
-- Выполняется авто‑детект RSS/Atom (из HTML и по стандартным путям).
+2) Architecture and working logic (by step)
+2.1 Automatic source detection
+- New sources are being sought through SerpaPI for key construction topics.
+- Sources are automatically added to the processing list.
+- Car - RSS/Atom (from TML and standard tracks)).
 
-2.2 Сбор и парсинг материалов
-- Поддерживаются форматы HTML, RSS/Atom, XML и PDF.
-- Для HTML выполняется извлечение основного текста.
-- Для RSS/Atom лент обрабатываются все записи.
-- Для PDF файлов извлекается текст (pdfplumber), либо OCR через Claude Vision.
+2.2 Collection and Parsing of Materials
+- XML, RSS/Atom, XML and PDF formats are supported.
+- For HTML, the basic text is drawn.
+- For RSS/Atom tapes, all records shall be processed.
+- For PDF files, text (pdfplumber) or OCR is extracted via Claude Vision.
 
-2.3 AI‑анализ и извлечение сущностей (LLM)
-- Нормализация текста, выделение сущностей и параметров через Claude Sonnet.
-- Роли и связи извлекаются из контекста:
-  - заказчик, инвестор, подрядчик, победитель, заявитель, субподрядчик
-- Сущности приводятся к единому формату:
-  - даты в ISO 8601
-  - суммы в рублях с учетом тыс/млн/млрд
-  - телефоны и email в нормализованном виде
+2.3 AI analysis and extraction (LLM))
+- Normalization of text, selection of entities and parameters via Claude Sonnet.
+- Roles and connections are derived from the context:
+  - Employer, investor, contractor, winner, claimant, subcontractor
+- The elements are presented in a single format:
+  - dates in ISO 8601
+  - Amounts in rubles, including thousands/millions/billions
+  - Telephones and emails in normal form
 
-2.4 Поиск и ранжирование
-- Поиск выполняется через Perplexity (web‑search).
-- Ранжирование и классификация выполняются через Claude Sonnet 4.5.
-- Результаты сортируются по релевантности и свежести публикаций.
+2.4 Search and ranking
+- The search is performed via Perplexity.
+- Ran and classification performed via Claude Sonnet 4.5.
+- Results are sorted according to relevance and freshness of publications.
 
-2.5 Дедупликация и качество
-- Дубликаты проектов и компаний склеиваются на уровне БД.
-- Срабатывают фильтры “только проекты” (отсекается шум: конференции/выставки/журналы).
-- Флаг качества помогает отслеживать полноту.
+2.5 Decodification and Quality
+- Duplications of projects and companies are glued to the database level.
+- Filters are only working on projects (noise: conferences/exhausts/magazines)).
+- The quality flag helps track completeness.
 
-2.6 Формирование единой таблицы
-- Все данные объединяются в единый отчет `/api/reports/projects`.
-- Таблица содержит поля по ТЗ:
-  - наименование проекта
-  - регион
-  - стадия
-  - сроки реализации
-  - сумма инвестиций
-  - объем геосинтетических материалов
-  - роли и контакты
+2.6 Formation of a single table
+- All data are combined into a single report `/api/reports/projects`.
+- The table contains TK fields:
+  - Project name
+  - Region
+  - Phase
+  - Time frame for implementation
+  - Total investments
+  - Geosynthetic material volume
+  - Roles and contacts
 
-3) Технологический стек
+3) Technology latch
 Backend:
 - Python 3.12
 - FastAPI
@@ -59,19 +59,19 @@ Backend:
 - PostgreSQL
 - Celery + RabbitMQ
 
-Парсинг:
+Parsing:
 - httpx
 - BeautifulSoup4
 - lxml
 - feedparser
 - pdfplumber
 
-LLM‑поиск и анализ:
+LLM – Search and Analysis:
 - Perplexity API (web‑search)
-- Claude Sonnet 4.5 (ранжирование, классификация, OCR)
+- Claude Sonnet 4.5
 - regex
 
-Экспорт:
+Exports:
 - pandas
 - openpyxl
 - pyarrow
@@ -81,24 +81,24 @@ LLM‑поиск и анализ:
 Frontend:
 - Streamlit
 
-4) Выполнено строго по ТЗ (кроме Seldon API)
-- Сбор из HTML/RSS/Atom/XML/PDF.
-- Автоматическое автообнаружение новых источников.
-- LLM‑извлечение сущностей, дат, сумм, контактов.
-- Классификация типов (проект/тендер/результаты/анализ) через Claude.
-- Поиск Perplexity + ранжирование Claude.
-- Дедупликация и нормализация.
-- Единая таблица проектов.
-- Экспорт CSV/XLSX/Parquet + досье PDF/Word.
-- Обновление 4 раза в сутки.
-- UI с фильтрами, вкладками, экспортом и сравнениями.
+4) Implemented strictly for TK (except Seldon API)
+- HTML/RSS/Atom/XML/PDF. Collection
+- Automatic auto-detection of new sources.
+- LLM-extraction of entities, dates, amounts, contacts.
+- Type classification (project/tender/output/analysis) via Claude.
+- Search Perplexity + Claude ranking.
+- Decodification and normalization.
+- Common project table.
+- Export CSV/XLSX/Parquet + file PDF/Word.
+- Update four times a day.
+- UI with filters, tabs, exports, and comparisons.
 
-5) Что требует ключей и доступа заказчика
-- SELDON_BASE_URL и SELDON_API_KEY — подключение Seldon API.
-- DISCOVERY_SEARCH_URL и DISCOVERY_API_KEY — доступ к SerpAPI.
-- HTTP_PROXY_URL — прокси (если требуется обход блокировок).
+5) Which requires the keys and access of the customer
+- SELDON_BASE_URL and SELDON_API_KEY – Seldon API connection.
+- DISCOVERY_SEARCH_URL and DISCOVERY_API_KEY — Access to SerpaPI.
+- HTTP_PROXY_URL – Proxie (if blockbacks are required to be bypassed)).
 
-6) Итог
-Система полностью соответствует ТЗ по части парсинга, AI‑анализа,
-нормализации, экспорта и UI. Единственное ограничение — Seldon API
-ожидает выдачи ключей со стороны заказчика.
+6) Outcome
+The system is fully compliant with TK for parsing, AI's analysis,
+Normalization, Exports and UI. The only restriction is Seldon API
+is awaiting the issuance of the keys by the employer.

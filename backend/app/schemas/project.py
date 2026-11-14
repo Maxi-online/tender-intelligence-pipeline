@@ -1,6 +1,6 @@
-"""Схемы проекта для API.
+"""Project schemes for API.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -12,16 +12,16 @@ from datetime import date
 
 
 class ProjectBase(BaseModel):
-    """Базовая схема проекта.
+    """The basic design of the project.
 
-    Атрибуты:
-        project_id: Внешний идентификатор проекта.
-        name: Название проекта.
-        region: Регион реализации.
-        stage: Стадия проекта.
-        start_date: Плановая дата начала.
-        end_date: Плановая дата окончания.
-        budget: Оценочная стоимость.
+    Attributes:
+        project_id: Project External Identifier.
+        name: Name of project.
+        region: Implementation region.
+        stage: Project stage.
+        start_date: Target date for commencement.
+        end_date: Target Date for Completion.
+        budget: Estimated value.
     """
 
     project_id: str | None = None
@@ -45,16 +45,16 @@ class ProjectBase(BaseModel):
 
 
 class ProjectCreate(ProjectBase):
-    """Схема для создания проекта на входе API."""
+    'A scheme to create a project at the API entrance.'
 
     model_config = ConfigDict(extra="forbid")
 
 
 class ProjectRead(ProjectBase):
-    """Схема проекта для чтения из API.
+    """Project outline for API reading.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
+    Attributes:
+        id: Internal record identifier.
     """
 
     id: int

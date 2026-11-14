@@ -1,4 +1,4 @@
-"""Тест: доступность Dadata через OpenAI Responses API + MCP."""
+'Test: Access to Dadata via OpenAI Responses API + MCP.'
 import asyncio
 
 from app.services.dadata_mcp import enrich_company_with_mcp

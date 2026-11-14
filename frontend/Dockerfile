@@ -1,5 +1,5 @@
 # TPIS Frontend Container (Streamlit)
-# Автор: Maxi-online
+# Author: Maxi-online
 
 FROM python:3.12-slim
 

@@ -1,6 +1,6 @@
-"""Модель связи тендера и статьи.
+"""Tender and article communication model.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,16 +14,16 @@ from app.models.base import Base
 
 
 class MatchLink(Base):
-    """Связь между тендером и статьей с оценкой уверенности.
+    """Relationship between tender and article with confidence assessment.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
-        tender_id: Идентификатор тендера.
-        article_id: Идентификатор статьи.
-        confidence_score: Уровень уверенности в связке.
-        approved: Флаг подтверждения оператором.
-        reviewed_at: Дата ручного подтверждения.
-        reviewer: Идентификатор оператора.
+    Attributes:
+        id: Internal record identifier.
+        tender_id: Tender Identifier.
+        article_id: Article Identifier.
+        confidence_score: Tilt confidence level.
+        approved: The operator's confirmation flag.
+        reviewed_at: Date of manual confirmation.
+        reviewer: Operator &apos; s Identifier.
     """
 
     __tablename__ = "match_links"

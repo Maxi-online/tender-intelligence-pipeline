@@ -1,6 +1,6 @@
-"""Парсер HTML страниц.
+"""HTML Parser pages.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -9,10 +9,10 @@ from bs4 import BeautifulSoup
 
 
 def extract_text(html: str) -> str:
-    """Извлечь основной текст из HTML.
+    """Extract the basic text from HTML.
 
-    :param html: HTML документ в виде строки.
-    :return: Очищенный текст без тегов и скриптов.
+    :param html: HTML document in string form.
+    :return: Peeled text without tags and scripts.
     """
 
     soup = BeautifulSoup(html, "lxml")

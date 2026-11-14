@@ -1,4 +1,4 @@
-"""Streamlit приложение TPIS.
+"""Streamlit app TPIS.
 
-Автор: Maxi-online
+Author: Maxi-online
 """

@@ -1,6 +1,6 @@
-"""Сбор и парсинг данных из источников.
+"""Collection and parasing of data from sources.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,10 +14,10 @@ from app.services.sitemap import parse_sitemap
 
 
 async def ingest_rss(feed_url: str) -> list[dict[str, Any]]:
-    """Собрать новости из RSS/Atom ленты.
+    """Collect news from RSS/Atom ribbon.
 
-    :param feed_url: URL RSS/Atom ленты.
-    :return: Список элементов ленты.
+    :param feed_url: URL RSS/Atom tape.
+    :return: List of ribbon elements.
     """
 
     client = HttpClient()
@@ -26,10 +26,10 @@ async def ingest_rss(feed_url: str) -> list[dict[str, Any]]:
 
 
 async def ingest_html_page(url: str) -> dict[str, Any]:
-    """Собрать текст со страницы HTML.
+    """Collect text from the XML page.
 
-    :param url: URL страницы.
-    :return: Словарь с URL и текстом страницы.
+    :param url: UrL pages.
+    :return: Vocabulary with URL and page text.
     """
 
     client = HttpClient()
@@ -39,10 +39,10 @@ async def ingest_html_page(url: str) -> dict[str, Any]:
 
 
 async def ingest_sitemap(url: str) -> list[str]:
-    """Собрать URL страниц из sitemap.
+    """Gather the URL pages from the siteup.
 
     :param url: URL sitemap.xml.
-    :return: Список URL страниц.
+    :return: URL List.
     """
 
     client = HttpClient()

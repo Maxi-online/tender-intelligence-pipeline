@@ -1,6 +1,6 @@
-"""Маршруты для работы с документами (PDF и др.).
+"""Documents routes (PDF et al.).
 
-Автор: адаптация под TPIS.
+Author: Adaptation to TPIS.
 """
 
 from __future__ import annotations
@@ -31,13 +31,13 @@ async def upload_pdf(
     entity_id: int | None = Query(None),
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, Any]:
-    """Загрузить PDF журнала и извлечь из него проекты.
+    """Download a PDF magazine and extract projects from it.
 
-    :param data: Байтовое содержимое PDF-файла.
-    :param entity_type: Тип связанной сущности: article/project/tender/company.
-    :param entity_id: Идентификатор сущности (опционально).
-    :param session: Сессия БД.
-    :return: Информация об обработке и найденных проектах.
+    :param data: Byte content of PDF file.
+    :param entity_type: Type of related substance: article/project/tender/company.
+    :param entity_id: Ideas Identifier (optimal).
+    :param session: database session.
+    :return: Information on processing and found projects.
     """
 
     extracted = await extract_text_smart(data)
@@ -56,11 +56,11 @@ async def upload_pdf(
     if entity_type == "company" and entity_id:
         linked_to["company_id"] = entity_id
 
-    # Сохраняем PDF как Article, чтобы он участвовал в отчётах/экспортах.
+    # Save PDF as Article to participate in reports/exports.
     article = Article(
         source="pdf_upload",
         url="",
-        title="PDF журнал",
+        title='PDF Log',
         text=text,
         entities=None,
         label="project",
@@ -70,10 +70,10 @@ async def upload_pdf(
     await session.commit()
     await session.refresh(article)
 
-    # Claude извлекает список проектов из текста журнала.
+    # Claude draws a list of projects from the text of the magazine.
     project_names = await extract_project_names_with_claude(fragments)
 
-    # Полный NLP-разбор через Claude: компании, контакты и роли.
+    # Full NLP screening via Claude: Companies, Contacts and Roles.
     entities = await extract_entities(text)
     article.entities = {
         "projects": entities.projects,

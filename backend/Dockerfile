@@ -1,5 +1,5 @@
 # TPIS Backend Container
-# Автор: Maxi-online
+# Author: Maxi-online
 
 FROM python:3.12-slim
 
@@ -10,7 +10,7 @@ WORKDIR /app
 COPY backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Playwright: системные зависимости и браузер Chromium для парсинга (страница → PDF и т.д.)
+# Playwright: System Dependences and Chromium Browser for Parsing (page PDF, etc.).)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \

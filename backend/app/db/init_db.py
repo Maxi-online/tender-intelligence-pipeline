@@ -1,6 +1,6 @@
-"""Инициализация структуры базы данных.
+"""Initialization of the database structure.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,9 +14,9 @@ from app.models.base import Base
 
 
 async def create_all() -> None:
-    """Создать все таблицы в базе данных.
+    """Create all tables in the database.
 
-    :return: None. Функция создает таблицы, если их нет.
+    :return: None. The function creates tables if they are not available.
     """
 
     async with engine.begin() as conn:
@@ -114,9 +114,9 @@ async def create_all() -> None:
 
 
 def init_db() -> None:
-    """Запустить создание таблиц в синхронном контексте.
+    """Start creating tables in a synchronous context.
 
-    :return: None. Функция вызывает создание таблиц.
+    :return: None. The function causes the creation of tables.
     """
 
     asyncio.run(create_all())

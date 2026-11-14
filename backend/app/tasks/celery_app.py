@@ -1,6 +1,6 @@
-"""Инициализация Celery приложения.
+"""Initialization of Celery Applications.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -25,6 +25,6 @@ celery_app.conf.update(
     enable_utc=False,
 )
 
-# Регистрация задач и расписаний.
+# Recording of tasks and schedules.
 from app.tasks import jobs as _jobs  # noqa: F401
 from app.tasks import schedule as _schedule  # noqa: F401

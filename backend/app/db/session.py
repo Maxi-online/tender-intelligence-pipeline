@@ -1,6 +1,6 @@
-"""Конфигурация сессий базы данных.
+"""Format of the database sessions.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -15,9 +15,9 @@ SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def get_db_session():
-    """Отдать асинхронную сессию SQLAlchemy как зависимость.
+    """Give the asynchronous session to SQLalchemy as an addiction.
 
-    :yield: Активная сессия, привязанная к текущему запросу.
+    :yeld: Active session linked to the current request.
     """
 
     async with SessionLocal() as session:

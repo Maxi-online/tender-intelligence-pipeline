@@ -1,6 +1,6 @@
-"""Пайплайн обработки данных: сбор, NLP, сопоставление.
+"""Data processing: collection, NLP, comparison.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -63,16 +63,16 @@ from sqlalchemy.orm import selectinload
 logger = logging.getLogger(__name__)
 MSK_TZ = ZoneInfo("Europe/Moscow")
 
-# Неуспех обычного парсера = ничего не нашёл (0 блоков) или нашёл мало информации. Тогда подключаем LLM.
-# Чуть ослабляем критерии, чтобы чаще добирать блоки через LLM.
+# Failure of a common parser = found nothing (0 blocks) or found little information. Then let's hook up the LLM.
+# Slightly loosening the criteria to get more units through LLM.
 MAX_BLOCKS_TO_TRIGGER_LLM = 8
 MIN_TEXT_LEN_FOR_LLM = 400
 
-# Лимитов на глобальный парсинг нет — обрабатываем все активные источники и все статьи.
+# No Limites on Global Parsing -- processing all active sources and all articles.
 MAX_SOURCES_PER_CYCLE = 1_000_000
 MAX_ARTICLES_PER_CYCLE = 1_000_000
 
-# Сигналы в тексте для гибкого поиска (без жёстких подписей «Заказчик:»)
+# Signals in flexible search text (without hard signatures):»)
 _TENDER_SIGNALS_RE = re.compile(
     r"бюджет|сумма|млн\s|млрд|тыс\.?\s*руб|₽|победитель|подрядчик|заказчик|44-фз|223-фз|"
     r"тендер|закупк|контракт|генподрядчик|исполнитель|окончательная\s+цена|тип\s+закупки",
@@ -101,15 +101,15 @@ async def _save_article(
     published_at: datetime | None,
     text: str | None,
 ) -> Article:
-    """Создать или обновить статью.
+    """Create or update the article.
 
-    :param session: Асинхронная сессия БД.
-    :param source: Источник данных.
-    :param url: URL статьи.
-    :param title: Заголовок статьи.
-    :param published_at: Дата публикации.
-    :param text: Полный текст статьи.
-    :return: Сохраненная статья.
+    :param session: Asynchronous database session.
+    :param source: Data source.
+    :param url: UrL articles.
+    :param number: Title of the article.
+    :param published_at: Date of publication.
+    :param text: Full article.
+    :return: Saved article.
     """
 
     result = await session.execute(select(Article).where(Article.url == url))
@@ -163,21 +163,21 @@ async def _save_article(
 
 
 def _get_parsing_keywords() -> list[str]:
-    """Ключевые слова из config/keywords.yaml для гибкого парсинга."""
+    'Key words from config/keywords.yaml for flexible parsing.'
     try:
         cfg = load_keywords_config()
         keywords = list(cfg.get("construction_keywords") or [])
         regions = list(cfg.get("regions") or [])
         return keywords + regions
     except Exception:
-        return ["строительство", "реконструкция", "капремонт", "тендер", "закупка", "проект"]
+        return ['Construction', 'Reconstruction', "капремонт", 'tender', 'Procurement', "проект"]
 
 
 def _normalize_source_url(url: str) -> str:
-    """Упрощённая нормализация URL источника для дедупликации.
+    """Simplified source URL normalization for deduplying.
 
-    Используется при добавлении новых Source из лидов Perplexity. Срезаем якоря и
-    параметры запроса, убираем хвостовой слэш.
+    Used to add new Source from Perplexity. Cut the anchor and
+    Query parameters, take out the tail slash.
     """
     from urllib.parse import urlparse, urlunparse
 
@@ -191,21 +191,21 @@ def _normalize_source_url(url: str) -> str:
 
 _CONSTRUCTION_THEMATIC_RE = re.compile(
     r"("
-    r"строительн"  # строительство, строительный, строительные работы
-    r"|реконструкц"  # реконструкция объектов
-    r"|кап(итальн|ремонт)"  # капремонт, капитальный ремонт
-    r"|объект[а-я\s]+капитальн"  # объекты капитального строительства
-    r"|инженерн[а-я\s]+сет"  # инженерные сети
-    r"|линейн[а-я\s]+объект"  # линейные объекты
-    r"|дорог[а-я]*"  # дороги, дорожное строительство
-    r"|магистрал"  # магистраль, магистральная дорога
-    r"|эстакад"  # эстакада
-    r"|путепровод"  # путепровод
-    r"|развязк"  # транспортная развязка
-    r"|тоннел"  # тоннель
-    r"|мост(ов|овои?|ы)?"  # мост, мостовой переход
-    r"|элементы\s+благоустройств"  # благоустройство территорий
-    r"|школ[а-я]*|детсад|садик|детский\s+сад"  # соц. объекты
+    r"строительн"  # Construction, construction, construction
+    r"|реконструкц"  # Renovation of facilities
+    r"|кап(итальн|ремонт)"  # Corporal maintenance, major maintenance
+    r"|объект[а-я\s]+капитальн"  # Capital construction projects
+    r"|инженерн[а-я\s]+сет"  # Engineering networks
+    r"|линейн[а-я\s]+объект"  # Line objects
+    r"|дорог[а-я]*"  # Roads, road construction
+    r"|магистрал"  # Main line, main road
+    r"|эстакад"  # the racecade
+    r"|путепровод"  # track
+    r"|развязк"  # Transport unbundling
+    r"|тоннел"  # Tunnel
+    r"|мост(ов|овои?|ы)?"  # Bridge, bridge crossing
+    r"|элементы\s+благоустройств"  # improvement of territories
+    r"|школ[а-я]*|детсад|садик|детский\s+сад"  # Social objects
     r"|поликлиник[а-я]*|больниц[а-я]*|диагностическ[а-я]*\s+центр"
     r")",
     re.IGNORECASE,
@@ -213,14 +213,14 @@ _CONSTRUCTION_THEMATIC_RE = re.compile(
 
 
 def _is_construction_related(text: str) -> bool:
-    """Жёсткий фильтр: оставить только строительную тематику / инфраструктуру."""
+    'Rigid filter: leave only the building theme / infrastructure.'
     if not text:
         return False
     return bool(_CONSTRUCTION_THEMATIC_RE.search(text))
 
 
 def _split_text_into_chunks(text: str, max_chunk: int = 2800, min_chunk: int = 1) -> list[str]:
-    """Разбить текст на фрагменты по абзацам или по размеру для гибкого поиска."""
+    'Disaggregate text into sub-paragraphs or size for flexible search.'
     if not text or not text.strip():
         return []
     chunks: list[str] = []
@@ -247,7 +247,7 @@ def _split_text_into_chunks(text: str, max_chunk: int = 2800, min_chunk: int = 1
 
 
 def _extract_tender_blocks_flexible(text: str, keywords: list[str]) -> list[dict]:
-    """Гибкое извлечение тендеров: любой фрагмент с ключевым словом и признаками закупки."""
+    'Flexible tender extraction: any fragment with keyword and purchase signs.'
     if not text or not keywords:
         return []
     chunks = _split_text_into_chunks(text)
@@ -255,11 +255,11 @@ def _extract_tender_blocks_flexible(text: str, keywords: list[str]) -> list[dict
     seen_titles: set[str] = set()
     kw_pattern = re.compile("|".join(re.escape(kw.strip()) for kw in keywords if kw.strip()), re.I)
     for chunk in chunks:
-        # Достаточно хотя бы одного ключевого слова ИЛИ хотя бы одного маркера тендера.
+        # At least one key word or one tender marker is enough.
         if not (kw_pattern.search(chunk) or _TENDER_SIGNALS_RE.search(chunk)):
             continue
         lines = [ln.strip() for ln in chunk.split("\n") if ln.strip()]
-        title = (lines[0][:512] if lines else chunk[:400].replace("\n", " ").strip()) or "Тендер"
+        title = (lines[0][:512] if lines else chunk[:400].replace("\n", " ").strip()) or 'Tender'
         norm = title.lower().strip()[:200]
         if norm in seen_titles:
             continue
@@ -285,7 +285,7 @@ def _extract_tender_blocks_flexible(text: str, keywords: list[str]) -> list[dict
 
 
 def _extract_project_blocks_flexible(text: str, keywords: list[str]) -> list[dict]:
-    """Гибкое извлечение проектов: фрагмент с ключевым словом и признаками объекта/строительства."""
+    'Flexible drawing of projects: a fragment with the keyword and characteristics of the object/building.'
     if not text or not keywords:
         return []
     chunks = _split_text_into_chunks(text)
@@ -293,11 +293,11 @@ def _extract_project_blocks_flexible(text: str, keywords: list[str]) -> list[dic
     seen_keys: set[str] = set()
     kw_pattern = re.compile("|".join(re.escape(kw.strip()) for kw in keywords if kw.strip()), re.I)
     for chunk in chunks:
-        # Достаточно хотя бы одного ключевого слова ИЛИ хотя бы одного маркера проекта.
+        # One key word or even one project marker is enough.
         if not (kw_pattern.search(chunk) or _PROJECT_SIGNALS_RE.search(chunk)):
             continue
         lines = [ln.strip() for ln in chunk.split("\n") if ln.strip()]
-        name = (lines[0][:512] if lines else chunk[:400].replace("\n", " ").strip()) or "Проект"
+        name = (lines[0][:512] if lines else chunk[:400].replace("\n", " ").strip()) or 'Draft'
         norm = name.lower().strip()[:200]
         if norm in seen_keys:
             continue
@@ -333,24 +333,24 @@ def _extract_project_blocks_flexible(text: str, keywords: list[str]) -> list[dic
 
 
 def _extract_tender_blocks_from_text(text: str) -> list[dict]:
-    """Извлечь из текста блоки тендеров/закупок: строгие шаблоны + гибкий поиск по ключевым словам.
+    """Extract from the text of tender/buy blocks: strict templates + flexible search for keywords.
 
-    Сначала применяются жёсткие маркеры (Закупка №, Заказчик: и т.д.), затем гибкий проход по
-    ключевым словам из config/keywords.yaml и признакам закупки. Дубликаты по заголовку отсекаются.
-    :param text: Текст страницы (HTML уже преобразован в текст).
-    :return: Список словарей с полями title, winner, budget, status.
+    First, rigid markers are used (Procurement No., Buyer: etc.), followed by flexible passage through
+    Keywords from config/keywords.yaml and procurement features. Heading duplicates are cut off.
+    :Param text: Text of the page (HTML already converted to text)).
+    :Return: List of dictionaries with fields of title, winner, budget, status.
     """
     if not text or not text.strip():
         return []
     blocks: list[dict] = []
-    # Ищем границы блоков: начало — «Закупка №» или «Тендер»
+    # We're looking for block boundaries: start with "Procurement No." or "Tender"
     start_pattern = re.compile(
         r"(Закупка\s*[№#]\s*[^\n]*|Тендер\s*[№#]?\s*[^\n]*)",
         re.IGNORECASE,
     )
     starts = [(m.start(), m.group(1).strip()) for m in start_pattern.finditer(text)]
     if not starts:
-        # Нет явных маркеров — один блок на весь текст, если есть признаки тендера/закупки/госзаказа.
+        # There are no obvious markers — one block per text if there are signs of tender/purchase/go-on order.
         if re.search(
             r"Генподрядчик|Окончательная\s+цена|Тип\s+закупки|44[-\s]*ФЗ|223[-\s]*ФЗ|тендер|закупк|аукцион|конкурс|лот|госзакупк|госзаказ",
             text,
@@ -360,11 +360,11 @@ def _extract_tender_blocks_from_text(text: str) -> list[dict]:
     for i, (pos, header) in enumerate(starts):
         end = starts[i + 1][0] if i + 1 < len(starts) else len(text)
         part = text[pos:end].strip()
-        # Заголовок блока или первая строка — как title
+        # Block Header or First Line - Like a title
         if header and len(header) > 3:
             title = header[:512]
         else:
-            title = "Тендер/закупка"
+            title = 'Tender/purchase'
             for line in part.split("\n"):
                 line = line.strip()
                 if not line or len(line) < 5:
@@ -401,12 +401,12 @@ def _extract_tender_blocks_from_text(text: str) -> list[dict]:
             status = s_match.group(1).strip()[:64]
         if title or winner or budget_val:
             blocks.append({
-                "title": (title[:512] if title else "Закупка"),
+                "title": (title[:512] if title else 'Procurement'),
                 "winner": winner or None,
                 "budget": budget_val,
                 "status": status or None,
             })
-    # Гибкий проход по ключевым словам из config
+    # Flexible matching of keywords from config
     keywords = _get_parsing_keywords()
     flexible = _extract_tender_blocks_flexible(text, keywords)
     seen = {b.get("title", "").lower().strip()[:200] for b in blocks}
@@ -419,16 +419,16 @@ def _extract_tender_blocks_from_text(text: str) -> list[dict]:
 
 
 def _extract_project_blocks_from_text(text: str) -> list[dict]:
-    """Извлечь из текста блоки про проекты (коммерческие и государственные).
+    """Extract from the text blocks about projects (commercial and public).
 
-    Маркеры: проект, строительство, реконструкция, инвестиции, заказчик, подрядчик, инвестор.
-    :param text: Текст страницы.
-    :return: Список словарей с полями name, customer_name, contractor_name, investor_name, budget.
+    Markers: project, construction, reconstruction, investment, employer, contractor, investor.
+    :param text: Text of the page.
+    :return: List of field dictionariesname, customer_name, contractor_name, investor_name, budget.
     """
     if not text or not text.strip():
         return []
     blocks: list[dict] = []
-    # Границы блоков: «Проект», «Строительство», «Реконструкция», «Инвестиции», заголовки с заказчиком/подрядчиком
+    # Cluster boundaries: Project, Construction, Reconstruction, Investment, employer/contractor headings
     start_pattern = re.compile(
         r"(Проект\s*[:\s]*[^\n]+|Строительство\s+[^\n]+|Реконструкция\s+[^\n]+|"
         r"Инвестиционн(?:ый|ая)\s+[^\n]+|Заказчик\s*[:\s]*[^\n]*|Подрядчик\s*[:\s]*[^\n]*)",
@@ -436,7 +436,7 @@ def _extract_project_blocks_from_text(text: str) -> list[dict]:
     )
     starts = [(m.start(), m.group(1).strip()) for m in start_pattern.finditer(text)]
     if not starts:
-        # Если нет явных заголовков, но есть признаки проекта/строительства/инвестиций — берём весь текст как один блок.
+        # If there are no clear headlines, but there are signs of project/construction/investment, we take the whole text as one block.
         if re.search(
             r"заказчик|подрядчик|инвестор|бюджет|инвестиции|строительство|реконструкция|объект|капитальный ремонт",
             text,
@@ -459,7 +459,7 @@ def _extract_project_blocks_from_text(text: str) -> list[dict]:
                 name = line[:512] if len(line) <= 512 else line[:512].rstrip()
                 break
             else:
-                name = part[:400].replace("\n", " ").strip() or "Проект"
+                name = part[:400].replace("\n", " ").strip() or 'Draft'
         customer = ""
         c_match = re.search(r"Заказчик\s*[:\s]*([^\n\r\[\]]+)", part, re.IGNORECASE)
         if c_match:
@@ -497,13 +497,13 @@ def _extract_project_blocks_from_text(text: str) -> list[dict]:
                     pass
         if name or customer or contractor or investor or budget_val:
             blocks.append({
-                "name": (name[:512] if name else "Проект"),
+                "name": (name[:512] if name else 'Draft'),
                 "customer_name": customer or None,
                 "contractor_name": contractor or None,
                 "investor_name": investor or None,
                 "budget": budget_val,
             })
-    # Гибкий проход по ключевым словам из config
+    # Flexible matching of keywords from config
     keywords = _get_parsing_keywords()
     flexible = _extract_project_blocks_flexible(text, keywords)
     seen = {(b.get("name") or "").lower().strip()[:200] for b in blocks}
@@ -521,16 +521,16 @@ async def _ingest_tenders_from_page_text(
     page_url: str,
     existing_tender_ids: set[str],
 ) -> int:
-    """По тексту страницы (любого источника) создать записи Tender в БД.
+    """By the text of the page (any source), create the Tender entries in the database.
 
-    :param session: Сессия БД.
-    :param text: Текст страницы.
-    :param page_url: URL страницы-источника.
-    :param existing_tender_ids: Множество уже существующих tender_id.
-    :return: Количество созданных тендеров.
+    :param session: database session.
+    :param text: Text of the page.
+    :param page_url: URL source page.
+    :Param existing_tender_ids: Multiple already existing tender_id.
+    :return: Number of tenders created.
     """
     blocks = _extract_tender_blocks_from_text(text)
-    # Неуспех парсера: ничего не нашёл или мало блоков — дополняем через LLM
+    # Parser failure: found nothing or few blocks - additional through LLM
     if len(blocks) <= MAX_BLOCKS_TO_TRIGGER_LLM and len((text or "").strip()) >= MIN_TEXT_LEN_FOR_LLM:
         try:
             llm_blocks = await extract_tender_blocks_llm(text, max_chars=7000)
@@ -541,10 +541,10 @@ async def _ingest_tenders_from_page_text(
                     seen.add(key)
                     blocks.append(b)
         except Exception as exc:
-            logger.warning("LLM tender extraction skipped (парсер дополнение): %s", exc)
+            logger.warning('LLM tester export skipped: %s', exc)
     created = 0
     for block in blocks:
-        title = (block.get("title") or "").strip() or "Тендер"
+        title = (block.get("title") or "").strip() or 'Tender'
         context_text = f"{title}\n{page_url}\n{text or ''}"
         if not _is_construction_related(context_text):
             logger.info("Tender skipped by construction thematic filter: %s", title[:120])
@@ -579,16 +579,16 @@ async def _ingest_projects_from_page_text(
     page_url: str,
     existing_project_keys: set[str],
 ) -> int:
-    """По тексту страницы создать записи Project (коммерческие и государственные) в БД.
+    """Create a Project (commercial and public) entries in the database page.
 
-    :param session: Сессия БД.
-    :param text: Текст страницы.
-    :param page_url: URL страницы-источника.
-    :param existing_project_keys: Множество уже существующих normalized_name.
-    :return: Количество созданных проектов.
+    :param session: database session.
+    :param text: Text of the page.
+    :param page_url: URL source page.
+    :Param existing_project_keys: Multiple already existing normalized_name.
+    :return: Number of projects established.
     """
     blocks = _extract_project_blocks_from_text(text)
-    # Неуспех парсера: ничего не нашёл или мало блоков — дополняем через LLM
+    # Parser failure: found nothing or few blocks - additional through LLM
     if len(blocks) <= MAX_BLOCKS_TO_TRIGGER_LLM and len((text or "").strip()) >= MIN_TEXT_LEN_FOR_LLM:
         try:
             llm_blocks = await extract_project_blocks_llm(text, max_chars=7000)
@@ -599,10 +599,10 @@ async def _ingest_projects_from_page_text(
                     seen.add(key)
                     blocks.append(b)
         except Exception as exc:
-            logger.warning("LLM project extraction skipped (парсер дополнение): %s", exc)
+            logger.warning('LLM project transfer skipped (supplied): %s', exc)
     created = 0
     for block in blocks:
-        name = (block.get("name") or "").strip() or "Проект"
+        name = (block.get("name") or "").strip() or 'Draft'
         context_text = f"{name}\n{page_url}\n{text or ''}"
         if not _is_construction_related(context_text):
             logger.info("Project skipped by construction thematic filter: %s", name[:120])
@@ -633,10 +633,10 @@ async def _ingest_projects_from_page_text(
 
 
 async def ingest_sources(session: AsyncSession) -> int:
-    """Собрать статьи из всех источников.
+    """Collect articles from all sources.
 
-    Ограничений по last_checked_at нет: источники парсятся каждый проход, а дубли статей/тендеров/
-    проектов отсекаются по Article.url, Tender.tender_id и Project.normalized_name.
+    There are no restrictions on last_checked_at: sources move each passage and duplicate articles/tenders/
+    Article.url, Tender.tender_id and Project.normalized_name.
     """
     try:
         result = await session.execute(
@@ -646,11 +646,11 @@ async def ingest_sources(session: AsyncSession) -> int:
         )
         sources = list(result.scalars().all())
     except Exception as e:
-        logger.exception("ingest_sources: не удалось выбрать источники из БД: %s", e)
+        logger.exception('ingest_sources: Could not select database sources: %s', e)
         raise
-    logger.info("ingest_sources: источников к парсингу (все): %s", len(sources))
+    logger.info('ingest_sources: springs to parsing (all): %s', len(sources))
     if not sources:
-        logger.info("ingest_sources: в БД нет источников")
+        logger.info('ingest_sources: There are no sources in the database')
         return 0
     client = HttpClient()
     processed = 0
@@ -668,20 +668,20 @@ async def ingest_sources(session: AsyncSession) -> int:
         try:
             return await client.get_text(url)
         except httpx.HTTPStatusError as exc:
-            logger.warning("Источник %s вернул %s для %s (источник не отключаем, повторим в следующем цикле)", source.url, exc.response.status_code, url)
+            logger.warning('Source %s returned %s for %s)', source.url, exc.response.status_code, url)
             return None
         except httpx.HTTPError as exc:
-            logger.warning("Ошибка HTTP для %s: %s", url, exc)
+            logger.warning('HTTP error for %s: %s', url, exc)
             return None
 
     async def _safe_get_bytes(url: str, source: Source) -> bytes | None:
         try:
             return await client.get_bytes(url)
         except httpx.HTTPStatusError as exc:
-            logger.warning("Источник %s вернул %s для %s (источник не отключаем, повторим в следующем цикле)", source.url, exc.response.status_code, url)
+            logger.warning('Source %s returned %s for %s)', source.url, exc.response.status_code, url)
             return None
         except httpx.HTTPError as exc:
-            logger.warning("Ошибка HTTP для %s: %s", url, exc)
+            logger.warning('HTTP error for %s: %s', url, exc)
             return None
 
     def _base_url_from(url: str) -> str:
@@ -690,7 +690,7 @@ async def ingest_sources(session: AsyncSession) -> int:
         return f"{p.scheme}://{p.netloc}/" if p.netloc else url
 
     async def _discover_and_save_feeds(html: str, page_url: str) -> None:
-        """Обнаружить RSS/Atom/XML в HTML и добавить новые источники в БД."""
+        'Detect RSS/Atom/XML in TML and add new sources to database.'
         base = _base_url_from(page_url)
         for feed in discover_feeds_from_html(html, base):
             feed_url = feed.get("url") or ""
@@ -721,7 +721,7 @@ async def ingest_sources(session: AsyncSession) -> int:
                 logger.warning("Skip invalid feed %s: %s", feed_url, e)
 
     async def _get_text_from_page(html: str, page_url: str, source: Source) -> str:
-        """Текст из HTML; при коротком ответе (JS-страница) — fallback: страница → PDF → парсинг."""
+        'Text from TML; with short answer (JS page) - Fallback: page ♪ PDF ♪ Parsing.'
         text = extract_text(html)
         if text and len(text.strip()) >= 300:
             return text
@@ -735,7 +735,7 @@ async def ingest_sources(session: AsyncSession) -> int:
 
     for source in sources:
         if processed >= MAX_ARTICLES_PER_CYCLE:
-            logger.info("ingest_sources: достигнут лимит статей %s, выходим", MAX_ARTICLES_PER_CYCLE)
+            logger.info('ingest_sources: achieved limit %s, come out', MAX_ARTICLES_PER_CYCLE)
             break
         try:
             if source.kind == "rss":
@@ -746,7 +746,7 @@ async def ingest_sources(session: AsyncSession) -> int:
                     continue
                 items = parse_feed_content(xml)
                 if not items:
-                    logger.debug("ingest_sources: источник %s (rss) — пустая лента", source.url)
+                    logger.debug('ingest_sources: source %s (rss) is an empty tape', source.url)
                 for item in items:
                     if processed >= MAX_ARTICLES_PER_CYCLE:
                         break
@@ -830,7 +830,7 @@ async def ingest_sources(session: AsyncSession) -> int:
                         continue
                     await _discover_and_save_feeds(html, source.url)
                     text = await _get_text_from_page(html, source.url, source)
-                # Главная страница источника
+                # Main page of the source
                 await _save_article(session, source, source.url, source.name, None, text)
                 processed += 1
                 if text:
@@ -842,7 +842,7 @@ async def ingest_sources(session: AsyncSession) -> int:
                     )
                     if created_t or created_p:
                         await session.commit()
-                # Глубокий обход внутренних ссылок и sitemap для HTML-источников
+                # Deeply bypassing internal links and sitecap for HTML sources
                 try:
                     internal_urls = await collect_internal_links(
                         source.url, client, max_pages=100, max_depth=2
@@ -885,20 +885,20 @@ async def ingest_sources(session: AsyncSession) -> int:
             await session.commit()
         except Exception as e:
             logger.exception(
-                "ingest_sources: ошибка при обработке источника %s (%s): %s",
+                'ingest_sources: error when processing the source %s (%s): %s',
                 getattr(source, "url", "?"),
                 getattr(source, "kind", "?"),
                 e,
             )
 
-    logger.info("ingest_sources: завершено, обработано статей: %s", processed)
+    logger.info('ingest_sources: Completed, processed articles: %s', processed)
     return processed
 
 
 async def _canonicalize_titles(
     session: AsyncSession, titles: list[str]
 ) -> dict[str, str]:
-    """Получить канонические названия проектов с кэшем в БД."""
+    'Get the canonical names of cache projects in the database.'
 
     unique_titles = [t.strip() for t in titles if t and t.strip()]
     if not unique_titles:
@@ -912,7 +912,7 @@ async def _canonicalize_titles(
     if not missing:
         return cached
 
-    # Запускаем батчами, чтобы не перегружать LLM.
+    # We start with boots so we don't overload LLM.
     batch_size = 20
     for idx in range(0, len(missing), batch_size):
         batch = missing[idx : idx + batch_size]
@@ -938,11 +938,11 @@ async def ingest_perplexity_leads(
     *,
     max_results: int = 1000,
 ) -> dict[str, int]:
-    """Поиск информации о проектах, тендерах и госзаказах через Perplexity и запись в БД.
+    """Search for project information, tenders and state orders via Perplexity and database recording.
 
-    Perplexity ищет по запросам (ключевые слова + госзакупки/44-ФЗ/223-ФЗ), возвращает ссылки
-    на статьи и страницы; по ним парсим текст и извлекаем тендеры/проекты. Так поиск напрямую
-    подключён к сбору данных о проектах, тендерах и госзаказах.
+    Perplexity is looking for (keywords + public procurement 44-FZ/223-FZ), returning links
+    on articles and pages; on them we parish text and draw tender/projects. So the search is direct
+    connected to the collection of data on projects, tenders and state orders.
     """
 
     client = PerplexityClient()
@@ -965,7 +965,7 @@ async def ingest_perplexity_leads(
     for (key,) in projects.all():
         if key:
             existing_project_keys.add(key)
-    # Уже известные источники, чтобы не создавать дублей Source из лидов Perplexity
+    # Already known sources to avoid creating a "Source" from Perplexity
     known_source_urls: set[str] = set()
     sources_result = await session.execute(select(Source.url))
     for (src_url,) in sources_result.all():
@@ -985,10 +985,10 @@ async def ingest_perplexity_leads(
             html = await http_client.get_text(url)
             return extract_text(html)
         except httpx.HTTPStatusError as exc:
-            logger.warning("Perplexity источник %s вернул %s", url, exc.response.status_code)
+            logger.warning('Perplexity Source %s returned %s', url, exc.response.status_code)
             return None
         except httpx.HTTPError as exc:
-            logger.warning("Perplexity источник HTTP ошибка %s: %s", url, exc)
+            logger.warning('Perplexity source HTTP error %s: %s', url, exc)
             return None
 
     def _entities_from_article(article: Article | None) -> ExtractedEntities | None:
@@ -1045,7 +1045,7 @@ async def ingest_perplexity_leads(
                 seen_urls.add(url)
                 if url and url in existing_urls:
                     continue
-                # Добавляем новый Source для URL от Perplexity, если такого ещё нет
+                # Adding a new Source to the UrL of Perplexity if it's not there yet
                 if url and url not in known_source_urls:
                     try:
                         normalized_src = _normalize_source_url(url)
@@ -1222,7 +1222,7 @@ async def ingest_perplexity_leads(
 
 
 async def enrich_projects_missing(session: AsyncSession, *, limit: int = 200) -> dict[str, int]:
-    """Дозаполнить проекты с пустыми полями через GPT+Perplexity+Dadata."""
+    'Refill empty field projects through GPT+Perplexity+Dadata.'
 
     stmt = (
         select(Project)
@@ -1245,7 +1245,7 @@ async def enrich_projects_missing(session: AsyncSession, *, limit: int = 200) ->
     updated = 0
     for project in projects:
         logger.info("Auto-enrich project: id=%s name=%s", project.id, project.name)
-        query = f"{project.name} заказчик подрядчик исполнитель контакты Россия РФ"
+        query = f"{project.name} Russian Federation contact contractor"
         results = await client.search_web(
             query,
             max_results=5,
@@ -1340,7 +1340,7 @@ async def enrich_projects_missing(session: AsyncSession, *, limit: int = 200) ->
 
 
 async def _build_perplexity_queries(session: AsyncSession) -> list[str]:
-    """Сформировать поисковые запросы из наборов ключевых слов/конфига."""
+    'Form Searches from Keyword Sets/confiscation.'
 
     await bootstrap_keyword_sets_from_yaml(session)
     keywords: list[str] = []
@@ -1357,27 +1357,27 @@ async def _build_perplexity_queries(session: AsyncSession) -> list[str]:
     keywords = [kw for kw in keywords if kw]
     if not keywords:
         return [
-            "строительные тендеры и закупки 2025 2026 Россия актуальные",
-            "строительные проекты и инвестиции 2025 2026 Россия актуальные",
+            'Construction tenders and procurement 2025 2026 Russia',
+            'Construction projects and investments 2025 2026 Russia',
         ]
 
     async def _expand_queries_llm(seed_keywords: list[str]) -> list[str]:
         client = OpenAIClient()
         system = (
-            "ВНИМАТЕЛЬНО ПРОАНАЛИЗИРУЙ, как улучшить запрос для максимально точного поиска. "
-            "Цель — узнавать о новых проектах, тендерах и госзаказах (44-ФЗ, 223-ФЗ, ЕИС, госзакупки РФ), "
-            "находить контакты заказчиков и подрядчиков. "
-            "Формируй запросы для поиска КОНКРЕТНОЙ ИНФОРМАЦИИ: журналы, СМИ, порталы закупок — "
-            "статьи и страницы с описанием проектов/тендеров/госзаказов и контактами. "
-            "Расширяй примитивные фразы. Добавляй: заказчик/подрядчик/победитель, контакты (телефон, email), "
-            "2025/2026, РФ/Россия, тендеры/закупки/проекты/госзаказы/госзакупки/СМИ/журнал/портал. "
-            "Исключай Казахстан. Запросы на русском, без булевых операторов и кавычек. "
-            "Верни ТОЛЬКО JSON‑массив строк."
+            'ATTENTION: How to improve the request for as accurate a search as possible. '
+            'The aim is to learn about new projects, tenders and State orders (44-FZ, 223-FZ, EIS, Russian State procurement)), '
+            'Find contacts between customers and contractors. '
+            'Make inquiries for cross-reference information: magazines, media, procurement portals — '
+            'Articles and pages describing projects/tenders/state orders and contacts. '
+            'Broaden the primitive phrases. Add: Employer/contractor/winner, contact (telephone, e-mail)), '
+            '2025/2026, Russian Federation/Russian Federation, tenders/purchases/projects/go-ons/go-on procurement/MI/journal/portal. '
+            'Delete Kazakhstan. Requests for Russian, non-bullet operators and quotations. '
+            'Just give it back to JSON, the mass of the lines.'
         )
         user_content = (
-            "Примитивные фразы (JSON‑массив строк):\n"
+            'Primitive phrases (JSON – string mass):\n'
             f"{json.dumps(seed_keywords, ensure_ascii=False)}\n\n"
-            "Верни JSON‑массив из 10–20 расширенных поисковых запросов."
+            "Return JSON's mass of 10–20 extended search requests."
         )
         try:
             response = await client.chat(
@@ -1407,16 +1407,16 @@ async def _build_perplexity_queries(session: AsyncSession) -> list[str]:
             return unique_queries[:query_limit]
         return unique_queries[:20]
 
-    # Fallback: поиск по проектам, тендерам, госзаказам и госзакупкам (СМИ, журналы, порталы)
-    role_terms = "заказчик подрядчик исполнитель победитель контакты телефон email"
-    country_terms = "Россия РФ"
-    base = " ".join(keywords[:8]) if keywords else "строительство инфраструктура"
+    # Fallback: Project searches, tenders, government orders and public procurement (MI, magazines, portals))
+    role_terms = 'The contractor is the winner of the e-mail phone'
+    country_terms = 'Russian Federation'
+    base = " ".join(keywords[:8]) if keywords else 'Construction infrastructure'
     fallback_queries = [
-        f"{base} тендеры закупки строительство 2025 2026 актуальные СМИ журнал портал {role_terms} {country_terms}",
-        f"{base} проекты инвестиции строительство 2025 2026 актуальные СМИ журнал портал {role_terms} {country_terms}",
-        f"{base} госзаказы госзакупки 44-ФЗ 223-ФЗ ЕИС закупки РФ 2025 2026 {role_terms} {country_terms}",
-        "госзаказы строительство реконструкция дороги мосты 2025 2026 Россия заказчик подрядчик",
-        "госзакупки тендеры строительные работы капитальный ремонт Россия актуальные",
+        f"{base} Procurement tenders 2025 2026 relevant portal magazine {role_terms} {country_terms}",
+        f"{base} Investment projects construction 2025 2026 relevant portal magazine {role_terms} {country_terms}",
+        f"{base} State purchase orders 44-FZ 223-FZ EIS procurement of the Russian Federation 2025 2026 {role_terms} {country_terms}",
+        'Construction of road reconstruction of bridges 2025 2026 Russian contractor',
+        'State procurement of tenders for construction works. Major repairs to Russia',
     ]
     if query_limit > 0:
         return fallback_queries[:query_limit]
@@ -1424,10 +1424,10 @@ async def _build_perplexity_queries(session: AsyncSession) -> list[str]:
 
 
 def _normalize_project_name(raw_name: str) -> str:
-    """Нормализовать название проекта для записи.
+    """Normalize the name of the project for recording.
 
-    :param raw_name: Исходное название.
-    :return: Нормализованное короткое название.
+    :param raw_name: Reference name.
+    :return: Normalized short name.
     """
 
     cleaned = " ".join(raw_name.replace("\n", " ").split()).strip()
@@ -1455,14 +1455,14 @@ async def _filter_noise_titles_llm(titles: list[str]) -> set[str]:
 
 
 def _parse_ruble_amount(raw_value: str) -> float | None:
-    """Распарсить сумму в рублях из строки.
+    """Unload the amount in the rubles from the line.
 
-    :param raw_value: Сырые данные суммы.
-    :return: Сумма в рублях или None.
+    :param raw_value: Raw amounts.
+    :return: Amount in rubles or None.
     """
 
     lowered = raw_value.lower().replace(" ", "")
-    if any(token in lowered for token in ("usd", "дол", "$", "eur", "евро", "€")):
+    if any(token in lowered for token in ("usd", 'Total', "$", "eur", 'Euro', "€")):
         return None
     match = re.search(r"(\d+(?:[.,]\d+)?)", lowered)
     if not match:
@@ -1481,11 +1481,11 @@ def _parse_ruble_amount(raw_value: str) -> float | None:
 
 
 def _collect_ruble_amounts(text: str, money_values: list[str]) -> list[float]:
-    """Собрать суммы в рублях из сущностей и текста.
+    """Collect amounts in rubles from entities and text.
 
-    :param text: Полный текст статьи.
-    :param money_values: Извлеченные сущности денег.
-    :return: Список сумм в рублях.
+    :param text: Full article.
+    :param money_values: The extracted essence of money.
+    :return: List of amounts in rubles.
     """
 
     amounts: list[float] = []
@@ -1502,10 +1502,10 @@ def _collect_ruble_amounts(text: str, money_values: list[str]) -> list[float]:
             amounts.append(parsed)
     return amounts
 def _normalize_project_key(raw_name: str) -> str:
-    """Нормализовать ключ проекта для защиты от дублей.
+    """Normalize the project key to protect against duplicates.
 
-    :param raw_name: Исходное название.
-    :return: Нормализованный ключ.
+    :param raw_name: Reference name.
+    :return: Normalized key.
     """
 
     lowered = raw_name.lower()
@@ -1516,10 +1516,10 @@ def _normalize_project_key(raw_name: str) -> str:
 
 
 def _normalize_company_key(raw_name: str) -> str:
-    """Нормализовать ключ компании для защиты от дублей.
+    """Normalize the company's key to protect against takeoff.
 
-    :param raw_name: Исходное название.
-    :return: Нормализованный ключ.
+    :param raw_name: Reference name.
+    :return: Normalized key.
     """
 
     lowered = raw_name.lower()
@@ -1533,10 +1533,10 @@ def _normalize_company_key(raw_name: str) -> str:
 
 
 def _normalize_phone(raw_phone: str) -> str | None:
-    """Нормализовать телефон для дедупликации.
+    """Standardize the phone for deduplication.
 
-    :param raw_phone: Сырый телефон.
-    :return: Нормализованный телефон или None.
+    :param raw_phone: Raw telephone.
+    :return: Normalized telephone or None.
     """
 
     digits = re.sub(r"\D+", "", raw_phone)
@@ -1554,12 +1554,12 @@ def _filter_contact_values(
     phones: list[str],
     source_url: str,
 ) -> tuple[list[str], list[str]]:
-    """Очистить контакты от мусорных доменов и привести телефоны.
+    """Clear the trash domain and bring the phones.
 
-    :param emails: Сырые email.
-    :param phones: Сырые телефоны.
-    :param source_url: URL статьи-источника.
-    :return: Очищенные email и телефоны.
+    :param emails: Raw emails.
+    :param phones: Raw phones.
+    :param source_url: URL source article.
+    :return: Cleaned emails and phones.
     """
 
     free_domains = {
@@ -1597,11 +1597,11 @@ def _filter_contact_values(
 
 
 def _merge_contact_lists(existing: list[str], incoming: list[str]) -> list[str]:
-    """Объединить списки контактов без дублей.
+    """Combine contact lists without duplicates.
 
-    :param existing: Текущие контакты.
-    :param incoming: Новые контакты.
-    :return: Объединенный список.
+    :param existing: Current contacts.
+    :param incoming: New contacts.
+    :return: Combined list.
     """
 
     merged = list(existing)
@@ -1612,7 +1612,7 @@ def _merge_contact_lists(existing: list[str], incoming: list[str]) -> list[str]:
 
 
 def _filter_company_names(companies: list[str]) -> list[str]:
-    """Нормализовать список компаний без эвристических фильтров."""
+    'Normalize list of companies without heuristic filters.'
 
     cleaned_list: list[str] = []
     for name in companies:
@@ -1626,12 +1626,12 @@ def _filter_company_names(companies: list[str]) -> list[str]:
 async def _upsert_projects(
     session: AsyncSession, projects: list[str], article: Article, text: str
 ) -> None:
-    """Создать проекты по данным статьи.
+    """Create projects based on the article.
 
-    :param session: Асинхронная сессия БД.
-    :param projects: Список упоминаний проектов.
-    :param article: Статья-источник.
-    :param text: Текст статьи.
+    :param session: Asynchronous database session.
+    :param projects: List of references to projects.
+    :param article: Source article.
+    :param text: Text of article.
     :return: None.
     """
 
@@ -1722,13 +1722,13 @@ async def _upsert_companies(
     phones: list[str],
     source_url: str,
 ) -> None:
-    """Создать компании по данным статьи.
+    """To create companies according to the article.
 
-    :param session: Асинхронная сессия БД.
-    :param companies: Список компаний.
-    :param emails: Найденные email.
-    :param phones: Найденные телефоны.
-    :param source_url: URL статьи-источника.
+    :param session: Asynchronous database session.
+    :param companies: List of companies.
+    :param emails: Found emails.
+    :paramphones found.
+    :param source_url: URL source article.
     :return: None.
     """
 
@@ -1769,9 +1769,9 @@ async def _upsert_companies(
             refs.append(source_url)
             company.source_refs = refs
 
-        # Автоматическое обогащение профиля компании через Dadata + Rusprofile.
-        # Запускаем один раз при создании/первом заполнении, если у компании
-        # ещё нет ИНН или адреса.
+        # Automatic enrichment of company profile through Dadata + Rusprofile.
+        # Start once in creation/first filling if the company
+        # There's no INN or address yet.
         if not company.inn or not company.address:
             profile = await enrich_company(
                 session,
@@ -1786,17 +1786,17 @@ async def _upsert_companies(
                 company.email = profile["email"]
             if profile.get("phone") and not company.phone:
                 company.phone = profile["phone"]
-            # сохраняем источники обогащения в contacts.external_sources
+            # Save sources of enrichment in contacts.external_sources
             contacts = company.contacts or {}
             contacts["external_sources"] = profile.get("sources") or []
             company.contacts = contacts
 
 
 async def match_tenders_and_articles(session: AsyncSession) -> int:
-    """Сопоставить тендеры и статьи и сохранить связи.
+    """Compare tenders and articles and maintain links.
 
-    :param session: Асинхронная сессия БД.
-    :return: Количество созданных связей.
+    :param session: Asynchronous database session.
+    :return: Number of links established.
     """
 
     settings = get_settings()

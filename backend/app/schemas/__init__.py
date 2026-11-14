@@ -1,6 +1,6 @@
-"""Импорт схем API.
+"""Imports of API schemes.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from app.schemas.article import ArticleCreate, ArticleRead

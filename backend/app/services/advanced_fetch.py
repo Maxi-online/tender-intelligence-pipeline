@@ -1,6 +1,6 @@
-"""Продвинутые методы загрузки и парсинга: RSS/Atom/XML, страница → PDF.
+"""Advanced loading and parasing techniques: RSS/Atom/XML page  \\PDF.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 def discover_feeds_from_html(html: str, base_url: str) -> list[dict]:
-    """Обнаружить RSS, Atom и XML-каналы в HTML по стандарту link rel=\"alternate\".
+    """Find RSS, Atom and XML channels in the XML standard line rel="alternate".
 
-    См. https://www.rssboard.org/rss-autodiscovery и https://indieweb.org/rel-feed
-    :param html: Исходный HTML страницы.
-    :param base_url: Базовый URL для разрешения относительных ссылок.
-    :return: Список словарей [{\"url\": str, \"kind\": \"rss\"|\"atom\"|\"xml\", \"title\": str}].
+    See https://www.rssboard.org/rss-autodiscovery and https://indieweb.org/rel-feed
+    :paramhtml: HTML Reference Page.
+    :Param base_url: Basic URL for relative reference resolution.
+    :Return: List of dictionarys [{"url": str, "kind": "rss"}].
     """
     if not html or not base_url:
         return []
@@ -64,7 +64,7 @@ def discover_feeds_from_html(html: str, base_url: str) -> list[dict]:
         feeds.append({"url": full_url, "kind": kind, "title": title})
         logger.info("Discovered feed: %s %s", kind, full_url)
 
-    # Дополнительно: ссылки на типичные пути каналов
+    # In addition: links to typical channels
     for a in soup.find_all("a", href=True):
         href = (a.get("href") or "").strip()
         text = (a.get_text() or "").strip().lower()
@@ -83,10 +83,10 @@ def discover_feeds_from_html(html: str, base_url: str) -> list[dict]:
 
 
 def fetch_page_as_pdf_sync(url: str, timeout_ms: int = 30000) -> bytes | None:
-    """Сохранить страницу в PDF через headless-браузер (Playwright), затем вернуть байты PDF.
+    """Save PDF page via the Playwright, then return PDF bytes.
 
-    Нестандартный метод для JS-тяжёлых страниц: рендер в браузере → PDF → парсинг.
-    Если playwright не установлен, возвращает None.
+    Non-standard method for JS heavy pages: browser bender ♪ PDF ♪ parsing.
+    If Playwright is not installed, it returns None.
     """
     try:
         from playwright.sync_api import sync_playwright
@@ -111,7 +111,7 @@ def fetch_page_as_pdf_sync(url: str, timeout_ms: int = 30000) -> bytes | None:
 
 
 async def fetch_page_as_pdf_async(url: str, timeout_ms: int = 30000) -> bytes | None:
-    """Асинхронно сохранить страницу в PDF (Playwright). Если библиотеки нет — None."""
+    'Asynchronically save PDF page). If No Library — None.'
     try:
         from playwright.async_api import async_playwright
     except ImportError:

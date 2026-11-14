@@ -1,4 +1,4 @@
-"""Модель кэша закупок Seldon для REST API по ТЗ TPIS."""
+'Seldon purchase cache model for REST API on TK TPIS.'
 
 from __future__ import annotations
 
@@ -12,10 +12,10 @@ from app.models.base import Base
 
 
 class SeldonPurchase(Base):
-    """Кэш одной закупки Seldon (purchase) для единого REST API.
+    """Cash One Seldon Purchase (purchase) for a single REST API.
 
-    Маппинг из ответов Purchases/Result и Purchases/Get; при необходимости
-    дополняется из Protocols и Contracts (участники, победитель, контакты).
+    Mapping from Purchases/Result and Purchasies/Get; if necessary
+    Added from Protocols and Contracts (participants, winner, contacts)).
     """
 
     __tablename__ = "seldon_purchases"

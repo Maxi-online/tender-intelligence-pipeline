@@ -1,4 +1,4 @@
-"""Юнит-тесты модуля Seldon: маппинг, извлечение участников/победителя."""
+'Seldon Unit Tests: Mapping, Participant/Winner Extract.'
 
 from __future__ import annotations
 import os
@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 
-# Добавить backend в path при запуске из корня репозитория
+# Add backend to path when starting from the root of the repository
 _backend = Path(__file__).resolve().parent.parent
 if str(_backend) not in sys.path:
     sys.path.insert(0, str(_backend))
@@ -19,7 +19,7 @@ from app.services.seldon_service import (
 )
 
 
-# Пример из документации Seldon (Приложение 2): один объект purchase
+# Example from Seldon documentation (Annex 2): One object purchase
 SAMPLE_PURCHASE = {
     "SeldonId": 1028827079,
     "reportId": 3,
@@ -34,7 +34,7 @@ SAMPLE_PURCHASE = {
     "subject": "Запрос коммерческих предложений для закупки по предмету: Оказание услуг по перевозке наличных денежных средств",
     "purchasePrice": None,
     "currency": {"code": "RUB", "name": "Российский рубль"},
-    "epName": "Сбер А. Коммерческие закупки",
+    "epName": 'Demonstration Procurement Platform',
     "epLink": "http://utp.sberbank-ast.ru/",
     "status": {
         "codeStatusEIS": None,
@@ -44,39 +44,39 @@ SAMPLE_PURCHASE = {
     },
     "startDate": "2021-04-23T07:23:00",
     "endDate": "2021-05-10T23:59:00",
-    "organizer": {"name": "УФПС Приморского края", "inn": "7707083893"},
+    "organizer": {"name": 'Demonstration Postal Operator', "inn": "7707083893"},
     "lotsList": [],
-    "contactInfo": {"person": "Иванов И.И.", "email": os.environ["EMAIL"], "phone": "+7 123 456-78-90"},
+    "contactInfo": {"person": 'Demo Contact', "email": os.environ["EMAIL"], "phone": "+7 123 456-78-90"},
 }
 
 
 def test_map_purchase_to_tpis_schema() -> None:
-    """Маппинг сырого purchase в схему ТЗ TPIS."""
+    'Mapping raw purchase into the TK TPIS scheme.'
     out = map_purchase_to_tpis_schema(SAMPLE_PURCHASE)
     assert out["tender_id"] == "1028827079"
     assert out["title"] == SAMPLE_PURCHASE["subject"]
     assert out["currency"] == "RUB"
     assert out["status"] == "Завершённая закупка"
     assert out["stage"] == "Запрос котировок"
-    assert out["customer"] == "УФПС Приморского края"
+    assert out["customer"] == 'Demonstration Postal Operator'
     assert out["source_url"] == SAMPLE_PURCHASE["purchaseLink"]
     assert out["contact_info"] == SAMPLE_PURCHASE["contactInfo"]
 
 
 def test_map_purchase_to_model() -> None:
-    """Маппинг в поля модели SeldonPurchase."""
+    '===SeldonPurchase===Maping in the SeldonPurchase fields.'
     out = map_purchase_to_model(SAMPLE_PURCHASE)
     assert out["seldon_id"] == 1028827079
     assert out["report_id"] == 3
     assert out["subject"] == SAMPLE_PURCHASE["subject"]
     assert out["status_name"] == "Завершённая закупка"
-    assert out["customer_name"] == "УФПС Приморского края"
+    assert out["customer_name"] == 'Demonstration Postal Operator'
     assert out["customer_inn"] == "7707083893"
     assert "raw_purchase" in out
 
 
 def test_map_purchase_to_model_requires_seldon_id() -> None:
-    """Без seldonId маппер бросает ValueError."""
+    'Without seldonId, the mapper leaves ValueError.'
     try:
         map_purchase_to_model({"subject": "Test"})
         assert False, "expected ValueError"
@@ -85,20 +85,20 @@ def test_map_purchase_to_model_requires_seldon_id() -> None:
 
 
 def test_extract_participants_from_protocol_empty() -> None:
-    """Пустой протокол — пустой список участников."""
+    'An empty protocol is an empty list of participants.'
     assert extract_participants_from_protocol(None) == []
     assert extract_participants_from_protocol({}) == []
 
 
 def test_extract_participants_from_protocol() -> None:
-    """Извлечение участников из структуры протокола (organizations + dataApps)."""
+    'Extraction of participants from the structure of the protocol (organizations + dataApps).'
     protocol = {
         "lotsList": [
             {
                 "apps": {
                     "organizations": [
-                        {"id": 1, "name": "ООО Рога", "inn": "111", "ogrnSeldon": "222"},
-                        {"id": 2, "name": "ООО Копыта", "inn": "333"},
+                        {"id": 1, "name": 'Demo Supplier A', "inn": "111", "ogrnSeldon": "222"},
+                        {"id": 2, "name": 'Demo Supplier B', "inn": "333"},
                     ],
                     "dataApps": [
                         {"organizationId": 1, "admitted": True, "resultType": "Допущен"},
@@ -111,12 +111,12 @@ def test_extract_participants_from_protocol() -> None:
     participants = extract_participants_from_protocol(protocol)
     assert len(participants) == 2
     names = {p.get("name") for p in participants}
-    assert "ООО Рога" in names
-    assert "ООО Копыта" in names
+    assert 'Demo Supplier A' in names
+    assert 'Demo Supplier B' in names
 
 
 def test_extract_winner_from_protocol_empty() -> None:
-    """Пустой протокол — нет победителя."""
+    'An empty protocol is no winner.'
     assert extract_winner_from_protocol(None) is None
     assert extract_winner_from_protocol({}) is None
 

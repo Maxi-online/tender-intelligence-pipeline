@@ -1,9 +1,9 @@
-"""Мультиагентная проверка качества выгрузки Seldon: соответствие тематике и требованиям ТЗ.
+"""Multi-agent quality check for the discharge of Seldon: compliance with the subject matter and requirements of TK.
 
-Опциональный шаг после получения Purchases/Result: несколько LLM (или одна модель)
-оценивают каждую закупку по критериям (строительная/инфраструктурная тематика,
-наличие обязательных полей, отсутствие мусора). Записи, не прошедшие проверку,
-можно не сохранять или помечать флагом.
+Option step after Purchasing/Result: Several LLM (or one model))
+Assess each procurement by criteria (construction/infrastructure topics),
+Mandatory fields, no garbage). Records not tested,
+may not hold or mark the flag.
 """
 
 from __future__ import annotations
@@ -16,13 +16,7 @@ from app.services.seldon_service import map_purchase_to_tpis_schema
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """Ты строгий классификатор закупок для системы TPIS.
-Оцени закупку по критериям:
-1) Тематика: строительство, реконструкция, капремонт, инфраструктура (дороги, мосты, сети), объекты соцкультбыта (школы, больницы, детсады). Если тематика явно не строительная/инфраструктурная — верни "reject".
-2) Обязательные поля: наличие осмысленного названия и заказчика (или организатора). Если названия нет или это явный мусор (контакты, форма вопрос-ответ, реклама) — верни "reject".
-3) Мусор: отклони закупки по продаже макулатуры, металлолома, запчастей, канцелярии, если это не связано со строительством объекта.
-
-Ответь ТОЛЬКО валидным JSON вида: {"verdict": "accept" | "reject", "reason": "краткое обоснование"}."""
+SYSTEM_PROMPT = 'You\'re a strict procurement classification for the TPIS system.\nAssess procurement against criteria:\n1) Themes: construction, reconstruction, capremont, infrastructure (roads, bridges, networks), objects of social culture (schools, hospitals, kindergartens)). If the subject is clearly not construction/infrastructure, return "project"".\n(2) Mandatory fields: meaningful name and customer (or organizer)). If there\'s no name, or if it\'s plain trash (comments, form of question-and-answer, advertising) - give back the "project"".\n3) Waste: disadvantages of purchase for sale of machulature, metal, spare parts, office, if this is not related to the construction of the object.\n\nAnswer the only one who\'s valid JSON species: {"verdict": "accept" | "reject", "reason": "brief justification"}.'
 
 
 async def validate_purchases_with_llm(
@@ -30,7 +24,7 @@ async def validate_purchases_with_llm(
     *,
     max_batch_size: int = 20,
 ) -> list[tuple[dict[str, Any], bool, str]]:
-    """Проверить список закупок через LLM. Возвращает для каждой (purchase, passed, reason)."""
+    'Check the procurement list with LLM. Returns for each (purchase, passed, reason)).'
     try:
         from app.services.openai_client import OpenAIClient
         client = OpenAIClient()
@@ -44,7 +38,7 @@ async def validate_purchases_with_llm(
         for raw in batch:
             try:
                 schema = map_purchase_to_tpis_schema(raw)
-                text = f"Название: {schema.get('title') or ''}\nЗаказчик: {schema.get('customer') or ''}\nНомер: {schema.get('notification_number') or ''}"
+                text = f"Name: {schema.get('title') or ''}\n Buyer: {schema.get('customer') or ''}\n Number: {schema.get('notification_number') or ''}"
                 response = await client.chat(SYSTEM_PROMPT, [{"role": "user", "content": text}])
                 content = (response.get("content") or [])
                 block = content[0] if content else {}
@@ -72,6 +66,6 @@ def filter_purchases_by_validation(
     purchases: list[dict[str, Any]],
     validation_results: list[tuple[dict[str, Any], bool, str]],
 ) -> list[dict[str, Any]]:
-    """Оставить только закупки, прошедшие проверку."""
+    'Leave only those purchases that have been tested.'
     passed_ids = {id(raw) for raw, passed, _ in validation_results if passed}
     return [p for p in purchases if id(p) in passed_ids]

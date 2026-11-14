@@ -1,6 +1,6 @@
-"""Схемы связи тендера и статьи для API.
+"""Tender and article communication schemes for API.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -11,15 +11,15 @@ from pydantic import BaseModel, ConfigDict
 
 
 class MatchLinkBase(BaseModel):
-    """Базовая схема связи тендера и статьи.
+    """Basic communication scheme for tenders and articles.
 
-    Атрибуты:
-        tender_id: Идентификатор тендера.
-        article_id: Идентификатор статьи.
-        confidence_score: Уровень уверенности в связке.
-        approved: Флаг подтверждения оператором.
-        reviewed_at: Дата подтверждения.
-        reviewer: Идентификатор оператора.
+    Attributes:
+        tender_id: Tender Identifier.
+        article_id: Article Identifier.
+        confidence_score: Tilt confidence level.
+        approved: The operator's confirmation flag.
+        reviewed_at: Date of confirmation.
+        reviewer: Operator &apos; s Identifier.
     """
 
     tender_id: int
@@ -31,16 +31,16 @@ class MatchLinkBase(BaseModel):
 
 
 class MatchLinkCreate(MatchLinkBase):
-    """Схема для создания связи на входе API."""
+    'A scheme for the API entrance connection.'
 
     model_config = ConfigDict(extra="forbid")
 
 
 class MatchLinkRead(MatchLinkBase):
-    """Схема связи для чтения из API.
+    """The API's read-through scheme.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
+    Attributes:
+        id: Internal record identifier.
     """
 
     id: int

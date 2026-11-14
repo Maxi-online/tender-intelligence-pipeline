@@ -1,16 +1,16 @@
-"""Настройка логирования.
+"""Logging settings.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 import logging
 
 
 def configure_logging(level: str) -> None:
-    """Настроить корневой логгер приложения.
+    """Set the root logger application.
 
-    :param level: Уровень логирования (например, "INFO", "DEBUG").
-    :return: None. Функция настраивает логирование глобально.
+    :param lion: Logistical level (e.g. "INFO", "DEBUG"").
+    :return: None. The function adjusts the logic globally.
     """
 
     logging.basicConfig(

@@ -1,10 +1,10 @@
 # Tender & Project Intelligence System (TPIS)
 
-## Инженерный обзор
+## Engineering review
 
-Система сбора и нормализации тендерных и проектных данных: API, очереди, разбор документов, LLM-извлечение, обогащение компаний и frontend. Конфигурации источников и интеграций отделены от прикладного пайплайна.
+System of collection and normalization of tender and project data: API, rows, documentation, LLM-tracking, corporate enrichment and frontend. Sources and integration configurations are separated from the application pipline.
 
-### Навигация по коду
+### Code navigation
 
 - [backend/app/services/pipeline.py](backend/app/services/pipeline.py)
 - [backend/app/services/openai_client.py](backend/app/services/openai_client.py)
@@ -12,83 +12,83 @@
 - [config/settings.example.json](config/settings.example.json)
 - [docker-compose.yml](docker-compose.yml)
 
-### Воспроизведение и оценка
+### Reproduction and evaluation
 
-Воспроизводимый пример: разрешённые документы → структурированные записи с происхождением → дубликаты → повторный импорт. Проверяйте extraction F1 и duplicate precision/recall на независимой разметке; отдельно проверяйте resume/idempotency. Ответ внешнего источника и генерация LLM не гарантируют достоверность записи без ссылки на исходный документ.
+Repeatable example: authorized documents → structured records with origin → duplicates → reimport. Check extraction F1 and duplicate precision/recall on an independent mark; separate check resume/idempotency. External source response and LLM generation do not guarantee the reliability of the record without reference to the source document.
 
 
-Автор: Maxi-online
+Author: Maxi-online
 
-TPIS — система для автоматического сбора, нормализации и интеллектуального анализа данных по строительным проектам и тендерам. Реализует цикл: автопоиск источников, парсинг СМИ/порталов, LLM‑извлечение сущностей и классификация, семантический поиск (Perplexity + Claude), дедупликация, API, экспорт и веб‑интерфейс.
+TPIS – system for automatic collection, normalization and intellectual analysis of data on construction projects and tender. Realizes the cycle: source search, media/portals parsing, LLM-extraction and classification, semantic search (Perplexity + Claude), deduplication, API, export and web interface.
 
-## Основные возможности
-- Автосбор данных из СМИ/журналов (RSS/HTML/Sitemap) + автообнаружение новых источников через SerpAPI.
-- LLM‑ядро на русском языке (Claude): сущности, даты, суммы, контакты, роли.
-- Семантический поиск (Perplexity + Claude) с ранжированием результатов.
-- Дедупликация проектов/компаний в БД, единая таблица отчета.
-- Экспорт CSV/XLSX/Parquet и досье PDF/Word.
-- Веб‑интерфейс на Streamlit (русская локализация UI).
+## Main opportunities
+- Media/journal data collection (RSS/HTML/Sitemap) + auto-detection of new sources via SerpaPI.
+- LLM – Russian core (Claude): the essence, dates, amounts, contacts, roles.
+- Semantic search (Perplexity + Claude) with ranking of results.
+- Deduction of projects/companies in the BD, a single table of report.
+- Export CSV/XLSX/Parquet and PDF/Word file.
+- Web-interface on Streetlit (Russian localization UI)).
 
-## Структура
-- `backend/` — FastAPI, задачи Celery, парсеры, NLP, matching, экспорт.
+## Structure
+- `Backend/' – FastAPI, Celery Tasks, Parser, NLP, Matching, Export.
 - `frontend/` — Streamlit UI.
-- `config/` — словари ключевых слов и список источников.
+- `config/` is a key words dictionary and source list.
 
-## Быстрый старт (локально)
-1. Скопируйте `.env.example` в `.env` и заполните параметры.
-2. Установите зависимости backend: `pip install -r backend/requirements.txt`
-3. Инициализация БД: `python -m app.db.init_db`
-4. Запуск API: `uvicorn app.main:app --reload --app-dir backend --host 0.0.0.0 --port 8001`
-5. Запуск Frontend: `cd frontend && pip install -r requirements.txt && streamlit run streamlit_app/Главная.py`
+## Quick start (local)
+1. Copy `.env.example` in `.env` and complete the parameters.
+2. Set backend relationships: `pip install -r backend/requirements.txt`
+3. Initialization of BD: `python -m app.db.init_db`
+4. LaunchAPI: `uvicorn app.main:app --reload --app-dir backend --host 0.0.0.0 --port 8001`
+5. Launch Frontend: `cd background &&pip install -r requirements.txt && streamlit run streamlit_app/Chief.py`
 
-## Запуск в Docker
-1. Скопируйте `.env.example` в `.env` и заполните параметры.
-2. Запуск: `docker compose up --build`
+## Docker Start
+1. Copy `.env.example` in `.env` and complete the parameters.
+2. Launch: `docker compose up --build`
 3. API: `http://localhost:8001/api`
 4. Frontend: `http://localhost:8501`
 
-## Основные параметры окружения (.env)
-- `DATABASE_URL` — строка подключения к PostgreSQL.
-- `SELDON_BASE_URL`, `SELDON_API_KEY` — доступ к Seldon API (если доступен).
-- `DISCOVERY_SEARCH_URL`, `DISCOVERY_API_KEY` — поиск источников (SerpAPI).
-  - Пример: `https://serpapi.com/search.json?engine=google_news&q={query}&hl=ru&gl=ru&api_key={api_key}`
+## Basic environmental parameters (.env)
+- `DATABASE_URL` is a link to PostgreSQL.
+- `SELDON_BASE_URL`, `SELDON_API_KEY` — Access to Justice in Environmental MattersSeldon API (if available).
+- `DISCOVERY_SEARCH_URL`, `ZDISCOVERY_API_KEY' — Search for Sources (SerpaPI)).
+  - Example: `https://serpapi.com/search.json?engine=google_news&q={query}&hl=ru&gl=ru&api_key={api_key}`
 - `HTTP_PROXY_URL`, `USER_AGENT`, `REQUEST_DELAY_MIN/MAX` — anti‑blocking.
-- `PERPLEXITY_API_KEY`, `PERPLEXITY_MODEL` — ключ и модель Perplexity.
-- `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` — ключ и модель Claude (Anthropic).
-- `DADATA_API_KEY`, `DADATA_SECRET_KEY`, `DADATA_MCP_URL` — доступ к Dadata и MCP.
-- `EXPORT_DIR` — каталог выгрузок.
-- `MATCHING_THRESHOLD`, `MATCHING_MIN_THRESHOLD` — пороги сопоставления.
-- `SOURCES_CONFIG_PATH`, `KEYWORDS_CONFIG_PATH` — пути к YAML конфигам.
+- `PERPLEXITY_API_KEY`, `PERPLEXITY_MODEL` — Key and ModelPerplexity.
+- `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` — Key and ModelClaude (Anthropic).
+- `DADATA_API_KEY`, `DADATA_SECRET_KEY`, `DADATA_MCP_URL` — Access to Justice in Environmental MattersDadata andMCP.
+- `EXPORT_DIR` is a shipping catalogue.
+- `MATCHING_THRESHOLD`, `MATCHING_MIN_THRESHOLD` — Comparison thresholds.
+- `SOURCES_CONFIG_PATH`, `ZKEYWORDS_CONFIG_PATH' — Paths to YAML Confiscations.
 
-## Автоматизация
-- `Celery Beat` запускает обновление 4 раза в день.
-- Отдельный цикл автообнаружения источников запускается по расписанию.
+## Automation
+- `Celery Beat` runs the update four times a day.
+- A separate auto-detection cycle shall be started on schedule.
 
-## Ключевые API эндпоинты
-- `GET /api/reports/projects` — единая таблица проектов.
-- `GET /api/export/projects/excel` — выгрузка Excel по шаблону.
-- `GET /api/search/semantic` — семантический поиск.
-- `GET /api/sources` — список источников.
-- `POST /api/sources/bootstrap` — загрузка источников из YAML.
-- `GET /api/automation/status` — состояние автоматизации.
-- `POST /api/automation/start` — ручной запуск цикла.
-- `POST /api/automation/enable` / `POST /api/automation/stop` — включить/выключить цикл.
+## Key API Endpoints
+- `GET /api/reports/projects` is a single project table.
+- `GET /api/export/projects/excel' is a model-based offloading of Excel.
+- `GET /api/search/semantic` is a semantic search.
+- `GET /api/sources` is a source list.
+- `POST /api/sources/bootstrap' is a download of YAML sources.
+- `GET /api/automation/status` is a state of automation.
+- `POST /api/automation/start` is a manual cycle launch.
+- `POST /api/automation/enable` / `POST /api/automation/stop' - Activate/off cycle.
 
-## Ограничения
-- Seldon API отключен без реального ключа и доступа.
-- Качество заполнения зависит от исходных источников.
+## Limitations
+- Seldon API is offline without a real key and access.
+- The quality of filling depends on the source.
 
-## Лицензия
-Коммерческая лицензия. Все права защищены.
+## Licensing
+Commercial licence. All rights protected.
 
-## Приватная конфигурация
+## Private configuration
 
-Ключи провайдеров, токены, пароли, прокси и персональные параметры задаются через переменные окружения. `.env.example` содержит имена без значений. Заполненный `.env` и локальные настройки исключены из Git. Не передавайте секреты аргументами команд и не публикуйте реальные журналы, выгрузки, сертификаты или пользовательские документы.
+Provider keys, tokens, passwords, proxy and personal parameters are set through variable environments. `.env.example` contains names without values. `.env` filled and local settings deleted from Git. Do not transmit secrets by command arguments and do not publish real magazines, downloads, certificates or user documents.
 
-Для запуска экспортируйте нужные переменные в окружение процесса либо заполните игнорируемый локальный `.env`, если используемый entrypoint его загружает. Содержимое `.env` само по себе не становится окружением произвольной Python-команды. Для Docker Compose значения из `.env` передаются в настроенные сервисы.
+To run, export the required variables to the process environment or fill the ignored local `.env` if the entrypoint used is downloading it. The content of `.env` does not in itself become an environment of arbitrary Python command. For Docker Compose, the values of `.env` are transferred to customized services.
 
-JSON/YAML-настройки используют ссылки `${NAME}`; конфигурационные загрузчики разрешают их через окружение. Для числовых значений предусмотрен `${NAME:int}`. Отсутствующее обязательное значение вызывает ошибку с именем переменной, без её содержимого. Безопасные `*.example.json` / `*.example.yaml` сохраняют структуру настроек.
+JSON/YAML- facilities use `${NAME}` links; configuration loaders allow them through the environment. For numerical values, ${NAME:int}`. Lack of mandatory value causes an error with the name of the variable, without its content. Safe `*.example.json` / `*.example.yaml` save configuration structure.
 
-Имена приватных параметров приведены в [.env.example](.env.example). Старые значения сохранены только в защищённом локальном хранилище владельца; оно не входит в публикуемый проект. После ротации ключей используйте новые значения.
+The names of the private parameters are given in [.env.example](.env.example)). Old values are only retained in the protected local storage facility of the owner; it is not part of the published project. Once the keys are rotated, use new values.
 
-Проверка исходников и формата настроек не заменяет запуск инфраструктуры и оценку модели. Изменения приватности не подтверждают качество AI, работоспособность внешних API или готовность всей системы к эксплуатации.
+Checking the source and configuration formats does not replace the launch of the infrastructure and model evaluation. Privacy changes do not confirm the quality of AI, the performance of external APIs, or the willingness of the entire system to operate.

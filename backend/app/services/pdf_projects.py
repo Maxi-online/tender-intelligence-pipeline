@@ -1,7 +1,7 @@
-"""Извлечение проектов из большого PDF с помощью Claude.
+"""Extraction of projects from a large PDF with Claude.
 
-Задача: по длинному тексту (распознанному из журнала/отчёта) найти
-максимум уникальных строительных проектов и вернуть их краткие описания.
+Objective: To find a long text (recognised from the journal/report)
+maximum unique construction projects and return their brief descriptions.
 """
 
 from __future__ import annotations
@@ -34,9 +34,9 @@ def _split_text(text: str, max_chars: int = 8000) -> list[str]:
 
 
 async def extract_project_names_with_claude(fragments: list[str]) -> list[str]:
-    """Извлечь список названий/формулировок проектов из текста PDF.
+    """Extract a list of projects names/formulations from the PDF text.
 
-    Использует Claude Sonnet 4.5, просит вернуть JSON-массив строк.
+    Using Claude Sonnet 4.5, requesting the return of the JSON line massage.
     """
 
     if not fragments:
@@ -47,10 +47,10 @@ async def extract_project_names_with_claude(fragments: list[str]) -> list[str]:
     chunks = _split_text(combined)
 
     system = (
-        "Ты эксперт по анализу строительных журналов и отчетов. "
-        "Твоя задача — найти в тексте все упоминания ОТДЕЛЬНЫХ строительных проектов "
-        "(автомобильные дороги, мосты, путепроводы, железнодорожные пути, заводы, комплексы и т.п.). "
-        "Не включай тендеры как юридические процедуры, а именно описания объектов строительства."
+        "You're an expert in building logs and reports. "
+        'Your job is to find all references to stand-alone construction projects in the text '
+        '(Roads, bridges, pipelines, railways, factories, complexes, etc.). '
+        'Do not include tenders as legal procedures, i.e. description of construction sites.'
     )
     claude = ClaudeClient()
     results: list[str] = []
@@ -58,10 +58,10 @@ async def extract_project_names_with_claude(fragments: list[str]) -> list[str]:
 
     for chunk in chunks:
         user = (
-            "Извлеки из приведённого текста список уникальных проектов строительства.\n"
-            "Каждый элемент списка — КРАТКАЯ формулировка проекта (1 строка), без лишних деталей.\n"
-            "Верни ЧИСТЫЙ JSON массив строк, без комментариев и дополнительного текста.\n\n"
-            "Текст:\n"
+            'The list of unique construction projects.\n'
+            'Each element of the list is a CREDENTIAL OF THE PROJECT (1 line) without any further details.\n'
+            'Return the NET JSON string array, no comment and no additional text.\n\n'
+            'Text:\n'
             f"{chunk}"
         )
         response = await claude._call_messages_api(  # type: ignore[attr-defined]
@@ -80,7 +80,7 @@ async def extract_project_names_with_claude(fragments: list[str]) -> list[str]:
         except Exception:  # noqa: BLE001
             continue
 
-    # Уникализируем и чистим
+    # Deduplicate and clean
     deduped: list[str] = []
     seen = set()
     for item in results:

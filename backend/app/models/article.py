@@ -1,6 +1,6 @@
-"""Модель статьи/новости.
+"""The article/news model.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,19 +14,19 @@ from app.models.base import Base
 
 
 class Article(Base):
-    """Сущность статьи из внешнего источника.
+    """The essence of an article from an external source.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
-        source_id: Идентификатор источника.
-        source: Источник публикации.
-        url: Ссылка на статью.
-        title: Заголовок статьи.
-        published_at: Дата публикации.
-        text: Полный текст статьи.
-        entities: Извлеченные сущности.
-        label: Метка классификации.
-        quality_flag: Признак качества данных.
+    Attributes:
+        id: Internal record identifier.
+        source_id: Source Identifier.
+        source: Publication source.
+        url: Reference to article.
+        title: The title of the article.
+        published_at: Date of publication.
+        text: Full text of the article.
+        entities: Extracted Essentials.
+        label: Classification label.
+        quality_flag: Data quality sign.
     """
 
     __tablename__ = "articles"

@@ -1,6 +1,6 @@
-"""Схемы источника для API.
+"""Source diagrams for API.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -11,14 +11,14 @@ from pydantic import BaseModel, ConfigDict
 
 
 class SourceBase(BaseModel):
-    """Базовая схема источника.
+    """Source reference diagram.
 
-    Атрибуты:
-        name: Человекочитаемое имя источника.
-        url: Базовый URL источника.
-        kind: Тип источника (rss, html, sitemap, api).
-        status: Статус источника (active, disabled).
-        auto_discovered: Признак автообнаружения.
+    Attributes:
+        name: The human name of the source.
+        url: Source reference URL.
+        kind: Source type (rss, html, sitamp, api).
+        status: Source status (active, disabled).
+        auto_discovered: Sign of autodetection.
     """
 
     name: str | None = None
@@ -29,18 +29,18 @@ class SourceBase(BaseModel):
 
 
 class SourceCreate(SourceBase):
-    """Схема для создания источника на входе API."""
+    'Schematic to create a source at the API inlet.'
 
     model_config = ConfigDict(extra="forbid")
 
 
 class SourceRead(SourceBase):
-    """Схема источника для чтения из API.
+    """Schematic of the API reading source.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
-        last_checked_at: Дата последней проверки.
-        created_at: Дата создания записи.
+    Attributes:
+        id: Internal record identifier.
+        last_checked_at: Date of last check.
+        created_at: Date of creation of the record.
     """
 
     id: int
