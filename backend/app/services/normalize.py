@@ -1,6 +1,6 @@
-"""Нормализация значений: телефоны, даты, валюты.
+"""Normalization of values: telephones, dates, currencies.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,10 +14,10 @@ PHONE_DIGITS = re.compile(r"\D+")
 
 
 def normalize_phone(raw_phone: str) -> str:
-    """Нормализовать телефон к формату +7XXXXXXXXXX.
+    """Normalize the telephone to +7XXXXXXX.
 
-    :param raw_phone: Телефон в произвольном формате.
-    :return: Нормализованный телефон.
+    :param raw_phone: Telephone in arbitrary format.
+    :return: Normalized telephone.
     """
 
     digits = PHONE_DIGITS.sub("", raw_phone)
@@ -29,10 +29,10 @@ def normalize_phone(raw_phone: str) -> str:
 
 
 def normalize_date(raw_date: str) -> str:
-    """Нормализовать дату в ISO 8601.
+    """Normalize the date in ISO 8601.
 
-    :param raw_date: Дата в произвольном формате.
-    :return: Дата в формате ISO 8601.
+    :param raw_date: Date in arbitrary format.
+    :return: Date in ISO 8601 format.
     """
 
     parsed = parser.parse(raw_date, dayfirst=True)
@@ -40,10 +40,10 @@ def normalize_date(raw_date: str) -> str:
 
 
 def normalize_currency(raw_currency: str) -> str:
-    """Нормализовать валюту к ISO 4217.
+    """Normalize the currency to ISO 4217.
 
-    :param raw_currency: Валюта в произвольной форме.
-    :return: Код валюты ISO 4217.
+    :param raw_currency: Currency in arbitrary form.
+    :return: ISO 4217 currency code.
     """
 
     lowered = raw_currency.lower()

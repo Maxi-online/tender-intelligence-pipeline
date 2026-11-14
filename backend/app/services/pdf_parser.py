@@ -1,6 +1,6 @@
-"""Парсер PDF документов.
+"""Parser PDF documents.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -11,10 +11,10 @@ import pdfplumber
 
 
 def extract_text_from_pdf(data: bytes) -> str:
-    """Извлечь текст из PDF файла.
+    """Extract text from a PDF file.
 
-    :param data: Байтовое содержимое PDF.
-    :return: Текст PDF.
+    :param data: Byte content of PDF.
+    :return: PDF text.
     """
 
     if not data:

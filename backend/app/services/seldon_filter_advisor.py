@@ -1,11 +1,11 @@
-"""Модуль GPT (gpt-5-nano) для подбора настроек фильтров Seldon под цель поиска.
+"""GPT (gpt-5-nano) module to select Seldon filter settings for search purposes.
 
-Запросы к OpenAI выполняются только через прокси (OpenAIClient). Для данного
-специалиста задан максимальный reasoning_effort для наилучшего качества подбора.
+Requests for OpenAI are only executed via Proxi (OpenAIClient)). For this
+Maximum reasoning_effort specified for best rebound quality.
 
-Анализирует цель пользователя (заказчики/победители, тематика, регион) и список
-доступных фильтров Seldon, возвращает рекомендуемые filter_id, date_from, date_to,
-subtype для максимально точной выгрузки.
+Analyses user purpose (buyers/winners, subject matter, region) and list
+Seldon filters available, returns recommended filter_id, date_from, date_to,
+subtype for as precise a discharge as possible.
 """
 
 from __future__ import annotations
@@ -17,24 +17,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """Ты помощник по настройке выгрузки закупок из Seldon. Задача системы — получать максимально свежую информацию о заказчиках и победителях (не участие в тендерах).
-
-На вход даётся:
-1) Цель поиска пользователя (свободный текст): тематика, регион, тип закупок (44-ФЗ, 223-ФЗ, коммерческие), акцент на заказчики/победители.
-2) Список доступных фильтров учётной записи Seldon: у каждого filterId, name, reportId.
-   reportId: 1 = 223-ФЗ, 2 = госзакупки 44/94, 3 = коммерческие, 4 = контракты, 5 = международные.
-
-Ты должен выбрать ОДИН наиболее подходящий фильтр (filterId) по названию и reportId, чтобы выгрузка максимально соответствовала цели. Также предложи разумный период дат (date_from, date_to) в формате ISO 8601 (yyyy-MM-ddTHH:mm:ss.000000+00:00). Для госзакупок 44/94 (reportId=2) можно указать subtype: 1 = ЕИС, 2 = остальные источники (если цель уточняет).
-
-Ответь ТОЛЬКО валидным JSON без markdown и комментариев:
-{
-  "filter_id": <число, filterId выбранного фильтра>,
-  "date_from": "<ISO строка>",
-  "date_to": "<ISO строка>",
-  "subtype": <1 | 2 | null>,
-  "reason": "<краткое обоснование выбора>"
-}
-Если подходящего фильтра нет — выбери наиболее близкий по смыслу и укажи это в reason."""
+SYSTEM_PROMPT = 'You\'re a Seldon offloading assistant. The purpose of the system is to obtain the most up-to-date information on customers and winners (not participating in tenders)).\n\nThe entrance shall be:\n1) Purpose of user search (free text): theme, region, type of purchases (44-FZ, 223-FZ, commercial), emphasis on customers/winners.\n(2) List of available Seldon account filters: each filterId, name, reportId.\n   reportId: 1 = 223-FZ, 2 = public procurement 44/94, 3 = commercial, 4 = contracts, 5 = international.\n\nYou need to choose the most suitable filter (filterId) by name and reportId so that the charging corresponds to the target as much as possible. Also propose a reasonable period of dates (date_from, date_to) in ISO 8601 format (yyyy-MM-ddTHH:mm:ss.000000+0000)). For public procurement 44/94 (reportId=2) you can specify subtype: 1 = EIS, 2 = other sources (if the target specifies)).\n\nAnswer JSON\'s only valide without Markdown and comments:\n{\n  "filter_id": <number, filterId selected filter>,\n  "date_from": "<ISO Line>",\n  "date_to": "<ISO Line>",\n  "subtype": <1 | 2 | null>,\n  "reason": "<A brief justification for the choice>"\n}\nIf you don\'t have a suitable filter, choose the closest one in the sense and point it out in reason.'
 
 
 def _default_dates() -> tuple[str, str]:
@@ -47,7 +30,7 @@ def _default_dates() -> tuple[str, str]:
 
 
 def _parse_llm_response(text: str, filters: list[dict]) -> dict[str, Any]:
-    """Распарсить ответ LLM и извлечь filter_id, date_from, date_to, subtype, reason."""
+    'Disperse the LLM answer and extract filter_id, date_from, date_to, subtype, reason.'
     default_from, default_to = _default_dates()
     out = {
         "filter_id": None,
@@ -91,10 +74,10 @@ async def recommend_filter_settings(
     search_goal: str,
     filters: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    """По цели поиска и списку фильтров Seldon вернуть рекомендуемые filter_id, даты, subtype.
+    """For search and list of Seldon filters, return the recommended filter_id, dates, subtype.
 
-    :param search_goal: Цель поиска (свободный текст).
-    :param filters: Список из User/Filters: [{"filterId": int, "name": str, "reportId": int}, ...].
+    :param search_goal: Search Purpose (free text).
+    :param filters: List from User/Filters: [{"filterId": int, "name": str, "reportId": int}, ...].
     :return: {"filter_id", "date_from", "date_to", "subtype", "reason"}.
     """
     default_from, default_to = _default_dates()
@@ -103,10 +86,10 @@ async def recommend_filter_settings(
         "date_from": default_from,
         "date_to": default_to,
         "subtype": None,
-        "reason": "LLM недоступен, использованы умолчания",
+        "reason": 'LLM is not accessible, silences are used',
     }
     if not filters:
-        return {**fallback, "reason": "Нет доступных фильтров"}
+        return {**fallback, "reason": 'No accessible filters'}
 
     try:
         from app.services.openai_client import OpenAIClient
@@ -119,7 +102,7 @@ async def recommend_filter_settings(
         [{"filterId": f.get("filterId"), "name": f.get("name"), "reportId": f.get("reportId")} for f in filters],
         ensure_ascii=False,
     )
-    user_content = f"Цель поиска: {search_goal}\n\nДоступные фильтры:\n{filters_desc}"
+    user_content = f"Search Purpose: {search_goal}\n\n Accessable filters:\n{filters_desc}"
 
     try:
         try:

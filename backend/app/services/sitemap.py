@@ -1,6 +1,6 @@
-"""Парсер sitemap XML.
+"""Parser situamp XML.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -9,10 +9,10 @@ from xml.etree import ElementTree
 
 
 def parse_sitemap(xml_content: str) -> list[str]:
-    """Извлечь список URL из sitemap.
+    """Extract the URL list from the sitemap.
 
-    :param xml_content: XML содержимое sitemap.
-    :return: Список URL страниц.
+    :param xml_content: XML contents of siteap.
+    :return: URL List.
     """
 
     urls: list[str] = []

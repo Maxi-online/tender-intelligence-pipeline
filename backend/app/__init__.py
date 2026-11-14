@@ -1,4 +1,4 @@
-"""Пакет backend приложения TPIS.
+"""TPIS Backend package.
 
-Автор: Maxi-online
+Author: Maxi-online
 """

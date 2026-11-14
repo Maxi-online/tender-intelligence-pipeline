@@ -1,6 +1,6 @@
-"""Экспорт данных в CSV, XLSX, Parquet.
+"""Export data to CSV, XLSX, Parquet.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -16,12 +16,12 @@ from app.core.config import get_settings
 
 
 def export_dataframe(df: pd.DataFrame, name: str, fmt: str) -> Path:
-    """Экспортировать DataFrame в заданный формат.
+    """Export DataFrame to a specified format.
 
-    :param df: DataFrame для выгрузки.
-    :param name: Базовое имя файла без расширения.
-    :param fmt: Формат выгрузки (csv, xlsx, parquet).
-    :return: Путь к созданному файлу.
+    :param df: DataFrame for unloading.
+    :paramname: File reference name without extension.
+    :param fmt: Unload format (csv, xlsx, parquet).
+    :return: Path to the created file.
     """
 
     settings = get_settings()
@@ -40,16 +40,16 @@ def export_dataframe(df: pd.DataFrame, name: str, fmt: str) -> Path:
         df.to_parquet(file_path, index=False)
         return file_path
 
-    raise ValueError(f"Неподдерживаемый формат: {fmt}")
+    raise ValueError(f"Non-supported format: {fmt}")
 
 
 def export_records(records: list[dict], name: str, fmt: str) -> Path:
-    """Экспортировать список словарей в файл.
+    """Export the list of dictionaries to the file.
 
-    :param records: Список словарей с данными.
-    :param name: Базовое имя файла без расширения.
-    :param fmt: Формат выгрузки (csv, xlsx, parquet).
-    :return: Путь к созданному файлу.
+    :param records: List of data dictionaries.
+    :paramname: File reference name without extension.
+    :param fmt: Unload format (csv, xlsx, parquet).
+    :return: Path to the created file.
     """
 
     df = pd.DataFrame(records)
@@ -57,12 +57,12 @@ def export_records(records: list[dict], name: str, fmt: str) -> Path:
 
 
 def export_dossier_docx(title: str, sections: dict[str, list[str]], name: str) -> Path:
-    """Сформировать досье в формате DOCX.
+    """Form a dossier in DOCX format.
 
-    :param title: Заголовок документа.
-    :param sections: Секции и строки содержимого.
-    :param name: Базовое имя файла без расширения.
-    :return: Путь к созданному DOCX файлу.
+    :param number: Document title.
+    :param sections: Sections and lines of contents.
+    :paramname: File reference name without extension.
+    :return: Path to the created DOCX file.
     """
 
     settings = get_settings()
@@ -81,12 +81,12 @@ def export_dossier_docx(title: str, sections: dict[str, list[str]], name: str) -
 
 
 def export_dossier_pdf(title: str, sections: dict[str, list[str]], name: str) -> Path:
-    """Сформировать досье в формате PDF.
+    """Form a file in PDF format.
 
-    :param title: Заголовок документа.
-    :param sections: Секции и строки содержимого.
-    :param name: Базовое имя файла без расширения.
-    :return: Путь к созданному PDF файлу.
+    :param number: Document title.
+    :param sections: Sections and lines of contents.
+    :paramname: File reference name without extension.
+    :return: Path to the PDF file created.
     """
 
     settings = get_settings()
@@ -117,62 +117,62 @@ def export_dossier_pdf(title: str, sections: dict[str, list[str]], name: str) ->
 
 
 def export_projects_excel_template(records: list[dict], name: str) -> Path:
-    """Экспортировать проекты в Excel по заданному шаблону.
+    """Export projects to Excel according to a given template.
 
-    :param records: Список словарей с проектами.
-    :param name: Базовое имя файла без расширения.
-    :return: Путь к созданному XLSX файлу.
+    :param records: List of dictionaries with projects.
+    :paramname: File reference name without extension.
+    :return: Path to the created XLSX file.
     """
 
     columns = [
-        "№п/п",
-        "Отрасль",
-        "Заказчик",
-        "Телефон заказчика",
-        "Email заказчика",
-        "Инвестор",
-        "Телефон инвестора",
-        "Email инвестора",
-        "Подрядчик",
-        "Телефон подрядчика",
-        "Email подрядчика",
-        "Наименование проекта",
-        "Регион",
-        "Сумма инвестиций общая, руб",
-        "Объем геосинтетических материалов в смете, руб",
-        "Срок реализации",
-        "Текущая стадия проекта",
+        'No.',
+        'Industry',
+        'Customer',
+        'Customer phone',
+        'Customer email',
+        'Investor',
+        'Investor phone',
+        'Investor email',
+        'Contractor',
+        'Contractor phone',
+        'Contractor email',
+        'Project name',
+        'Region',
+        'Total investment, RUB',
+        'Estimated geosynthetic materials, RUB',
+        'Implementation period',
+        'Current project stage',
     ]
     rows = []
     for idx, item in enumerate(records, start=1):
         rows.append(
             {
-                "№п/п": idx,
-                "Отрасль": item.get("Отрасль", item.get("industry", "")),
-                "Заказчик": item.get("Заказчик", item.get("customer", "")),
-                "Телефон заказчика": item.get("Телефон заказчика", ""),
-                "Email заказчика": item.get("Email заказчика", ""),
-                "Инвестор": item.get("Инвестор", item.get("investor", "")),
-                "Телефон инвестора": item.get("Телефон инвестора", ""),
-                "Email инвестора": item.get("Email инвестора", ""),
-                "Подрядчик": item.get("Подрядчик", item.get("contractor", "")),
-                "Телефон подрядчика": item.get("Телефон подрядчика", ""),
-                "Email подрядчика": item.get("Email подрядчика", ""),
-                "Наименование проекта": item.get(
-                    "Наименование проекта",
-                    item.get("Объект", item.get("name", "")),
+                'No.': idx,
+                'Industry': item.get('Industry', item.get("industry", "")),
+                'Customer': item.get('Customer', item.get("customer", "")),
+                'Customer phone': item.get('Customer phone', ""),
+                'Customer email': item.get('Customer email', ""),
+                'Investor': item.get('Investor', item.get("investor", "")),
+                'Investor phone': item.get('Investor phone', ""),
+                'Investor email': item.get('Investor email', ""),
+                'Contractor': item.get('Contractor', item.get("contractor", "")),
+                'Contractor phone': item.get('Contractor phone', ""),
+                'Contractor email': item.get('Contractor email', ""),
+                'Project name': item.get(
+                    'Project name',
+                    item.get('Facility', item.get("name", "")),
                 ),
-                "Регион": item.get("Регион", item.get("region", "")),
-                "Сумма инвестиций общая, руб": item.get(
-                    "Сумма инвестиций общая, руб",
+                'Region': item.get('Region', item.get("region", "")),
+                'Total investment, RUB': item.get(
+                    'Total investment, RUB',
                     item.get("budget", ""),
                 ),
-                "Объем геосинтетических материалов в смете, руб": item.get(
-                    "Объем геосинтетических материалов в смете, руб",
+                'Estimated geosynthetic materials, RUB': item.get(
+                    'Estimated geosynthetic materials, RUB',
                     item.get("geo_materials_budget", ""),
                 ),
-                "Срок реализации": item.get("Срок реализации", item.get("end_date", "")),
-                "Текущая стадия проекта": item.get("Текущая стадия проекта", item.get("stage", "")),
+                'Implementation period': item.get('Implementation period', item.get("end_date", "")),
+                'Current project stage': item.get('Current project stage', item.get("stage", "")),
             }
         )
     df = pd.DataFrame(rows, columns=columns)

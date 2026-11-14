@@ -1,6 +1,6 @@
-"""HTTP клиент для доступа к внешним источникам.
+"""HTTP is a client for access to external sources.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,10 +14,10 @@ import httpx
 from app.core.config import get_settings
 
 class HttpClient:
-    """Асинхронный HTTP клиент с базовой обработкой ошибок.
+    """Asynchronous HTTP client with basic error processing.
 
-    :param timeout: Таймаут запроса в секундах.
-    :param headers: Заголовки по умолчанию для всех запросов.
+    :param timeout: Timeout request in seconds.
+    :param heders: default headings for all queries.
     """
 
     def __init__(self, timeout: float = 30.0, headers: dict[str, str] | None = None) -> None:
@@ -31,11 +31,11 @@ class HttpClient:
         self._delay_max = settings.request_delay_max
 
     async def get_json(self, url: str, params: dict[str, Any] | None = None) -> Any:
-        """Выполнить GET запрос и вернуть JSON.
+        """Do GET request and return JSON.
 
-        :param url: Полный URL запроса.
-        :param params: Query параметры запроса.
-        :return: Распарсенный JSON-ответ.
+        :param url: Full URL request.
+        :param pars:Query &apos; s request parameters.
+        :return: Dissolved JSON response.
         """
 
         await asyncio.sleep(random.uniform(self._delay_min, self._delay_max))
@@ -52,12 +52,12 @@ class HttpClient:
         params: dict[str, Any] | None = None,
         json: dict[str, Any] | None = None,
     ) -> Any:
-        """Выполнить POST запрос и вернуть JSON.
+        """Do POST request and return JSON.
 
-        :param url: Полный URL запроса.
-        :param params: Query параметры запроса.
-        :param json: Тело запроса (JSON).
-        :return: Распарсенный JSON-ответ.
+        :param url: Full URL request.
+        :param pars:Query &apos; s request parameters.
+        :param json: Query Body (JSON).
+        :return: Dissolved JSON response.
         """
 
         await asyncio.sleep(random.uniform(self._delay_min, self._delay_max))
@@ -69,11 +69,11 @@ class HttpClient:
             return response.json()
 
     async def get_text(self, url: str, params: dict[str, Any] | None = None) -> str:
-        """Выполнить GET запрос и вернуть текст.
+        """Do the GET request and return the text.
 
-        :param url: Полный URL запроса.
-        :param params: Query параметры запроса.
-        :return: Текст ответа.
+        :param url: Full URL request.
+        :param pars:Query &apos; s request parameters.
+        :return: Text of the reply.
         """
 
         await asyncio.sleep(random.uniform(self._delay_min, self._delay_max))
@@ -85,11 +85,11 @@ class HttpClient:
             return response.text
 
     async def get_bytes(self, url: str, params: dict[str, Any] | None = None) -> bytes:
-        """Выполнить GET запрос и вернуть байты.
+        """Do the GET request and return the bytes.
 
-        :param url: Полный URL запроса.
-        :param params: Query параметры запроса.
-        :return: Байтовое содержимое ответа.
+        :param url: Full URL request.
+        :param pars:Query &apos; s request parameters.
+        Byte content of the answer.
         """
 
         await asyncio.sleep(random.uniform(self._delay_min, self._delay_max))

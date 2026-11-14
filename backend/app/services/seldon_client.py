@@ -1,9 +1,9 @@
-"""Клиент для работы с Seldon Tenders API (заказы: New, Status, Result, Get).
+"""Client for Seldon Tenders API (orders: New, Status, Results, Get)).
 
-Используется для получения актуальных данных об участниках — заказчиках и победителях
-(не для участия в тендерах). Реальный API: https://apitorgi.myseldon.com — авторизация
-User/Login (name, password), далее token в URL. Модель заказов: Purchases/New → Status →
-Result (постранично). Ограничение: не более 1 запроса в секунду.
+Used to obtain up-to-date data on customer and winner participants
+(Not for tender). Real API: https://apitorgi.myseldon.com — Authorisation
+User/Login (name, password), followed by token in URL. The order model: Purchases/New \\status →
+RESULT (Little)). Limitation: not more than 1 request per second.
 """
 
 from __future__ import annotations
@@ -18,18 +18,18 @@ from app.services.http_client import HttpClient
 
 logger = logging.getLogger(__name__)
 
-# Интервал между запросами к Seldon (секунды)
+# Interval between Seldon requests (seconds)
 SELDON_RATE_LIMIT_SEC = 1.0
 
 
 class SeldonClient:
-    """Клиент доступа к Seldon Tenders API (order-based)."""
+    'Client access to Seldon Tenders API (order-based).'
 
     def __init__(self, base_url: str | None = None) -> None:
         settings = get_settings()
         self._base_url = (base_url or settings.seldon_base_url).rstrip("/")
         if not self._base_url:
-            raise ValueError("SELDON_BASE_URL не задан")
+            raise ValueError('SELDON_BASE_URL not specified')
         self._client = HttpClient()
         self._token: str | None = settings.seldon_api_key
         self._token_expires_at: datetime | None = None
@@ -72,7 +72,7 @@ class SeldonClient:
             return self._token
         if self._token:
             return self._token
-        raise ValueError("Seldon: задайте seldon_login/seldon_password или seldon_api_key")
+        raise ValueError('Seldon: ask seldon_login/seldon_password or seldon_api_key')
 
     async def _post(self, path: str, body: dict[str, Any] | None = None) -> Any:
         token = await self._ensure_token()
@@ -90,7 +90,7 @@ class SeldonClient:
         return data.get("result")
 
     async def get_filters(self) -> list[dict[str, Any]]:
-        """Получить список поисковых фильтров учётной записи."""
+        'Get a search list of the account filters.'
         result = await self._post("User/Filters")
         if not result:
             return []
@@ -104,7 +104,7 @@ class SeldonClient:
         date_to: str,
         subtype: int | None = None,
     ) -> str:
-        """Создать заказ на получение закупок. Возвращает taskId."""
+        'Create purchase order. Returns taskId.'
         body: dict[str, Any] = {
             "filterId": filter_id,
             "dateFrom": date_from,
@@ -125,7 +125,7 @@ class SeldonClient:
         date_to: str,
         subtype: int | None = None,
     ) -> str:
-        """Создать заказ на получение протоколов. Возвращает taskId."""
+        'Create an order to receive protocols. Returns taskId.'
         body: dict[str, Any] = {
             "filterId": filter_id,
             "dateFrom": date_from,
@@ -146,7 +146,7 @@ class SeldonClient:
         date_to: str,
         subtype: int | None = None,
     ) -> str:
-        """Создать заказ на получение контрактов. Возвращает taskId."""
+        'Create contract order. Returns taskId.'
         body: dict[str, Any] = {
             "filterId": filter_id,
             "dateFrom": date_from,
@@ -161,7 +161,7 @@ class SeldonClient:
         return str(task_id)
 
     async def get_order_status(self, task_id: str, content_type: str = "purchases") -> dict[str, Any]:
-        """Проверить статус заказа. content_type: purchases | protocols | contracts."""
+        'Check order status. content_type: purchases | protocols | contracts.'
         path = f"{content_type.capitalize()}/Status"
         result = await self._post(path, {"taskId": task_id})
         return result or {}
@@ -173,7 +173,7 @@ class SeldonClient:
         poll_interval: float = 1.0,
         max_wait_sec: float = 600.0,
     ) -> None:
-        """Ждать выполнения заказа. searchStatus.code: 1=wait, 2=in progress, 3=ready, 4=error."""
+        'Waiting for order. searchStatus.code: 1=wait, 2=in progress, 3=ready, 4=error.'
         path = f"{content_type.capitalize()}/Status"
         started = asyncio.get_event_loop().time()
         while True:
@@ -194,7 +194,7 @@ class SeldonClient:
             await asyncio.sleep(poll_interval)
 
     async def get_purchases_result_page(self, task_id: str, page_index: int) -> list[dict[str, Any]]:
-        """Получить одну страницу закупок (до 100 записей)."""
+        'Receive one procurement page (up to 100 entries).'
         result = await self._post("Purchases/Result", {"taskId": task_id, "pageIndex": page_index})
         if not result:
             return []
@@ -202,7 +202,7 @@ class SeldonClient:
         return purchases if isinstance(purchases, list) else []
 
     async def get_purchases_result_all(self, task_id: str) -> list[dict[str, Any]]:
-        """Обойти все страницы Result и вернуть все закупки."""
+        'Cross all the pages of Resul and return all the purchases.'
         out: list[dict[str, Any]] = []
         page = 1
         while True:
@@ -216,7 +216,7 @@ class SeldonClient:
         return out
 
     async def get_purchase(self, seldon_id: int, report_id: int = 2) -> dict[str, Any] | None:
-        """Получить одну закупку по seldonId и reportId."""
+        'Get one purchase for selfonId and returnId.'
         result = await self._post("Purchases/Get", {"seldonId": seldon_id, "reportId": report_id, "etpId": None})
         if not result:
             return None
@@ -228,7 +228,7 @@ class SeldonClient:
         return None
 
     async def get_protocols_result_page(self, task_id: str, page_index: int) -> list[dict[str, Any]]:
-        """Получить одну страницу протоколов."""
+        'Get one page of the protocols.'
         result = await self._post("Protocols/Result", {"taskId": task_id, "pageIndex": page_index})
         if not result:
             return []
@@ -236,7 +236,7 @@ class SeldonClient:
         return protocols if isinstance(protocols, list) else []
 
     async def get_protocols_result_all(self, task_id: str) -> list[dict[str, Any]]:
-        """Обойти все страницы протоколов."""
+        'Overstep every page of the protocol.'
         out: list[dict[str, Any]] = []
         page = 1
         while True:
@@ -250,7 +250,7 @@ class SeldonClient:
         return out
 
     async def get_protocol_by_purchase(self, seldon_id: int, report_id: int = 2) -> dict[str, Any] | None:
-        """Получить протокол по закупке (Protocols/Get)."""
+        'Receive the purchase protocol (Protocols/Get).'
         result = await self._post("Protocols/Get", {"seldonId": seldon_id, "reportId": report_id, "etpId": None})
         if not result:
             return None
@@ -262,7 +262,7 @@ class SeldonClient:
         return None
 
     async def get_contracts_result_page(self, task_id: str, page_index: int) -> list[dict[str, Any]]:
-        """Получить одну страницу контрактов."""
+        'Get one page of the contracts.'
         result = await self._post("Contracts/Result", {"taskId": task_id, "pageIndex": page_index})
         if not result:
             return []
@@ -270,7 +270,7 @@ class SeldonClient:
         return contracts if isinstance(contracts, list) else []
 
     async def get_contracts_result_all(self, task_id: str) -> list[dict[str, Any]]:
-        """Обойти все страницы контрактов."""
+        'Overstep every page of the contract.'
         out: list[dict[str, Any]] = []
         page = 1
         while True:
@@ -284,7 +284,7 @@ class SeldonClient:
         return out
 
     async def get_contract_by_purchase(self, seldon_id: int, report_id: int = 2) -> dict[str, Any] | None:
-        """Получить контракт по закупке (Contracts/Get). Документация уточняет входные параметры."""
+        'Receive procurement contract (Contracts/Get)). Documentation specifies input parameters.'
         result = await self._post("Contracts/Get", {"seldonId": seldon_id, "reportId": report_id, "etpId": None})
         if not result:
             return None

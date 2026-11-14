@@ -1,6 +1,6 @@
-"""Дедупликация проектов.
+"""Deduction of projects.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -21,10 +21,10 @@ from app.services.llm_processing import (
 
 
 def normalize_project_name(name: str) -> str:
-    """Нормализовать название проекта для сравнения.
+    """Normalize the name of the project for comparison.
 
-    :param name: Исходное название проекта.
-    :return: Нормализованная строка.
+    :paramname: Project name.
+    :return: Normalized line.
     """
 
     lowered = name.lower()
@@ -35,10 +35,10 @@ def normalize_project_name(name: str) -> str:
 
 
 async def dedupe_projects(session: AsyncSession) -> dict[str, int]:
-    """Склеить дубликаты проектов по нормализованному названию.
+    """Add duplicates of normalized title projects.
 
-    :param session: Асинхронная сессия БД.
-    :return: Статистика склейки.
+    :param session: Asynchronous database session.
+    :return: Scene statistics.
     """
 
     projects = (await session.execute(select(Project))).scalars().all()
@@ -93,7 +93,7 @@ async def dedupe_projects(session: AsyncSession) -> dict[str, int]:
         if key not in kept:
             kept[key] = project
             continue
-        # Дубликат: выбор победителя через OpenAI
+        # Dublicate: selection of winner via OpenAI
         candidates = [kept[key], project]
         payload = [
             {
@@ -122,7 +122,7 @@ async def dedupe_projects(session: AsyncSession) -> dict[str, int]:
 
     await session.commit()
 
-    # Второй проход: дубликаты по доказательствам (один регион, цена, заказчик, исполнитель)
+    # Second passage: duplicate evidence (one region, price, employer, performer))
     projects_left = (await session.execute(select(Project))).scalars().all()
     evidence_batch_size = 25
     for idx in range(0, len(projects_left), evidence_batch_size):

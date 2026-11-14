@@ -1,8 +1,8 @@
-"""Высокоуровневый сервис обогащения компаний (Dadata + Rusprofile + LLM).
+"""High-level company enrichment service (Dadata + Rusprofile + LLM)).
 
-Задача: по ИНН/ОГРН/email/телефону/домену собрать максимум сведений о компании
-из Dadata и Rusprofile и вернуть агрегированный профиль, который можно
-сохранить в БД или отобразить во фронтенде.
+Objective: To collect maximum information on the company on the DIN/E-mail/telephone/dominant
+from Dadata and Rusprofile and return an aggregate profile that can be
+Save it in the database or display it in the frontend.
 """
 
 from __future__ import annotations
@@ -38,18 +38,18 @@ async def enrich_company(
     phone: str | None = None,
     name: str | None = None,
 ) -> dict[str, Any]:
-    """Собрать максимум информации о компании из внешних источников.
+    """Collect maximum company information from external sources.
 
-    :param session: Сессия БД (для возможной записи компании в будущем).
-    :param inn: ИНН компании.
-    :param ogrn: ОГРН компании.
-    :param email: Корпоративный email.
-    :param phone: Телефон (для Rusprofile-прокси).
-    :param name: Название компании.
-    :return: Агрегированный профиль компании с пометкой источников.
+    :param session: Session of the database (for possible future recording of the company)).
+    :param inn: INN company.
+    :param ogrn: The company's DEAD.
+    :param email: Corporate email.
+    :param phone: Telephone (for Rusprofile-proxie)
+    :param name: Name of company.
+    :Retorn: Company aggregate profile with source markings.
     """
 
-    _ = session  # пока не сохраняем автоматически, только возвращаем профиль
+    _ = session  # Until we automatically save, just return the profile
     logger.info(
         "enrich_company: inn=%s ogrn=%s email=%s phone=%s name=%s",
         inn,
@@ -68,7 +68,7 @@ async def enrich_company(
     canonical_email = email
     canonical_phone = phone
 
-    # --- Dadata: поиск по названию (если нет ИНН/ОГРН) ---
+    # ----Dadata: search by name (if no IDN/DRN) ---
     if not (inn or ogrn) and name:
         try:
             dadata_client = DadataClient()
@@ -83,7 +83,7 @@ async def enrich_company(
         except Exception as exc:  # noqa: BLE001
             logger.warning("Dadata suggest error for %s: %s", name, exc)
 
-    # --- Dadata: организация по ИНН/ОГРН ---
+    # ----Dadata: OIN/DOE--
     dadata_profile: dict[str, Any] | None = None
     if canonical_inn or canonical_ogrn:
         query = canonical_inn or canonical_ogrn or ""
@@ -99,7 +99,7 @@ async def enrich_company(
     else:
         logger.info("Dadata party skipped: no inn/ogrn")
 
-    # --- Dadata: компания по email ---
+    # ---Dadata: e-mail company ---
     dadata_email_profile: dict[str, Any] | None = None
     if email:
         try:
@@ -112,7 +112,7 @@ async def enrich_company(
         except Exception as exc:  # noqa: BLE001
             logger.warning("Dadata email error for %s: %s", email, exc)
 
-    # --- Dadata: аффилированные компании по ИНН учредителя/руководителя ---
+    # --- Dadata: Affiliated INS Founder/Head Companies ---
     affiliated_companies: list[dict[str, Any]] = []
     if inn:
         try:
@@ -133,7 +133,7 @@ async def enrich_company(
         except Exception as exc:  # noqa: BLE001
             logger.warning("Dadata affiliated error for %s: %s", inn, exc)
 
-    # --- Dadata MCP: карточка компании по ИНН/ОГРН ---
+    # ----Dadata MCP: INN/DOGN card ---
     if canonical_inn or canonical_ogrn:
         try:
             query = canonical_inn or canonical_ogrn or ""
@@ -181,7 +181,7 @@ async def enrich_company(
         except Exception:  # noqa: BLE001
             logger.warning("Dadata MCP error for %s", canonical_inn or canonical_ogrn)
 
-    # --- Perplexity: web-поиск по компании и Rusprofile ---
+    # ---Perplexity: web search for company and Rusprofile ---
     try:
         perplexity = PerplexityClient()
         query_parts = [p for p in [inn, ogrn, email, phone, name] if p]
@@ -190,8 +190,8 @@ async def enrich_company(
             search_results = await perplexity.search(
                 f"{query} site:rusprofile.ru",
                 system_prompt=(
-                    "Ты ищешь карточки компаний на rusprofile.ru и официальные страницы. "
-                    "Верни только релевантные ссылки."
+                    "You're looking for company cards on rusprofile.ru and official pages. "
+                    'Just return the relevant links.'
                 ),
                 keywords=[],
                 max_results=10,
@@ -227,7 +227,7 @@ async def enrich_company(
     except Exception as exc:  # noqa: BLE001
         logger.warning("Perplexity company search error: %s", exc)
 
-    # --- Повторный Dadata после извлечения ИНН/ОГРН/Email из Rusprofile ---
+    # --- Repeated Dadata after extracting INN/OGRN/Email from Rusprofile ---
     if not dadata_profile and (canonical_inn or canonical_ogrn):
         query = canonical_inn or canonical_ogrn or ""
         try:
@@ -257,7 +257,7 @@ async def enrich_company(
     elif not dadata_email_profile:
         logger.info("Dadata email skipped: no email")
 
-    # --- Повторный Dadata MCP после извлечения ИНН/ОГРН ---
+    # --- Repeated Dadata MCP after extracting INN/OGRN ---
     if canonical_inn or canonical_ogrn:
         try:
             query = canonical_inn or canonical_ogrn or ""
@@ -307,8 +307,8 @@ async def enrich_company(
     else:
         logger.info("Dadata MCP skipped: no inn/ogrn")
 
-    # --- Итоговый агрегированный профиль ---
-    # Приоритет: Dadata party > Dadata email > Rusprofile > уже известные значения
+    # ---- Total aggregate profile ---
+    # Priority: Dadata party > Dadata email > Rusprofile > already known values
     if dadata_profile:
         canonical_name = dadata_profile.get("name") or canonical_name
         canonical_inn = dadata_profile.get("inn") or canonical_inn
@@ -346,7 +346,7 @@ async def enrich_company(
 
 
 def apply_company_profile(company: Company, profile: dict[str, Any]) -> None:
-    """Применить профиль обогащения к записи компании."""
+    "Apply the enrichment profile to the company's record."
 
     if not company.inn and profile.get("inn"):
         company.inn = profile["inn"]

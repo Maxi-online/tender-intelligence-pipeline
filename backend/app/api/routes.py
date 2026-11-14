@@ -1,6 +1,6 @@
-"""Маршруты API для базовых сущностей.
+"""API routes for basic entities.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -77,9 +77,9 @@ class SearchSettingsUpdate(BaseModel):
 
 @router.get("/health", tags=["system"])
 async def health_check() -> dict:
-    """Проверить доступность сервиса.
+    """Check the availability of the service.
 
-    :return: Словарь со статусом сервиса.
+    A dictionary with service status.
     """
 
     return {"status": "ok"}
@@ -103,24 +103,24 @@ async def list_tenders(
     end_date_to: date | None = None,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[TenderRead]:
-    """Получить список тендеров с пагинацией.
+    """Get a list of tenders with pagination.
 
-    :param limit: Максимальное количество записей в ответе.
-    :param offset: Смещение от начала выборки.
-    :param region: Фильтр по региону.
-    :param search: Поисковая строка по ID/статусу.
-    :param stage: Стадия тендера/проекта.
-    :param status: Статус тендера.
-    :param winner: Фильтр по победителю.
-    :param participant: Фильтр по участнику.
-    :param budget_min: Минимальный бюджет.
-    :param budget_max: Максимальный бюджет.
-    :param start_date_from: Начальная дата (от).
-    :param start_date_to: Начальная дата (до).
-    :param end_date_from: Конечная дата (от).
-    :param end_date_to: Конечная дата (до).
-    :param session: Асинхронная сессия БД.
-    :return: Список тендеров.
+    :param limit: Maximum number of entries in response.
+    :param offset: Offset from sample start.
+    :param region: Regional filter.
+    :param search: Search line on ID/stat.
+    :param position: tender/project stage.
+    :param status: Tender status.
+    :param winner: Winner filter.
+    :param partipant: Filter by participant.
+    :param budget_min: Minimum budget.
+    :param budget_max: Maximum budget.
+    :param start_date_from: Initial date (from).
+    :param start_date_to: Initial date (before).
+    :param end_date_from: Final date (from).
+    :param end_date_to: Final date (before).
+    :param session: Asynchronous database session.
+    A list of tenders.
     """
 
     query = select(Tender)
@@ -171,11 +171,11 @@ async def create_tender(
     payload: TenderCreate,
     session: AsyncSession = Depends(get_db_session),
 ) -> TenderRead:
-    """Создать тендер.
+    """Create tender.
 
-    :param payload: Данные тендера для создания.
-    :param session: Асинхронная сессия БД.
-    :return: Созданная запись тендера.
+    :param payload: Data tender for creation.
+    :param session: Asynchronous database session.
+    :return: A tender record has been created.
     """
 
     tender = Tender(**payload.model_dump())
@@ -190,11 +190,11 @@ async def get_tender(
     tender_id: str,
     session: AsyncSession = Depends(get_db_session),
 ) -> TenderRead:
-    """Получить тендер по внешнему идентификатору.
+    """Get a tender using an external identifier.
 
-    :param tender_id: Идентификатор тендера (внешний).
-    :param session: Асинхронная сессия БД.
-    :return: Тендер.
+    :param tender_id: Tender Identifier (external).
+    :param session: Asynchronous database session.
+    Tender.
     """
 
     result = await session.execute(select(Tender).where(Tender.tender_id == tender_id))
@@ -210,12 +210,12 @@ async def list_companies(
     offset: int = 0,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[CompanyRead]:
-    """Получить список компаний с пагинацией.
+    """Get a list of companies with a pagination.
 
-    :param limit: Максимальное количество записей в ответе.
-    :param offset: Смещение от начала выборки.
-    :param session: Асинхронная сессия БД.
-    :return: Список компаний.
+    :param limit: Maximum number of entries in response.
+    :param offset: Offset from sample start.
+    :param session: Asynchronous database session.
+    List of companies.
     """
 
     result = await session.execute(select(Company).offset(offset).limit(limit))
@@ -226,10 +226,10 @@ async def list_companies(
 async def dedupe_companies_endpoint(
     session: AsyncSession = Depends(get_db_session),
 ) -> dict:
-    """Запустить дедупликацию компаний.
+    """Starting the deduction of companies.
 
-    :param session: Асинхронная сессия БД.
-    :return: Статистика склейки.
+    :param session: Asynchronous database session.
+    :return: Scene statistics.
     """
 
     return await dedupe_companies(session)
@@ -240,11 +240,11 @@ async def create_company(
     payload: CompanyCreate,
     session: AsyncSession = Depends(get_db_session),
 ) -> CompanyRead:
-    """Создать компанию.
+    """To create a company.
 
-    :param payload: Данные компании для создания.
-    :param session: Асинхронная сессия БД.
-    :return: Созданная запись компании.
+    :param payload: Company data for creation.
+    :param session: Asynchronous database session.
+    :return: Company's created record.
     """
 
     company = Company(**payload.model_dump())
@@ -256,9 +256,9 @@ async def create_company(
 
 @router.get("/dadata-mcp/check", tags=["companies"])
 async def dadata_mcp_check() -> dict:
-    """Проверить доступность MCP-сервера Dadata напрямую (без OpenAI).
+    """Check direct access to the MPData server (without OpenAI)).
 
-    Помогает понять, возвращается ли 424 из-за недоступности Dadata или из-за OpenAI.
+    Helps to see if 424 returns due to Dadata's inefficiencies or OpenAI's.
     """
     return await check_dadata_mcp_server()
 
@@ -272,10 +272,10 @@ async def enrich_company_endpoint(
     name: str | None = None,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict:
-    """Обогатить данные о компании через Dadata и Rusprofile.
+    """Enrich company data through Dadata and Rusprofile.
 
-    Параметры можно передавать в любом сочетании; сервис попытается собрать
-    максимум информации из внешних источников.
+    Options can be transmitted in any combination; the service will try to collect
+    maximum information from external sources.
     """
 
     profile = await enrich_company(
@@ -294,7 +294,7 @@ async def enrich_companies_auto(
     limit: int = 50,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict:
-    """Автоматически обогатить компании из БД через Dadata/Perplexity/Rusprofile."""
+    'Automatically enrich companies from database via Datata/Perplexity/Rusprofile.'
 
     result = await session.execute(select(Company).limit(limit))
     companies = list(result.scalars().all())
@@ -328,20 +328,20 @@ async def list_projects(
     end_date_to: date | None = None,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[ProjectRead]:
-    """Получить список проектов с пагинацией.
+    """Get a list of projects with pagination.
 
-    :param limit: Максимальное количество записей в ответе.
-    :param offset: Смещение от начала выборки.
-    :param region: Фильтр по региону.
-    :param stage: Стадия проекта.
-    :param budget_min: Минимальный бюджет.
-    :param budget_max: Максимальный бюджет.
-    :param start_date_from: Начальная дата (от).
-    :param start_date_to: Начальная дата (до).
-    :param end_date_from: Конечная дата (от).
-    :param end_date_to: Конечная дата (до).
-    :param session: Асинхронная сессия БД.
-    :return: Список проектов.
+    :param limit: Maximum number of entries in response.
+    :param offset: Offset from sample start.
+    :param region: Regional filter.
+    :param stage: Project stage.
+    :param budget_min: Minimum budget.
+    :param budget_max: Maximum budget.
+    :param start_date_from: Initial date (from).
+    :param start_date_to: Initial date (before).
+    :param end_date_from: Final date (from).
+    :param end_date_to: Final date (before).
+    :param session: Asynchronous database session.
+    :return: List of projects.
     """
 
     query = select(Project)
@@ -368,10 +368,10 @@ async def list_projects(
 
 @router.get("/projects/count", tags=["projects"])
 async def count_projects(session: AsyncSession = Depends(get_db_session)) -> dict:
-    """Получить количество проектов.
+    """Get the number of projects.
 
-    :param session: Асинхронная сессия БД.
-    :return: Количество проектов.
+    :param session: Asynchronous database session.
+    :return: Number of projects.
     """
 
     result = await session.execute(select(Project.id))
@@ -383,11 +383,11 @@ async def create_project(
     payload: ProjectCreate,
     session: AsyncSession = Depends(get_db_session),
 ) -> ProjectRead:
-    """Создать проект.
+    """Create a project.
 
-    :param payload: Данные проекта для создания.
-    :param session: Асинхронная сессия БД.
-    :return: Созданная запись проекта.
+    :param payload: Project data for creation.
+    :param session: Asynchronous database session.
+    :return: Created project entry.
     """
 
     project = Project(**payload.model_dump())
@@ -402,11 +402,11 @@ async def get_project(
     project_id: int,
     session: AsyncSession = Depends(get_db_session),
 ) -> ProjectRead:
-    """Получить проект по идентификатору.
+    """Get an I.D. project.
 
-    :param project_id: Идентификатор проекта.
-    :param session: Асинхронная сессия БД.
-    :return: Проект.
+    :param project_id: Project Identifier.
+    :param session: Asynchronous database session.
+    :return: Project.
     """
 
     result = await session.execute(select(Project).where(Project.id == project_id))
@@ -417,12 +417,12 @@ async def get_project(
 
 
 def _format_contact_block(name: str, emails: list[str], phones: list[str]) -> str:
-    """Сформировать контактный блок для отчёта.
+    """Form a contact box for the report.
 
-    :param name: Название компании.
-    :param emails: Email контакты.
-    :param phones: Телефоны.
-    :return: Строка с контактами.
+    :param name: Name of company.
+    :param emails: Email contacts.
+    :param phones: Phones.
+    Contact string.
     """
 
     unique_phones = []
@@ -435,27 +435,27 @@ def _format_contact_block(name: str, emails: list[str], phones: list[str]) -> st
             unique_emails.append(email)
     parts = [name]
     if unique_phones:
-        parts.append(f"тел.: {', '.join(unique_phones[:2])}")
+        parts.append(f"Tel: {', '.join(unique_phones[:2])}")
     if unique_emails:
         parts.append(f"email: {', '.join(unique_emails[:2])}")
     return " | ".join([p for p in parts if p])
 
 
 def _infer_industry(project_name: str) -> str:
-    """Определить отрасль по названию проекта.
+    """Identify the industry by the name of the project.
 
-    :param project_name: Название проекта.
-    :return: Отрасль.
+    :param project_name: Name of project.
+    Industry.
     """
 
-    return "Строительство"
+    return 'Construction'
 
 
 def _clean_companies_for_report(companies: list[str]) -> list[str]:
-    """Очистить список компаний для отчёта.
+    """Clear the company list for the report.
 
-    :param companies: Сырые названия.
-    :return: Очищенный список.
+    :param companies: Raw names.
+    :return: Cleared list.
     """
 
     cleaned_list: list[str] = []
@@ -470,10 +470,10 @@ def _clean_companies_for_report(companies: list[str]) -> list[str]:
 
 
 def _normalize_company_key(raw_name: str) -> str:
-    """Нормализовать ключ компании для защиты от дублей.
+    """Normalize the company's key to protect against takeoff.
 
-    :param raw_name: Исходное название.
-    :return: Нормализованный ключ.
+    :param raw_name: Reference name.
+    :return: Normalized key.
     """
 
     lowered = raw_name.lower()
@@ -487,10 +487,10 @@ def _normalize_company_key(raw_name: str) -> str:
 
 
 def _normalize_project_key(raw_name: str) -> str:
-    """Нормализовать ключ проекта для защиты от дублей.
+    """Normalize the project key to protect against duplicates.
 
-    :param raw_name: Исходное название.
-    :return: Нормализованный ключ.
+    :param raw_name: Reference name.
+    :return: Normalized key.
     """
 
     lowered = raw_name.lower()
@@ -502,10 +502,10 @@ def _normalize_project_key(raw_name: str) -> str:
 
 
 def _is_project_name(name: str) -> bool:
-    """Проверить, что строка похожа на название проекта.
+    """Check that the line is similar to the name of the project.
 
-    :param name: Название проекта.
-    :return: True, если это похоже на проект.
+    :param name: Name of project.
+    True, if it's like a project.
     """
 
     cleaned = " ".join(name.split()).strip()
@@ -543,14 +543,14 @@ def _is_project_name(name: str) -> bool:
 
 
 def _parse_ruble_amount(raw_value: str) -> float | None:
-    """Распарсить сумму в рублях из строки.
+    """Unload the amount in the rubles from the line.
 
-    :param raw_value: Сырые данные суммы.
-    :return: Сумма в рублях или None.
+    :param raw_value: Raw amounts.
+    :return: Amount in rubles or None.
     """
 
     lowered = raw_value.lower().replace(" ", "")
-    if any(token in lowered for token in ("usd", "дол", "$", "eur", "евро", "€")):
+    if any(token in lowered for token in ("usd", 'Total', "$", "eur", 'Euro', "€")):
         return None
     match = re.search(r"(\d+(?:[.,]\d+)?)", lowered)
     if not match:
@@ -569,10 +569,10 @@ def _parse_ruble_amount(raw_value: str) -> float | None:
 
 
 def _extract_geo_materials_budget(texts: list[str]) -> float | None:
-    """Извлечь бюджет по геосинтетическим материалам.
+    """Budget for Geosynthic Materials.
 
-    :param texts: Список текстов статей.
-    :return: Сумма в рублях или None.
+    :param texts: List of articles.
+    :return: Amount in rubles or None.
     """
 
     for text in texts:
@@ -590,10 +590,10 @@ def _extract_geo_materials_budget(texts: list[str]) -> float | None:
 
 
 def _project_score(project: Project) -> tuple[int, float]:
-    """Оценить качество заполненности проекта.
+    """Assess the quality of the completion of the project.
 
-    :param project: Проект.
-    :return: Кортеж (score, budget).
+    :param project: Project.
+    :return: Corte (score, budget).
     """
 
     score = 0
@@ -611,10 +611,10 @@ def _project_score(project: Project) -> tuple[int, float]:
 
 
 def _get_company_contacts(company: Company | None) -> tuple[str, str]:
-    """Получить телефон и email компании.
+    """Get the phone and e-mail to the company.
 
-    :param company: Компания.
-    :return: Телефон и email.
+    :param company: Company.
+    :return: Phone and email.
     """
 
     if not company:
@@ -631,11 +631,11 @@ def _build_company_cells(
     name: str | None,
     companies_map: dict[str, Company],
 ) -> tuple[str, str, str]:
-    """Сформировать ячейки компании для отчёта.
+    """Form a company cell for the report.
 
-    :param name: Название компании.
-    :param companies_map: Справочник компаний по нормализованному ключу.
-    :return: Название, телефон, email.
+    :param name: Name of company.
+    :param companies_map: Companies' Handbook on Normalized Key.
+    Name, telephone, e-mail.
     """
 
     if not name:
@@ -647,11 +647,11 @@ def _build_company_cells(
 
 
 def _filter_emails_for_article(article: Article, emails: list[str]) -> list[str]:
-    """Удалить email домены источника из списка.
+    """Remove e-mail domains of the source from the list.
 
-    :param article: Статья источника.
-    :param emails: Список email.
-    :return: Отфильтрованный список.
+    :param article: Source article.
+    :param emails: Email list.
+    :return: Filtered list.
     """
 
     free_domains = {
@@ -693,10 +693,10 @@ def _filter_emails_for_article(article: Article, emails: list[str]) -> list[str]
 
 
 async def _build_project_report(session: AsyncSession) -> list[dict]:
-    """Сформировать строки отчёта по проектам.
+    """Form the lines of the project report.
 
-    :param session: Асинхронная сессия БД.
-    :return: Список строк отчёта.
+    :param session: Asynchronous database session.
+    :return: List of lines of report.
     """
 
     projects = (await session.execute(select(Project))).scalars().all()
@@ -734,8 +734,8 @@ async def _build_project_report(session: AsyncSession) -> list[dict]:
 
     project_items: list[dict] = []
     for project in grouped_projects.values():
-        # Для отчёта по проектам ориентируемся на локальные статьи,
-        # а не на внешний поиск Perplexity.
+        # For the project report, we're looking at local articles,
+        # It's not an external search for Perplexity.
         related_articles = [
             a for a in articles if a.text and project.name.lower() in (a.text or "").lower()
         ]
@@ -793,25 +793,25 @@ async def _build_project_report(session: AsyncSession) -> list[dict]:
             budget_value = 0
         report_rows.append(
             {
-                "№п/п": idx,
-                "Отрасль": _infer_industry(project.name),
-                "Заказчик": customer_name or "",
-                "Телефон заказчика": customer_phone or "",
-                "Email заказчика": customer_email or "",
-                "Инвестор": investor_name or "",
-                "Телефон инвестора": investor_phone or "",
-                "Email инвестора": investor_email or "",
-                "Подрядчик": contractor_name or "",
-                "Телефон подрядчика": contractor_phone or "",
-                "Email подрядчика": contractor_email or "",
-                "Наименование проекта": project.name,
-                "Описание проекта": project.description or "",
-                "Источник": ", ".join(project.source_urls or []),
-                "Регион": project.region or "",
-                "Сумма инвестиций общая, руб": budget_value,
-                "Объем геосинтетических материалов в смете, руб": geo_budget,
-                "Срок реализации": project.end_date,
-                "Текущая стадия проекта": project.stage or "",
+                'No.': idx,
+                'Industry': _infer_industry(project.name),
+                'Customer': customer_name or "",
+                'Customer phone': customer_phone or "",
+                'Customer email': customer_email or "",
+                'Investor': investor_name or "",
+                'Investor phone': investor_phone or "",
+                'Investor email': investor_email or "",
+                'Contractor': contractor_name or "",
+                'Contractor phone': contractor_phone or "",
+                'Contractor email': contractor_email or "",
+                'Project name': project.name,
+                'Project description': project.description or "",
+                'Source': ", ".join(project.source_urls or []),
+                'Region': project.region or "",
+                'Total investment, RUB': budget_value,
+                'Estimated geosynthetic materials, RUB': geo_budget,
+                'Implementation period': project.end_date,
+                'Current project stage': project.stage or "",
             }
         )
     return report_rows
@@ -819,10 +819,10 @@ async def _build_project_report(session: AsyncSession) -> list[dict]:
 
 @router.get("/reports/projects", tags=["reports"])
 async def report_projects(session: AsyncSession = Depends(get_db_session)) -> list[dict]:
-    """Получить отчет по проектам в формате таблицы.
+    """Receive the project report in table format.
 
-    :param session: Асинхронная сессия БД.
-    :return: Список строк отчёта.
+    :param session: Asynchronous database session.
+    :return: List of lines of report.
     """
 
     missing_stmt = (
@@ -846,7 +846,7 @@ async def report_projects(session: AsyncSession = Depends(get_db_session)) -> li
 
 @router.post("/projects/clear", tags=["projects"])
 async def clear_projects(session: AsyncSession = Depends(get_db_session)) -> dict:
-    """Полностью очистить проекты, тендеры и кэш канонических названий."""
+    'Completely clear projects, tenders and caches of canonical names.'
 
     project_count = await session.execute(select(func.count(Project.id)))
     project_total = int(project_count.scalar() or 0)
@@ -862,7 +862,7 @@ async def clear_projects(session: AsyncSession = Depends(get_db_session)) -> dic
 
 @router.post("/automation/start_test", tags=["automation"])
 async def automation_start_test() -> dict:
-    """Запустить полный цикл с одним запросом Perplexity."""
+    'Start a full cycle with one Perplexity request.'
 
     from app.tasks.celery_app import celery_app
 
@@ -879,10 +879,10 @@ async def automation_start_test() -> dict:
 
 @router.get("/export/projects/excel", tags=["export"])
 async def export_projects_excel(session: AsyncSession = Depends(get_db_session)):
-    """Выгрузить проекты в Excel по шаблону.
+    """Unload the projects to Excel using a template.
 
-    :param session: Асинхронная сессия БД.
-    :return: Файл XLSX.
+    :param session: Asynchronous database session.
+    :return: XLSX file.
     """
 
     records = await _build_project_report(session)
@@ -900,12 +900,12 @@ async def export_project_dossier(
     format: str = "pdf",
     session: AsyncSession = Depends(get_db_session),
 ):
-    """Сформировать досье проекта.
+    """Form a project file.
 
-    :param project_id: Идентификатор проекта.
-    :param format: Формат выгрузки (pdf, docx).
-    :param session: Асинхронная сессия БД.
-    :return: Файл с досье проекта.
+    :param project_id: Project Identifier.
+    :param form: discharge format (pdf, doxx).
+    :param session: Asynchronous database session.
+    :return: Project file.
     """
 
     result = await session.execute(select(Project).where(Project.id == project_id))
@@ -913,19 +913,19 @@ async def export_project_dossier(
     if not project:
         return {"error": "not_found"}
     sections = {
-        "Параметры проекта": [
-            f"Название: {project.name}",
-            f"Регион: {project.region or ''}",
-            f"Стадия: {project.stage or ''}",
-            f"Бюджет: {project.budget or ''}",
-            f"Начало: {project.start_date or ''}",
-            f"Окончание: {project.end_date or ''}",
+        'Project parameters': [
+            f"Name: {project.name}",
+            f"Region: {project.region or ''}",
+            f"Stage: {project.stage or ''}",
+            f"Budget: {project.budget or ''}",
+            f"Start: {project.start_date or ''}",
+            f"End: {project.end_date or ''}",
         ]
     }
     if format == "docx":
-        file_path = export_dossier_docx("Досье проекта", sections, f"project_{project_id}")
+        file_path = export_dossier_docx('Project file', sections, f"project_{project_id}")
     else:
-        file_path = export_dossier_pdf("Досье проекта", sections, f"project_{project_id}")
+        file_path = export_dossier_pdf('Project file', sections, f"project_{project_id}")
     return FileResponse(path=file_path)
 
 
@@ -934,23 +934,23 @@ async def get_project_related(
     project_id: int,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[dict]:
-    """Получить связанные материалы по названию проекта через Perplexity/Claude.
+    """Get related project name through Perplexity/Claude.
 
-    :param project_id: Идентификатор проекта.
-    :param session: Асинхронная сессия БД.
-    :return: Список связанных статей.
+    :param project_id: Project Identifier.
+    :param session: Asynchronous database session.
+    :return: List of related articles.
     """
 
     result = await session.execute(select(Project).where(Project.id == project_id))
     project = result.scalars().first()
     if not project:
         return []
-    # Используем тот же LLM-подход, что и для общего семантического поиска,
-    # но без дополнительных ключевых наборов и с фиксированным фокусом на статьях/новостях.
+    # We use the same LLM approach as for common semantic search,
+    # but without additional key sets and with a fixed focus on articles/news.
     base_prompt = (
-        "Ты помощник по поиску публикаций о строительных проектах. "
-        "Найди статьи и новости, которые явно связаны с указанным проектом, "
-        "и верни наиболее релевантные результаты."
+        "You're a research assistant on construction projects. "
+        'Find articles and news that are clearly related to the project, '
+        'and return the most relevant results.'
     )
     perplexity_client = PerplexityClient()
     raw_results = await perplexity_client.search(
@@ -970,12 +970,12 @@ async def list_articles(
     offset: int = 0,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[ArticleRead]:
-    """Получить список статей с пагинацией.
+    """Get a list of articles with pagination.
 
-    :param limit: Максимальное количество записей в ответе.
-    :param offset: Смещение от начала выборки.
-    :param session: Асинхронная сессия БД.
-    :return: Список статей.
+    :param limit: Maximum number of entries in response.
+    :param offset: Offset from sample start.
+    :param session: Asynchronous database session.
+    :return: List of articles.
     """
 
     stmt = (
@@ -993,11 +993,11 @@ async def create_article(
     payload: ArticleCreate,
     session: AsyncSession = Depends(get_db_session),
 ) -> ArticleRead:
-    """Создать статью.
+    """Create an article.
 
-    :param payload: Данные статьи для создания.
-    :param session: Асинхронная сессия БД.
-    :return: Созданная запись статьи.
+    :param payload: These articles are for creation.
+    :param session: Asynchronous database session.
+    :return: An article created.
     """
 
     article = Article(**payload.model_dump())
@@ -1013,12 +1013,12 @@ async def list_matches(
     offset: int = 0,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[MatchLinkRead]:
-    """Получить список связей тендер-статья с пагинацией.
+    """Get a list of the links to the tender article with the pagination.
 
-    :param limit: Максимальное количество записей в ответе.
-    :param offset: Смещение от начала выборки.
-    :param session: Асинхронная сессия БД.
-    :return: Список связей.
+    :param limit: Maximum number of entries in response.
+    :param offset: Offset from sample start.
+    :param session: Asynchronous database session.
+    It's a list of connections.
     """
 
     result = await session.execute(select(MatchLink).offset(offset).limit(limit))
@@ -1031,12 +1031,12 @@ async def list_pending_matches(
     offset: int = 0,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[MatchLinkRead]:
-    """Получить список неподтвержденных связей.
+    """Get a list of unconfirmed connections.
 
-    :param limit: Максимальное количество записей в ответе.
-    :param offset: Смещение от начала выборки.
-    :param session: Асинхронная сессия БД.
-    :return: Список неподтвержденных связей.
+    :param limit: Maximum number of entries in response.
+    :param offset: Offset from sample start.
+    :param session: Asynchronous database session.
+    List of unconfirmed links.
     """
 
     result = await session.execute(
@@ -1050,11 +1050,11 @@ async def create_match(
     payload: MatchLinkCreate,
     session: AsyncSession = Depends(get_db_session),
 ) -> MatchLinkRead:
-    """Создать связь между тендером и статьей.
+    """Create a link between the tender and the article.
 
-    :param payload: Данные связи для создания.
-    :param session: Асинхронная сессия БД.
-    :return: Созданная запись связи.
+    :param payload: Data of the connection for creation.
+    :param session: Asynchronous database session.
+    :return: Created communication tape.
     """
 
     match = MatchLink(**payload.model_dump())
@@ -1070,12 +1070,12 @@ async def approve_match(
     reviewer: str | None = None,
     session: AsyncSession = Depends(get_db_session),
 ) -> MatchLinkRead:
-    """Подтвердить связь оператором.
+    """Confirm the operator's connection.
 
-    :param match_id: Идентификатор связи.
-    :param reviewer: Идентификатор оператора.
-    :param session: Асинхронная сессия БД.
-    :return: Обновленная связь.
+    :param match_id: Communication Identifier.
+    :param reviewer: Operator Identifier.
+    :param session: Asynchronous database session.
+    :return: Updated link.
     """
 
     result = await session.execute(select(MatchLink).where(MatchLink.id == match_id))
@@ -1096,12 +1096,12 @@ async def list_sources(
     offset: int = 0,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[SourceRead]:
-    """Получить список источников.
+    """Get a list of sources.
 
-    :param limit: Максимальное количество записей в ответе.
-    :param offset: Смещение от начала выборки.
-    :param session: Асинхронная сессия БД.
-    :return: Список источников.
+    :param limit: Maximum number of entries in response.
+    :param offset: Offset from sample start.
+    :param session: Asynchronous database session.
+    List of sources.
     """
 
     stmt = select(Source).order_by(Source.created_at.desc()).offset(offset).limit(limit)
@@ -1111,10 +1111,10 @@ async def list_sources(
 
 @router.get("/sources/count", tags=["sources"])
 async def count_sources(session: AsyncSession = Depends(get_db_session)) -> dict:
-    """Получить количество источников.
+    """Get a lot of sources.
 
-    :param session: Асинхронная сессия БД.
-    :return: Количество источников.
+    :param session: Asynchronous database session.
+    :return: Number of sources.
     """
 
     result = await session.execute(select(Source.id))
@@ -1126,11 +1126,11 @@ async def create_source(
     payload: SourceCreate,
     session: AsyncSession = Depends(get_db_session),
 ) -> SourceRead:
-    """Создать источник.
+    """Create a source.
 
-    :param payload: Данные источника для создания.
-    :param session: Асинхронная сессия БД.
-    :return: Созданная запись источника.
+    :param payload: Source data for creation.
+    :param session: Asynchronous database session.
+    :return: Source created.
     """
 
     source = Source(**payload.model_dump())
@@ -1142,10 +1142,10 @@ async def create_source(
 
 @router.post("/sources/bootstrap", tags=["sources"])
 async def bootstrap_sources(session: AsyncSession = Depends(get_db_session)) -> dict:
-    """Загрузить источники из YAML конфигурации.
+    """Load the YAML sources of the configuration.
 
-    :param session: Асинхронная сессия БД.
-    :return: Количество добавленных источников.
+    :param session: Asynchronous database session.
+    :return: Number of sources added.
     """
 
     items = load_sources_config()
@@ -1175,10 +1175,10 @@ async def bootstrap_sources(session: AsyncSession = Depends(get_db_session)) -> 
 async def discover_sources(
     query: str = Query(..., min_length=2),
 ) -> list[dict[str, str]]:
-    """Найти источники по ключевому слову.
+    """Find sources by the key word.
 
-    :param query: Поисковая фраза.
-    :return: Список найденных источников.
+    :param query: Search phrase.
+    :return: List of sources found.
     """
 
     service = DiscoveryService()
@@ -1194,7 +1194,7 @@ async def discover_sources(
 
 @router.post("/sources/discover/run", tags=["sources"])
 async def run_discover_sources() -> dict:
-    """Запустить фоновое автообнаружение источников."""
+    'Start background auto-detection of sources.'
 
     from app.tasks.celery_app import celery_app
 
@@ -1204,9 +1204,9 @@ async def run_discover_sources() -> dict:
 
 @router.get("/keywords", tags=["sources"])
 async def get_keywords() -> dict:
-    """Получить словари ключевых слов из YAML-конфига (для обратной совместимости).
+    """Get Keyword Vocabularies from YAML-config (for interoperability)).
 
-    :return: Словарь ключевых слов.
+    :return: Keyword dictionary.
     """
 
     return load_keywords_config()
@@ -1220,10 +1220,10 @@ async def get_keywords() -> dict:
 async def list_keyword_sets_endpoint(
     session: AsyncSession = Depends(get_db_session),
 ) -> list[SearchKeywordSetRead]:
-    """Получить все наборы ключевых слов/промптов.
+    """Get all keywords/prompts.
 
-    При первом обращении автоматически инициализирует базовый набор
-    из config/keywords.yaml (construction_keywords), если в БД пусто.
+    In the first application, automatically initializes the basic set
+    from config/keywords.yaml (construction_keywords) if the database is empty.
     """
 
     await bootstrap_keyword_sets_from_yaml(session)
@@ -1240,7 +1240,7 @@ async def create_keyword_set_endpoint(
     payload: SearchKeywordSetCreate,
     session: AsyncSession = Depends(get_db_session),
 ) -> SearchKeywordSetRead:
-    """Создать новый набор ключевых слов."""
+    'Create a new set of key words.'
 
     keywords_payload = payload.keywords or []
     keywords = [(item.text, item.weight) for item in keywords_payload]
@@ -1264,7 +1264,7 @@ async def update_keyword_set_endpoint(
     payload: SearchKeywordSetUpdate,
     session: AsyncSession = Depends(get_db_session),
 ) -> SearchKeywordSetRead | dict:
-    """Обновить существующий набор ключевых слов."""
+    'Update the existing set of key words.'
 
     keywords = (
         [(item.text, item.weight) for item in payload.keywords] if payload.keywords else None
@@ -1290,7 +1290,7 @@ async def delete_keyword_set_endpoint(
     set_id: int,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict:
-    """Удалить набор ключевых слов."""
+    'Delete the set of key words.'
 
     ok = await delete_keyword_set(session, set_id)
     return {"deleted": ok}
@@ -1302,12 +1302,12 @@ async def compare_entities(
     article_id: int,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict:
-    """Сравнить поля тендера и статьи.
+    """Compare tender fields with articles.
 
-    :param tender_id: Идентификатор тендера (внешний).
-    :param article_id: Идентификатор статьи.
-    :param session: Асинхронная сессия БД.
-    :return: Словарь расхождений по полям.
+    :param tender_id: Tender Identifier (external).
+    :param article_id: Article Identifier.
+    :param session: Asynchronous database session.
+    :return: Vocabulary of Field Discrepancies.
     """
 
     tender_result = await session.execute(select(Tender).where(Tender.tender_id == tender_id))
@@ -1339,53 +1339,53 @@ async def semantic_search_endpoint(
     perplexity_limit: int | None = None,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[dict]:
-    """Поиск с использованием Perplexity и ранжированием Claude.
+    """Perplexity search and Claude ranking.
 
-    Perplexity отвечает за сбор релевантных результатов: проекты, тендеры, госзаказы и госзакупки
-    (журналы, СМИ, порталы закупок). Claude доранжирует и классифицирует.
+    Perplexity is responsible for collecting relevant results: projects, tenders, government purchase orders and public procurement
+    (magazines, media, procurement portals). Claude pre-sells and classifys.
 
-    :param query: Поисковый запрос (может быть сгенерирован автоматически).
-    :param scope: Область поиска (articles/tenders/projects/all) — влияет на промпт.
-    :param limit: Максимум результатов.
-    :param keyword_set_id: Идентификатор набора ключевых слов.
-    :param mode: Режим: generic/journals/media/tenders_projects/gov_orders.
-    :param session: Асинхронная сессия БД.
-    :return: Список совпадений.
+    :Param query: Search request (may be generated automatically)).
+    :Param scope: Search Area (Articles/tenders/projects/all).
+    :param limit: Maximum results.
+    :Param keyword_set_id: Keyword Set Identifier.
+    :Param mode: Mode: Generic/journals/media/tenders_projects/gov_orders.
+    :param session: Asynchronous database session.
+    A list of coincidences.
     """
 
     keywords = await resolve_keywords_for_set(session, keyword_set_id)
 
     base_prompt = (
-        "Ты помощник по поиску информации о строительных проектах, тендерах и госзаказах в русскоязычном интернете. "
-        "Ищи статьи, объявления и страницы с проектами, закупками (44-ФЗ, 223-ФЗ), госзаказами. "
-        "Указывай реальные ссылки и заголовки."
+        "You're an assistant for research on construction projects, tenders and state orders on the Russian-language Internet. "
+        'Look for articles, announcements and pages on projects, procurement (44-FZ, 223-FZ), government orders. '
+        'Give me real links and headlines.'
     )
     mode = (mode or "generic").lower()
     if mode == "journals":
         base_prompt += (
-            " Отдавай приоритет отраслевым журналам и изданиям по строительству и инфраструктуре."
+            ' Give priority to industry journals and publications on construction and infrastructure.'
         )
     elif mode == "media":
         base_prompt += (
-            " Отдавай приоритет СМИ и региональным порталам с новостями о строительных проектах и торгах."
+            ' Give priority to the media and regional portals with news on construction projects and tenders.'
         )
     elif mode == "tenders_projects":
         base_prompt += (
-            " Сфокусируйся на коммерческих тендерах, закупках и строительных проектах в России."
+            ' Focus on commercial tenders, procurement and construction projects in Russia.'
         )
     elif mode == "gov_orders":
         base_prompt += (
-            " Сфокусируйся на госзаказах и госзакупках: ЕИС, 44-ФЗ, 223-ФЗ, закупки РФ, заказчики, подрядчики, контакты."
+            ' Focus on state orders and public procurement: EIS, 44-FZ, 223-FZ, Russian procurement, customers, contractors, contacts.'
         )
 
     if scope == "articles":
-        base_prompt += " Особый фокус на новостных статьях и аналитических материалах."
+        base_prompt += ' Special focus on news articles and analysis.'
     elif scope == "tenders":
-        base_prompt += " Особый фокус на тендерах и закупочных процедурах."
+        base_prompt += ' Special focus on tenders and procurement procedures.'
     elif scope == "projects":
-        base_prompt += " Особый фокус на описаниях проектов и инвестиционных планах."
+        base_prompt += ' Special focus on project descriptions and investment plans.'
 
-    # Вызов Perplexity для первичного поиска
+    # The Perplexity Challenge for Primary Search
     perplexity_client = PerplexityClient()
     max_results = max(limit, perplexity_limit or 0) if perplexity_limit else max(limit, 20)
     raw_results = await perplexity_client.search(
@@ -1395,10 +1395,10 @@ async def semantic_search_endpoint(
         max_results=max_results,
     )
 
-    # Ранжирование и возможная классификация через Claude
+    # Ran and possible classification via Claude
     claude_client = ClaudeClient()
     ranked = await claude_client.rank_results(query, raw_results, keywords=keywords)
-    # Обрезаем до запрошенного лимита, сохраняя порядок
+    # Cut to the requested limit while maintaining order
     return ranked[:limit]
 
 
@@ -1407,11 +1407,11 @@ async def export_tenders(
     format: str = "csv",
     session: AsyncSession = Depends(get_db_session),
 ):
-    """Выгрузить список тендеров в файл.
+    """Unload the tender list to the file.
 
-    :param format: Формат выгрузки (csv, xlsx, parquet).
-    :param session: Асинхронная сессия БД.
-    :return: Файл с выгрузкой.
+    :param formula: Unload format (csv, xlsx, parquet).
+    :param session: Asynchronous database session.
+    :return: Unload file.
     """
 
     result = await session.execute(select(Tender))
@@ -1435,12 +1435,12 @@ async def export_company_dossier(
     format: str = "pdf",
     session: AsyncSession = Depends(get_db_session),
 ):
-    """Сформировать досье компании.
+    """Form a company file.
 
-    :param company_id: Идентификатор компании.
-    :param format: Формат выгрузки (pdf, docx).
-    :param session: Асинхронная сессия БД.
-    :return: Файл с досье компании.
+    :param company_id: Company Identifier.
+    :param form: discharge format (pdf, doxx).
+    :param session: Asynchronous database session.
+    :return: Company file.
     """
 
     result = await session.execute(select(Company).where(Company.id == company_id))
@@ -1448,26 +1448,26 @@ async def export_company_dossier(
     if not company:
         return {"error": "not_found"}
     sections = {
-        "Общие данные": [
-            f"Наименование: {company.name}",
-            f"ИНН: {company.inn or ''}",
-            f"Телефон: {company.phone or ''}",
+        'General information': [
+            f"Name: {company.name}",
+            f"INN: {company.inn or ''}",
+            f"Phone: {company.phone or ''}",
             f"Email: {company.email or ''}",
-            f"Адрес: {company.address or ''}",
+            f"Address: {company.address or ''}",
         ]
     }
     if format == "docx":
-        file_path = export_dossier_docx("Досье компании", sections, f"company_{company_id}")
+        file_path = export_dossier_docx('Company file', sections, f"company_{company_id}")
     else:
-        file_path = export_dossier_pdf("Досье компании", sections, f"company_{company_id}")
+        file_path = export_dossier_pdf('Company file', sections, f"company_{company_id}")
     return FileResponse(path=file_path)
 
 
 @router.get("/automation/status", tags=["automation"])
 async def automation_status() -> dict:
-    """Получить состояние автоматизации.
+    """Get a state of automation.
 
-    :return: Состояние автоматизации.
+    :return: Automation status.
     """
 
     return get_state()
@@ -1475,9 +1475,9 @@ async def automation_status() -> dict:
 
 @router.post("/automation/start", tags=["automation"])
 async def automation_start() -> dict:
-    """Запустить цикл автоматизации вручную.
+    """Run the manual automation cycle.
 
-    :return: Статус запуска.
+    :return: Launch status.
     """
 
     from app.tasks.celery_app import celery_app
@@ -1488,9 +1488,9 @@ async def automation_start() -> dict:
 
 @router.post("/automation/enable", tags=["automation"])
 async def automation_enable() -> dict:
-    """Включить автоматизацию.
+    """Put the automation on.
 
-    :return: Обновлённое состояние.
+    :return: Updated state.
     """
 
     return set_enabled(True)
@@ -1498,9 +1498,9 @@ async def automation_enable() -> dict:
 
 @router.post("/automation/stop", tags=["automation"])
 async def automation_stop() -> dict:
-    """Отключить автоматизацию.
+    """Shut down the automation.
 
-    :return: Обновлённое состояние.
+    :return: Updated state.
     """
 
     return set_enabled(False)
@@ -1522,12 +1522,12 @@ async def export_tender_dossier(
     format: str = "pdf",
     session: AsyncSession = Depends(get_db_session),
 ):
-    """Сформировать досье тендера.
+    """Form a tender file.
 
-    :param tender_id: Внешний идентификатор тендера.
-    :param format: Формат выгрузки (pdf, docx).
-    :param session: Асинхронная сессия БД.
-    :return: Файл с досье тендера.
+    :param tender_id: External tender identifier.
+    :param form: discharge format (pdf, doxx).
+    :param session: Asynchronous database session.
+    :return: Tender file file.
     """
 
     result = await session.execute(select(Tender).where(Tender.tender_id == tender_id))
@@ -1535,29 +1535,29 @@ async def export_tender_dossier(
     if not tender:
         return {"error": "not_found"}
     sections = {
-        "Параметры тендера": [
+        'Tender parameters': [
             f"ID: {tender.tender_id}",
-            f"Название: {tender.title or ''}",
-            f"Регион: {tender.region or ''}",
-            f"Бюджет: {tender.budget or ''} {tender.currency or ''}",
-            f"Статус: {tender.status or ''}",
-            f"Заказчик: {tender.customer or ''}",
-            f"Победитель: {tender.winner or ''}",
+            f"Name: {tender.title or ''}",
+            f"Region: {tender.region or ''}",
+            f"Budget: {tender.budget or ''} {tender.currency or ''}",
+            f"Status: {tender.status or ''}",
+            f"Buyer: {tender.customer or ''}",
+            f"Winner: {tender.winner or ''}",
         ]
     }
     if format == "docx":
-        file_path = export_dossier_docx("Досье тендера", sections, f"tender_{tender_id}")
+        file_path = export_dossier_docx('Tender file', sections, f"tender_{tender_id}")
     else:
-        file_path = export_dossier_pdf("Досье тендера", sections, f"tender_{tender_id}")
+        file_path = export_dossier_pdf('Tender file', sections, f"tender_{tender_id}")
     return FileResponse(path=file_path)
 
 
 @router.post("/nlp/extract", tags=["nlp"])
 async def nlp_extract(payload: TextRequestCreate) -> dict:
-    """Извлечь сущности из текста.
+    """Extract entities from text.
 
-    :param payload: Объект с текстом для обработки.
-    :return: Словарь с извлеченными сущностями.
+    :param payload: An object with text for processing.
+    :Return: Dictionary with extracted essences.
     """
 
     entities = await extract_entities(payload.text)
@@ -1574,10 +1574,10 @@ async def nlp_extract(payload: TextRequestCreate) -> dict:
 
 @router.post("/nlp/classify", tags=["nlp"])
 async def nlp_classify(payload: TextRequestCreate) -> dict:
-    """Классифицировать текст по типу контента.
+    """Classify text by content type.
 
-    :param payload: Объект с текстом для обработки.
-    :return: Словарь с меткой класса.
+    :param payload: An object with text for processing.
+    :return: Class-marked dictionary.
     """
 
     label = await classify_text(payload.text)
@@ -1589,11 +1589,11 @@ async def ingest_seldon(
     limit: int = 100,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict:
-    """Импортировать данные из Seldon API.
+    """Import data from Seldon API.
 
-    :param limit: Максимальное количество тендеров.
-    :param session: Асинхронная сессия БД.
-    :return: Статистика по импорту.
+    :param limit: Maximum number of tenders.
+    :param session: Asynchronous database session.
+    :return: Import statistics.
     """
 
     client = SeldonClient()
@@ -1602,10 +1602,10 @@ async def ingest_seldon(
 
 @router.post("/ingest/sources", tags=["ingest"])
 async def ingest_sources_endpoint(session: AsyncSession = Depends(get_db_session)) -> dict:
-    """Импортировать данные из источников СМИ.
+    """Import data from media sources.
 
-    :param session: Асинхронная сессия БД.
-    :return: Статистика по импортированным статьям.
+    :param session: Asynchronous database session.
+    :return: Statistics on imported articles.
     """
 
     count = await ingest_sources(session)
@@ -1614,10 +1614,10 @@ async def ingest_sources_endpoint(session: AsyncSession = Depends(get_db_session
 
 @router.post("/match/run", tags=["matching"])
 async def run_matching(session: AsyncSession = Depends(get_db_session)) -> dict:
-    """Запустить сопоставление тендеров и статей.
+    """Start a comparison of tenders and articles.
 
-    :param session: Асинхронная сессия БД.
-    :return: Количество созданных связей.
+    :param session: Asynchronous database session.
+    :return: Number of links established.
     """
 
     created = await match_tenders_and_articles(session)
@@ -1626,10 +1626,10 @@ async def run_matching(session: AsyncSession = Depends(get_db_session)) -> dict:
 
 @router.get("/ingest/diagnostics", tags=["ingest"])
 async def ingest_diagnostics(session: AsyncSession = Depends(get_db_session)) -> dict:
-    """Диагностика поиска и парсинга: почему мало тендеров/проектов.
+    """Search and Parsing Diagnostics: Why Few Tenders/Projects.
 
-    Показывает: число источников, статей, тендеров, проектов; результат последнего цикла;
-    настроены ли Seldon и Perplexity. Парсер обрабатывает все источники без фильтра по статусу.
+    Shows: number of sources, articles, tenders, projects; outcome of last cycle;
+    Whether Seldon and Perplexity. Parser handles all sources without a status filter.
     """
     settings = get_settings()
     state = get_state()

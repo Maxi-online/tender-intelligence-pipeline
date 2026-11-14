@@ -1,6 +1,6 @@
-"""Схемы наборов ключевых слов для API.
+"""Schematics of Keyword Sets for API.
 
-Автор: адаптация под TPIS.
+Author: Adaptation to TPIS.
 """
 
 from __future__ import annotations
@@ -11,20 +11,20 @@ from pydantic import BaseModel, ConfigDict
 
 
 class SearchKeywordBase(BaseModel):
-    """Базовая схема ключевого слова/промпта."""
+    'Basic key word/prompt diagram.'
 
     text: str
     weight: float = 1.0
 
 
 class SearchKeywordCreate(SearchKeywordBase):
-    """Схема создания ключевого слова."""
+    'A key word scheme.'
 
     model_config = ConfigDict(extra="forbid")
 
 
 class SearchKeywordRead(SearchKeywordBase):
-    """Схема чтения ключевого слова."""
+    'A keyword reading scheme.'
 
     id: int
 
@@ -33,7 +33,7 @@ class SearchKeywordRead(SearchKeywordBase):
 
 
 class SearchKeywordSetBase(BaseModel):
-    """Базовая схема набора ключевых слов."""
+    'Basic outline of a set of key words.'
 
     name: str
     description: str | None = None
@@ -41,7 +41,7 @@ class SearchKeywordSetBase(BaseModel):
 
 
 class SearchKeywordSetCreate(SearchKeywordSetBase):
-    """Схема создания набора ключевых слов."""
+    'Schematic of the creation of a set of key words.'
 
     keywords: list[SearchKeywordCreate] | None = None
 
@@ -49,7 +49,7 @@ class SearchKeywordSetCreate(SearchKeywordSetBase):
 
 
 class SearchKeywordSetUpdate(BaseModel):
-    """Схема обновления набора ключевых слов."""
+    'Scheme for updating the set of key words.'
 
     name: str | None = None
     description: str | None = None
@@ -60,7 +60,7 @@ class SearchKeywordSetUpdate(BaseModel):
 
 
 class SearchKeywordSetRead(SearchKeywordSetBase):
-    """Схема чтения набора ключевых слов."""
+    'Schematic of reading a set of key words.'
 
     id: int
     created_at: datetime

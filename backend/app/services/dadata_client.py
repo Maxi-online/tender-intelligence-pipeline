@@ -1,11 +1,11 @@
-"""Клиент Dadata для обогащения данных о компаниях.
+"""Dadata's client to enrich company data.
 
-Используются методы:
-- findById/party (поиск организации по ИНН/ОГРН)
-- findByEmail/company (поиск компании по корпоративному email)
-- findAffiliated/party (поиск аффилированных компаний по ИНН учредителя/руководителя)
+Methods used are:
+- FindById/party
+- findByEmail/company)
+- FindAffiliated/partition (searching for Affiliated INN Founder/Manager Companies))
 
-Документация:
+Documentation:
 - https://dadata.ru/api/find-party/
 - https://dadata.ru/api/find-company/by-email/
 - https://dadata.ru/api/find-affiliated/
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class DadataClient:
-    """Простой HTTP-клиент для REST API Dadata."""
+    'A simple HTTP client for REST API Datata.'
 
     def __init__(self) -> None:
         settings = get_settings()
@@ -33,7 +33,7 @@ class DadataClient:
         self._secret_key: str | None = settings.dadata_secret_key
         self._base_url: str = "https://suggestions.dadata.ru/suggestions/api/4_1/rs"
         if not self._api_key:
-            raise RuntimeError("DADATA_API_KEY не задан в окружении.")
+            raise RuntimeError('DADATA_API_KEY is not set in the environment.')
 
     def _auth_headers(self, with_secret: bool = False) -> dict[str, str]:
         headers = {
@@ -79,9 +79,9 @@ class DadataClient:
         type: str | None = None,
         status: list[str] | None = None,
     ) -> list[dict[str, Any]]:
-        """Поиск организации по ИНН/ОГРН.
+        """Searching for an IDN/DOE organization.
 
-        Возвращает массив объектов из поля suggestions.
+        Returns the array of objects from the fields of suggestions.
         """
 
         payload: dict[str, Any] = {"query": query, "count": count}
@@ -97,9 +97,9 @@ class DadataClient:
         return data.get("suggestions") or []
 
     async def find_company_by_email(self, email: str) -> list[dict[str, Any]]:
-        """Поиск компании по корпоративному email.
+        """Searching for corporate e-mail company.
 
-        Требует API-ключ и секретный ключ.
+        It requires an API key and a secret key.
         """
 
         data = await self._post(
@@ -116,7 +116,7 @@ class DadataClient:
         count: int = 50,
         scope: list[str] | None = None,
     ) -> list[dict[str, Any]]:
-        """Поиск аффилированных компаний по ИНН учредителя/руководителя."""
+        'Search for Affiliated INS Founder/Manager Companies.'
 
         payload: dict[str, Any] = {"query": inn_person_or_org, "count": count}
         if scope:
@@ -131,7 +131,7 @@ class DadataClient:
         count: int = 10,
         status: list[str] | None = None,
     ) -> list[dict[str, Any]]:
-        """Поиск организации по названию (suggest/party)."""
+        'Search for organization by name (suggest/party).'
         payload: dict[str, Any] = {"query": query, "count": count}
         if status:
             payload["status"] = status
@@ -140,7 +140,7 @@ class DadataClient:
 
 
 def _normalize_dadata_party(party: dict[str, Any]) -> dict[str, Any]:
-    """Нормализовать карточку организации Dadata в общий формат CompanyProfile-like."""
+    'Normalize the Dadata card to the Common Profile-lake format.'
 
     data = party.get("data") or {}
     address = (data.get("address") or {}).get("value")
@@ -172,7 +172,7 @@ def _normalize_dadata_party(party: dict[str, Any]) -> dict[str, Any]:
 
 
 def _normalize_dadata_email_company(item: dict[str, Any]) -> dict[str, Any]:
-    """Нормализовать ответ findByEmail/company в общий формат."""
+    'Normalize the response findByEmail/company into a common format.'
 
     data = item.get("data") or {}
     company = data.get("company") or {}

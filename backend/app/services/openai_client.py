@@ -1,4 +1,4 @@
-"""Клиент OpenAI (fallback) через AsyncOpenAI."""
+'OpenAI (fallback) client via AsyncOpenAI.'
 
 from __future__ import annotations
 
@@ -72,7 +72,7 @@ def _load_openai_settings(path: str) -> dict[str, str]:
         raise RuntimeError("OpenAI API key not found in settings.json")
     model = data.get("openai_model") or "gpt-5-nano"
     base_url = data.get("openai_base_url") or "https://api.openai.com/v1"
-    # Ключи Dadata из того же файла (опционально), чтобы не зависеть от env в контексте, где он недоступен
+    # The dadata keys from the same file (optimal) so that they don't depend on env in a context where it's not available
     dadata_api_key = data.get("dadata_api_key") or ""
     dadata_secret_key = data.get("dadata_secret_key") or ""
     return {
@@ -85,12 +85,12 @@ def _load_openai_settings(path: str) -> dict[str, str]:
 
 
 class OpenAIClient:
-    """Клиент OpenAI: все запросы отправляются только через прокси (HTTP_PROXY_URL)."""
+    'OpenAI client: All queries are sent via proxy only (HTTP_PROXY_URL)).'
 
     def __init__(self) -> None:
         settings = get_settings()
         if not settings.http_proxy_url:
-            raise RuntimeError("HTTP_PROXY_URL обязателен: запросы к OpenAI идут только через прокси.")
+            raise RuntimeError('HTTP_PROXY_URL mandatory: OpenAI requests only go through proxies.')
         cfg = _load_openai_settings(settings.openai_settings_path)
         self._model = cfg["model"]
         self._client = AsyncOpenAI(
@@ -110,7 +110,7 @@ class OpenAIClient:
         reasoning_effort: str | None = None,
         **extra_create_kwargs: Any,
     ) -> dict[str, Any]:
-        """Запрос к OpenAI (всегда через прокси). reasoning_effort: low | medium | high | xhigh (макс. качество рассуждений)."""
+        'OpenAI Request (always via Proxi). reasoning_effort: low ~ medium ~ high xhh (max. quality of reasoning)).'
         logger.info(
             "OpenAI call: model=%s system_len=%s messages=%s reasoning_effort=%s",
             self._model,

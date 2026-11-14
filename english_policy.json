@@ -1,0 +1,635 @@
+{
+  "purpose": "Engineering prose, comments, docstrings, prompts, UI labels and setup instructions are English. Exact reviewed linguistic data retains its source-language semantics. No directory is excluded.",
+  "data_literals": [
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "24b784f878942835673575b037b0bae8ace385f74543ffa2cd0c6713a3358040",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "19f83b295e58fc83f05ef3d224c5af056ecc2d711bff21db9a8f2438ea42dbcb",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "5a74413135f729d18f8b2d69654932d7d9a9570a1446763bdb3f7a6f13c6fdcb",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "22244ced9e19937299d02906e9f13683bc4c32b74311e3c680db99643d163261",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "4377eb158399ae88694bebdc930a711b9e5da5bef3f9e148f77987c4d4313327",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "b19fba40f60212fcf137c15eec28f061086ae6f598d9ba98a35e869a18c6e1d9",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "f5ad9554656d29ae34603ff84e4951625c99a0973cd39ffb99bf70e4f135140a",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "423d00bfa83a278eef9abdc8f7bb6b3d7a752c2282cc51b0cb603232c5ad62ef",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "9f59b98e28c4803cbef921ec0dcaf0bfa255607d5cedb9d9136076608f2960cc",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "6eac4c7b2cc162697bb65f9dbd33929279ef4521b79bd2a1ea4a58ae821fab6d",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "3af002e83e205c77b35047c2f41d73fdedde19f7cc6d3eb476c5064688d34534",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "9d218d951046dc4867e88a4a41fa894635ed6ea41310b2592ae484e506c7acb3",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "5844e09d9379ca622164cff9c44a0a045a9aaf2fc02ae259ca3514c9003b1fe0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "95da4678ae170502b254f3cfcc3cc0b5cbbfcc6e3c97e361142881135783d0c9",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "81803f8dab14fb231e35e64e7d13d3beebbed16fb4cb3b80258277083d0b5393",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "b81189dcda14490da36ac11417f92e47c74fef014f67b86974af4e824e222006",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "8ed1ff9bd2c40395b1ab3f2af51c167b2bdd1b262dcce132a0f687b7450c9c35",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "dfb992e6d06a26ff3e779b7df2b8375ca3fe28a1abed8cd2bc299e6eae32ee58",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "34e62ccf1e9b1b54f9d5be6b6aad6d653a0205a5e4d4b82487e54c5d65f2a06a",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "866e16dc0dd61575e0848b0d2acb6e5a9109cb3a368496be632d9884a7ea432e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "8dc1e693b44aef26fc6d9aae1a0eaf19f7ab76afaf0381d779dbeba4d303f357",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "27b17e39b014b30eb70ca38b6f63a03a63ae1c4616ca70c83513a0433c73036b",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "16526a97c2577a4e369aa7e63bfc068285997c124cf683aaad66478c141c88d8",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "4d6a9ceeeb922799e17a06f421cbc0c2d0e05b50fefa3a397b494f953963a10b",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "fdeed57bd92e4c14d647a745f56f0d2efbff7f3f44d55efdf4577fe637e75aa6",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "04c5e757c18eeda9587e6904607687f7be221a432d1139e03999264fbdecd968",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "6d9a040709d54abeb1d769426401681adf32de9b909f0e5e402fe1f5d9b64426",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "57c8be2f83720e7633bcf1a2e3ee9a4b2a49a9883d1ce920036d6952a9bcc775",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "22b2691f99c9e2fbe7e09f37b2619916c40e033d6b1e282ba02d395c3bbd283d",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "be808f824181ae48d99339cff99d58490bce89071c0d541af69722cad3ab4b04",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "d8ccf0bd9ebab4e0aeec4c3b83f9b799785cc78743ce220fff4fdac9f000b69e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "d72651978e5a83a20404ba9ebe4314bed663ce21303c40efddb8501f45a8b573",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "504762a1b0ce146265361926c5c295e0b1a044ce9cd3673bfcf56321197c92a0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "284e53187e840765503dee16315eb8e781f7466b8c8aea73f2c7868127585900",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "946811bcb830c92b46d826f516989367c9bb0085c7ec460dc5c68c05b7c0a0c0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "734dbc2b54ab6c95217ac8dbd3b3419f5b9486ab4675b5d4b548ff3d0a73385d",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "04a9210861385f5fc42dfeaaebcf73aec757bfe8dc78d336436511f066a74a26",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/api/routes.py",
+      "sha256": "9c3d45ac45500bd7b189046e821fd3f6a421086063f28758728fccbd449a13f4",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/advanced_fetch.py",
+      "sha256": "b093177f9cd0492d51132a75d49a537b591602a42615cd4ce41dfc7916af08cd",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/dedupe_companies.py",
+      "sha256": "19f83b295e58fc83f05ef3d224c5af056ecc2d711bff21db9a8f2438ea42dbcb",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/dedupe_companies.py",
+      "sha256": "b19fba40f60212fcf137c15eec28f061086ae6f598d9ba98a35e869a18c6e1d9",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/dedupe_companies.py",
+      "sha256": "423d00bfa83a278eef9abdc8f7bb6b3d7a752c2282cc51b0cb603232c5ad62ef",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/dedupe_companies.py",
+      "sha256": "22244ced9e19937299d02906e9f13683bc4c32b74311e3c680db99643d163261",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/dedupe_projects.py",
+      "sha256": "9f59b98e28c4803cbef921ec0dcaf0bfa255607d5cedb9d9136076608f2960cc",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/normalize.py",
+      "sha256": "284e53187e840765503dee16315eb8e781f7466b8c8aea73f2c7868127585900",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "fc0f764bcb486bd5a8797ecd6d0c9a809765d41de36830dd6f38c95456f93c45",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "97349153b7a8098abce5556b174c402f290440b084d62ee613f03616f8091362",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "3a9bf216b14426399aa99b9bfb77adaf3fff50972f56985fb9840bc5995abf0c",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "6c83131276922327ae538710e51908c4181e7587f5960bba7cef1232aff13574",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "31e1a8cad840369473ece388e7cf4e2de9834d7aaa63ab7fe1722e0008a8e664",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "8dc1e693b44aef26fc6d9aae1a0eaf19f7ab76afaf0381d779dbeba4d303f357",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "dfb992e6d06a26ff3e779b7df2b8375ca3fe28a1abed8cd2bc299e6eae32ee58",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "414fae7190c1d5aa07f04c4d68f71d8cdd7a5f1bee215e551cdbb1ee02555e95",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "65e8fa03024f58bf06cb47e1cd4776a9c9b0d9f20c7781af11932907c2b88eb7",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "160d1d45ff149996f63e04826075f71c63e57c1e23e3ef37864b2a6e4da4812a",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "14d5ba4b595c03381df07dfb225556dbafeedb10db4e1bd64ac986bc59e0f452",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "020d762cbd7360a972ede345cc4c269921050b249a83e810b46fe4c6fbfe1533",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "32b277803f3086c364bc7acc403d11db5d808b9d36070c045376a37f9a10f57c",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "fbb4b127728183fb479d620347515a966d896189a4b0e98d365047c683da5519",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "96f87242856e2f3d30b158d40fbbb116368ce88f3d3ce5729a7465cd7d1ede77",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "54fff73be5d50bac97dea9f97ee13b7578650f8a1643d0d01aa8b3388933de91",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "948e0b881d9a0fc3dc951c7f36e68482c6b3b5f920c32b794b54480411de6383",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "e664a30dda9e763f72bb1fc6513a82f4ffdbea34c7e245ada06817062f9d3447",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "e54709346770f18c9cbf5f8291fd75e8229ced281130a08c202979f10249f964",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "be68d57110d50a6726ef2c6066617237ba73f8b19f6aa9559a3946c58c38b57d",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "368ead2b03e5e421bba1ffd330b87535e25c3442791bba2f688b23de3a440eed",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "b15139344c8d7481189e2b6d3f1246112b1c8276569e7bed552a903743adce0a",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "4e5f3cd096b85132c743bddd3a89367fdfa8c08d980afb89ba487e03c52fa021",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "5c81c115a49aecb619af5444a5a8168a7e1c1ecf15edc95ce9886bbab60b8283",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "8a64100cfad2f040943ea13e23dcac7cb64bac672a49595e3b32528a7a254948",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "6f4c664c250077a40107b0ec51631b86f19d5077abae4164047bbd2fedafdd04",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "7a70ae8b8f6e9fc2ab5c48b5c1d6a19a7c7291378eea001c875b83afcadb7405",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "f0cb64271bfc5327998c40e9cc2a53d796b8101da8bb73b4b2f41c1145b18d21",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "c3c606901465d1a0be3b09f8f3ddbab62a0564415c14353560d8bb10cfbfa440",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "3828d92499da7c9dcda53a4edfce59f88f434601570b2994cc22bb61a7746d72",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "bdea75c56783ee5104d33f8d46f6d877f647ecd47d5a6ff3c2bf3d8df0358ba8",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "e852a3841590201845fb64e5d2d83381df27efdd7f598242a8b09f3f2478e8ec",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "ade8dc507dd181df3d5d097f740aed4ef1e3cc9bd2edd46d42ccd0a1baddb983",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "9bd65fb2d23b05c175d7043b62d801bab97ccf6ffee6401084216041b68cdfa7",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "f9fe056c7b903b67eea42a8999716c1faed495b089ca8df5c97e17914f861b9b",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "b6c2fe2ed415184cb0d2f73506873f1d53d5696c92e6df240fba759e9d96d0cf",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "80a991106c5e3fcb6d600917d8a0c76852c3f12904f902be14b78df8957b0903",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "4b9afa225133322f8046277593373cd658f5fc60a35dfea03137cf60a08c5161",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "ad99ae72f8a328a3896acce213c5e3405e3d7dd9410549d3f99b2f998a2fc23d",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "8ebee2e4549cf7d1a44249a097e7a569e461a13e4357d84ffa57a607c9691435",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "019ecc03e3de70304eed4464e03de8b9d7404671642ea62aa24937af862521f5",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "0445b385d12aa618d4c28ea16ee95bbcc6f36d5a1aef84ddc7db533233b7679c",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "b641bc12532648f3358eda8a35eecd1a260b3c7170b9c4c313323c7991524891",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "cc7e1394e6d6245d1a95c6668f7784c810c70f455de92d916ec086a831a4d4dd",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "d8ccf0bd9ebab4e0aeec4c3b83f9b799785cc78743ce220fff4fdac9f000b69e",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "d72651978e5a83a20404ba9ebe4314bed663ce21303c40efddb8501f45a8b573",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "504762a1b0ce146265361926c5c295e0b1a044ce9cd3673bfcf56321197c92a0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "284e53187e840765503dee16315eb8e781f7466b8c8aea73f2c7868127585900",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "946811bcb830c92b46d826f516989367c9bb0085c7ec460dc5c68c05b7c0a0c0",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "734dbc2b54ab6c95217ac8dbd3b3419f5b9486ab4675b5d4b548ff3d0a73385d",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "9c3d45ac45500bd7b189046e821fd3f6a421086063f28758728fccbd449a13f4",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "9f59b98e28c4803cbef921ec0dcaf0bfa255607d5cedb9d9136076608f2960cc",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "24b784f878942835673575b037b0bae8ace385f74543ffa2cd0c6713a3358040",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "19f83b295e58fc83f05ef3d224c5af056ecc2d711bff21db9a8f2438ea42dbcb",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "5a74413135f729d18f8b2d69654932d7d9a9570a1446763bdb3f7a6f13c6fdcb",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "22244ced9e19937299d02906e9f13683bc4c32b74311e3c680db99643d163261",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "4377eb158399ae88694bebdc930a711b9e5da5bef3f9e148f77987c4d4313327",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "b19fba40f60212fcf137c15eec28f061086ae6f598d9ba98a35e869a18c6e1d9",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "f5ad9554656d29ae34603ff84e4951625c99a0973cd39ffb99bf70e4f135140a",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "423d00bfa83a278eef9abdc8f7bb6b3d7a752c2282cc51b0cb603232c5ad62ef",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "717a05c2cb550e8a7dbed63fe58c1e7feeffd8abd12b4e41801a576a7c4125f1",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/pipeline.py",
+      "sha256": "0d2913c148e204d319119aa786f00b94d13721009e0dd063ef50d16d77aaebb9",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/rusprofile_client.py",
+      "sha256": "fdf4a9b1751cd9c6e812b5b159a2e3a873bff9670e65f611005c4c8e39509a41",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/rusprofile_client.py",
+      "sha256": "e39a84928ad24fe08934c606db3cd6ab26002faca18792e69a90d6c5dfa67c79",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/rusprofile_client.py",
+      "sha256": "67dafc82330c3cc0bcd4d8115aee1c0ba0d54e8fa8ba6e92320ca0252c5bf7dd",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/services/seldon_service.py",
+      "sha256": "755a2d9d4024749ba0f93427d311000dddfbbd99c35339bc8de3d214c789d2f5",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/tasks/jobs.py",
+      "sha256": "8ed1ff9bd2c40395b1ab3f2af51c167b2bdd1b262dcce132a0f687b7450c9c35",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/tasks/jobs.py",
+      "sha256": "7618601c8cc56590dcfd3150b4aa60ee29f98dde429b012417f637ec713023b4",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/tasks/jobs.py",
+      "sha256": "b936c407b56121463310de4d88e245141ab968d4bad24bbeb782fdb37820d4ba",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/tasks/jobs.py",
+      "sha256": "73e62b71a741a7f3766e2d890c36cffca0bb5f4ec6db9a7d021bb0747dc7ceee",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/tasks/jobs.py",
+      "sha256": "febd280fb3d08b0527d75de8c6efee56e077135a73d6741344d84cc5cebeac84",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/app/tasks/jobs.py",
+      "sha256": "ced3954b593e0682d130cee8f5858cd964a6c3c9c4f0d12f0cb5a7e0c1173940",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/tests/test_seldon.py",
+      "sha256": "81eb47b426b9616bb55f8a67e54d960be45030368cd4ff92e687ee6c610672a2",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/tests/test_seldon.py",
+      "sha256": "029b9b75f2574a5f4ee95c3cd6867d8bdfb92c4fdd410c98e5f53aad2e0da831",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/tests/test_seldon.py",
+      "sha256": "06e0aefb52c21246efe02fae92e87688e25df154f6b57911a086dbd85c4992c9",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/tests/test_seldon.py",
+      "sha256": "a1d68a0d9a4e237273c0fb66d1e0be77d71d256bee7f555211053149ac56a425",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/tests/test_seldon.py",
+      "sha256": "b07d4a70afacb26b07ba8418e9e1d7764963c94696ab77d34ae08fcf7bc08e81",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "backend/tests/test_seldon.py",
+      "sha256": "aba57c13e094b1436b4ece0720a9245da222121b07ce514d1739efea68b647f1",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "frontend/streamlit_app/pages/2_Search.py",
+      "sha256": "f2097bd0018fc479f6952165dbec52bfeb62b57a2755776767c162a3f602c1d8",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "offline_demo.py",
+      "sha256": "8613e952d6cc08061147f00999e3066bf5ba833ac515a73f570b3fa8c1a25f00",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    },
+    {
+      "path": "tests/offline/test_core.py",
+      "sha256": "8613e952d6cc08061147f00999e3066bf5ba833ac515a73f570b3fa8c1a25f00",
+      "reason": "Source-language vocabulary, external data schema, or a linguistic parser fixture; retain the exact runtime value."
+    }
+  ]
+}

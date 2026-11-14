@@ -1,18 +1,18 @@
-"""Базовые модели SQLAlchemy.
+"""Basic SQLalchemy models.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
-    """Базовый класс для моделей SQLAlchemy."""
+    'Basic class for SQLalchemy models.'
 
     def __repr__(self) -> str:
-        """Вернуть строковое представление модели.
+        """Return the string view of the model.
 
-        :return: Читаемая строка с названием класса и идентификатором.
+        :return: Reading line with class name and identifier.
         """
 
         model_id = getattr(self, "id", None)

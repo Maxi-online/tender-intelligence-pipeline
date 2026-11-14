@@ -1,6 +1,6 @@
-"""Кэш канонических названий проектов.
+"""Cash canonical project names.
 
-Автор: адаптация под TPIS.
+Author: Adaptation to TPIS.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from app.models.base import Base
 
 
 class ProjectTitleCache(Base):
-    """Кэш канонических названий проектов для дедупликации."""
+    'Cash canonic names of projects for deduplication.'
 
     __tablename__ = "project_title_cache"
 

@@ -1,6 +1,6 @@
-"""Страница управления автоматизацией (файл с латинским именем для сайдбара).
+"""Automation management page (Latin name file for Sidebar)).
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -13,12 +13,12 @@ from utils import api_get, api_post, apply_theme, render_sidebar_nav, to_datafra
 
 
 def main() -> None:
-    """Отрисовать страницу автоматизации."""
-    st.set_page_config(page_title="TPIS | Автоматизация", page_icon="⚙️", layout="wide")
+    'Paint the automation page.'
+    st.set_page_config(page_title='TPIS ♪ Automation', page_icon="⚙️", layout="wide")
     apply_theme()
-    render_sidebar_nav("Автоматизация")
-    st.title("Автозапуск сбора данных")
-    st.caption("Запуск поиска тендеров и проектов по настройкам, просмотр последнего результата.")
+    render_sidebar_nav('Automation')
+    st.title('Auto-start data collection')
+    st.caption('Start search for tenders and customization projects, view the latest result.')
 
     status = api_get("/automation/status")
     enabled = bool(status.get("enabled")) if isinstance(status, dict) else False
@@ -38,93 +38,93 @@ def main() -> None:
     if isinstance(last_result, dict):
         summary_parts = []
         summary_parts.append(
-            "Новых сайтов добавлено: "
+            'New sites added: '
             f"{_num(last_result.get('sources_discovered'))} "
-            f"(найдено {_num(last_result.get('sources_found'))})"
+            f"(found) {_num(last_result.get('sources_found'))})"
         )
         leads_raw = last_result.get("perplexity_leads")
         leads = leads_raw if isinstance(leads_raw, dict) else {}
         summary_parts.append(
-            "Проектов и тендеров: "
-            f"проекты {_num(leads.get('projects'))}, "
-            f"тендеры {_num(leads.get('tenders'))}, "
-            f"всего {_num(leads.get('total_results'))}"
+            'Projects and tenders: '
+            f"projects {_num(leads.get('projects'))}, "
+            f"Bids {_num(leads.get('tenders'))}, "
+            f"Total {_num(leads.get('total_results'))}"
         )
-        summary_parts.append(f"Обработано источников: {_num(last_result.get('sources'))}")
-        summary_parts.append(f"Проектов дозаполнено контактами: {_num(last_result.get('projects_enriched'))}")
-        summary_parts.append(f"Дубликатов проектов объединено: {_num(last_result.get('projects_deduped'))}")
-        summary_parts.append(f"Дубликатов компаний объединено: {_num(last_result.get('companies_deduped'))}")
-        summary_parts.append(f"Совпадений тендеров со статьями: {_num(last_result.get('matches'))}")
-        last_result_summary = " | ".join(summary_parts) if summary_parts else "нет данных"
+        summary_parts.append(f"Sources processed: {_num(last_result.get('sources'))}")
+        summary_parts.append(f"The projects are supplemented by contacts: {_num(last_result.get('projects_enriched'))}")
+        summary_parts.append(f"Project duplicates are combined as follows: {_num(last_result.get('projects_deduped'))}")
+        summary_parts.append(f"Company duplicates are combined as follows: {_num(last_result.get('companies_deduped'))}")
+        summary_parts.append(f"Convergence of tenders with articles: {_num(last_result.get('matches'))}")
+        last_result_summary = " | ".join(summary_parts) if summary_parts else 'No data'
     else:
-        last_result_summary = last_result if last_result is not None else "цикл ещё не запускался"
+        last_result_summary = last_result if last_result is not None else 'The cycle has not yet started'
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Автозапуск по расписанию", "Включён" if enabled else "Выключен")
+        st.metric('Time-bound automatic start-up', 'Entered' if enabled else 'Unplugged')
     with col2:
-        st.metric("Когда последний раз запускали", last_run or "ещё не запускали")
+        st.metric('When was the last time they launched', last_run or "Haven't been launched yet.")
     with col3:
-        st.metric("Итог последнего запуска", last_result_summary)
+        st.metric('Outcome of the last launch', last_result_summary)
 
-    st.markdown("**Детали последнего результата**")
+    st.markdown('** Details of last result**')
     leads_raw = last_result.get("perplexity_leads") if isinstance(last_result, dict) else {}
     leads = leads_raw if isinstance(leads_raw, dict) else {}
     if isinstance(last_result, dict):
         details_rows = [
-            {"Параметр": "Новых сайтов добавлено в базу", "Значение": str(_num(last_result.get("sources_discovered")))},
-            {"Параметр": "Сайтов найдено всего (поиск)", "Значение": str(_num(last_result.get("sources_found")))},
-            {"Параметр": "Проектов из поиска", "Значение": str(_num(leads.get("projects")))},
-            {"Параметр": "Тендеров из поиска", "Значение": str(_num(leads.get("tenders")))},
-            {"Параметр": "Результатов поиска всего", "Значение": str(_num(leads.get("total_results")))},
-            {"Параметр": "Источников обработано (ленты, страницы)", "Значение": str(_num(last_result.get("sources")))},
-            {"Параметр": "Проектов дозаполнено (контакты, заказчик)", "Значение": str(_num(last_result.get("projects_enriched")))},
-            {"Параметр": "Дубликатов проектов объединено", "Значение": str(_num(last_result.get("projects_deduped")))},
-            {"Параметр": "Дубликатов компаний объединено", "Значение": str(_num(last_result.get("companies_deduped")))},
-            {"Параметр": "Совпадений тендеров со статьями", "Значение": str(_num(last_result.get("matches")))},
+            {'Parameter': 'New sites added to database', 'Value': str(_num(last_result.get("sources_discovered")))},
+            {'Parameter': 'All sites found (search)', 'Value': str(_num(last_result.get("sources_found")))},
+            {'Parameter': 'Search projects', 'Value': str(_num(leads.get("projects")))},
+            {'Parameter': 'Tenders from the search', 'Value': str(_num(leads.get("tenders")))},
+            {'Parameter': 'Results of the search for all', 'Value': str(_num(leads.get("total_results")))},
+            {'Parameter': 'Sources processed (lents, pages)', 'Value': str(_num(last_result.get("sources")))},
+            {'Parameter': 'Projects completed (comments, requisitioner)', 'Value': str(_num(last_result.get("projects_enriched")))},
+            {'Parameter': 'Project duplicates combined', 'Value': str(_num(last_result.get("projects_deduped")))},
+            {'Parameter': 'Company duplicates combined', 'Value': str(_num(last_result.get("companies_deduped")))},
+            {'Parameter': 'Convergence of tenders with articles', 'Value': str(_num(last_result.get("matches")))},
         ]
         details_df = to_dataframe(details_rows).astype(str)
         st.dataframe(details_df, use_container_width=True, hide_index=True)
     else:
         st.info(
-            "Сбор ещё не запускался. Нажмите «Запустить сбор сейчас» или «Тестовый запуск», "
-            "чтобы заполнить таблицу результатами."
+            'The collection hasn\'t started yet. Press "Stop Collection Now" or "Text Launch"», '
+            "I'm here to fill out the table of results."
         )
         details_rows = [
-            {"Параметр": "Новых сайтов добавлено в базу", "Значение": "0"},
-            {"Параметр": "Сайтов найдено всего (поиск)", "Значение": "0"},
-            {"Параметр": "Проектов из поиска", "Значение": "0"},
-            {"Параметр": "Тендеров из поиска", "Значение": "0"},
-            {"Параметр": "Результатов поиска всего", "Значение": "0"},
-            {"Параметр": "Источников обработано (ленты, страницы)", "Значение": "0"},
-            {"Параметр": "Проектов дозаполнено (контакты, заказчик)", "Значение": "0"},
-            {"Параметр": "Дубликатов проектов объединено", "Значение": "0"},
-            {"Параметр": "Дубликатов компаний объединено", "Значение": "0"},
-            {"Параметр": "Совпадений тендеров со статьями", "Значение": "0"},
+            {'Parameter': 'New sites added to database', 'Value': "0"},
+            {'Parameter': 'All sites found (search)', 'Value': "0"},
+            {'Parameter': 'Search projects', 'Value': "0"},
+            {'Parameter': 'Tenders from the search', 'Value': "0"},
+            {'Parameter': 'Results of the search for all', 'Value': "0"},
+            {'Parameter': 'Sources processed (lents, pages)', 'Value': "0"},
+            {'Parameter': 'Projects completed (comments, requisitioner)', 'Value': "0"},
+            {'Parameter': 'Project duplicates combined', 'Value': "0"},
+            {'Parameter': 'Company duplicates combined', 'Value': "0"},
+            {'Parameter': 'Convergence of tenders with articles', 'Value': "0"},
         ]
         details_df = to_dataframe(details_rows).astype(str)
         st.dataframe(details_df, use_container_width=True, hide_index=True)
 
-    st.markdown("### Запуск сбора")
+    st.markdown('### Launching the collection')
     c1, c2, c3 = st.columns(3)
     with c1:
-        if st.button("Запустить сбор сейчас"):
+        if st.button('Start collection now'):
             api_post("/automation/start")
-            st.success("Сбор поставлен в очередь. Результаты появятся через несколько минут.")
+            st.success('Collection in line. The results will be available in a few minutes.')
     with c2:
-        if st.button("Выключить автозапуск по расписанию"):
+        if st.button('Shut down on schedule'):
             api_post("/automation/stop")
-            st.success("Автозапуск отключён.")
+            st.success('Auto-start off.')
     with c3:
-        if st.button("Тестовый запуск (мало запросов)"):
+        if st.button('Test launch (small requests)'):
             api_post("/automation/start_test")
-            st.success("Тестовый сбор поставлен в очередь.")
+            st.success('The test collection is in line.')
 
-    st.markdown("### Опасные действия")
-    if st.button("Удалить все проекты из базы"):
+    st.markdown('### Dangerous actions')
+    if st.button('Remove all projects from the base'):
         result = api_post("/projects/clear")
         deleted = result.get("deleted") if isinstance(result, dict) else None
-        st.success(f"Проекты удалены: {deleted if deleted is not None else 'готово'}.")
+        st.success(f"The projects have been deleted: {deleted if deleted is not None else 'Ready.'}.")
 
 
 if __name__ == "__main__":

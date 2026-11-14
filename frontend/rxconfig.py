@@ -1,6 +1,6 @@
-"""Конфигурация фронтенда TPIS на Reflex.
+"""TPI frontend configuration on Reflex.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 import reflex as rx

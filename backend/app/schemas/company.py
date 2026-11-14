@@ -1,6 +1,6 @@
-"""Схемы компании для API.
+"""Company schemes for API.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -9,17 +9,17 @@ from pydantic import BaseModel, ConfigDict
 
 
 class CompanyBase(BaseModel):
-    """Базовая схема компании.
+    """The company's basic scheme.
 
-    Атрибуты:
-        inn: ИНН компании.
-        name: Наименование компании.
-        phone: Контактный телефон.
-        email: Контактный email.
-        address: Адрес компании.
-        contacts: Дополнительные контакты.
-        source_refs: Ссылки на источники данных.
-        canonical_id: Идентификатор канонической компании.
+    Attributes:
+        inn: INN company.
+        name: Name of company.
+        phone: Contact number.
+        email: Contact email.
+        address: Address of the company.
+        contacts: Additional contacts.
+        source_refs: References to data sources.
+        canonical_id: Identifier of the canon company.
     """
 
     inn: str | None = None
@@ -33,16 +33,16 @@ class CompanyBase(BaseModel):
 
 
 class CompanyCreate(CompanyBase):
-    """Схема для создания компании на входе API."""
+    'A scheme to create a company at the API entrance.'
 
     model_config = ConfigDict(extra="forbid")
 
 
 class CompanyRead(CompanyBase):
-    """Схема компании для чтения из API.
+    """The company's chart for reading from API.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
+    Attributes:
+        id: Internal record identifier.
     """
 
     id: int

@@ -1,8 +1,8 @@
-"""Клиент Rusprofile для поиска информации о компании.
+"""Rusprofile client to search for company information.
 
-У Rusprofile нет официального открытого API, поэтому здесь реализован
-минимальный HTTP-клиент с возможностью подключить документированный API
-или прокси-обёртку, если она появится.
+Rusprofile doesn't have an official open API, so it's implemented here
+Minimum HTTP client with ability to connect documented API
+Or a proxie wrapper if she shows up.
 """
 
 from __future__ import annotations
@@ -16,12 +16,12 @@ from app.services.http_client import HttpClient
 
 
 class RusprofileClient:
-    """Клиент для поиска компаний на rusprofile.ru.
+    """The client is looking for companies on rusprofile.ru.
 
-    Поддерживаются два режима:
-    - Если RUSPROFILE_BASE_URL задан и возвращает JSON формата {"results": [...]}
-      (собственный прокси/API) — используется он.
-    - В противном случае выполняется HTML-парсинг публичного сайта https://www.rusprofile.ru.
+    Two regimes are maintained:
+    - If RUSPROFILE_BASE_URL is given and returned JSON format {"results": [...]}
+      (own Proxi/API) is used.
+    - Otherwise, the HTML parking of the public site https://www.rusprofile.ru is performed.
     """
 
     def __init__(self) -> None:
@@ -34,13 +34,13 @@ class RusprofileClient:
         query: str,
         limit: int,
     ) -> list[dict[str, Any]]:
-        """Поиск через внешний JSON API-прокси, если он настроен."""
+        "Searching through the external JSON API-proxi, if he's in the mood."
 
         if not self._api_base:
             return []
         from urllib.parse import urlencode
         base = self._api_base.rstrip("/")
-        # Допустим, прокси принимает q и limit как query-параметры.
+        # Say the proxie takes q and limit as quaerry parameters.
         params = {"q": query, "limit": str(limit)}
         url = f"{base}?{urlencode(params)}"
         data = await self._http.get_json(url)
@@ -51,7 +51,7 @@ class RusprofileClient:
         query: str,
         limit: int,
     ) -> list[dict[str, Any]]:
-        """HTML-парсинг rusprofile.ru/search."""
+        'HTML parsing rusprofile.ru/search.'
 
         from urllib.parse import urlencode
 
@@ -62,17 +62,17 @@ class RusprofileClient:
 
         results: list[dict[str, Any]] = []
 
-        # Основной сценарий: карточки компаний в списке поиска.
-        # Структура сайта может меняться, поэтому используем несколько эвристик.
+        # Main scenario: company cards on the search list.
+        # The site structure can change, so we use a few heuristics.
         cards = soup.select("div.company-item") or soup.select("article.company-item")
         if not cards:
-            # fallback: любые ссылки на /id/<число> как карточки компаний
+            # fallback: any references to /id/<number> as company cards
             links = soup.select("a[href^='/id/']")
             for link in links[:limit]:
                 name = link.get_text(strip=True)
                 href = link.get("href") or ""
                 full_url = f"https://www.rusprofile.ru{href}"
-                # Ищем текст вокруг ссылки, чтобы вытащить ИНН/ОГРН и адрес
+                # We're looking for text around the link to pull out the DIN/DOE and address
                 container = link.find_parent("div") or link.parent
                 text_block = container.get_text(" ", strip=True) if container else ""
                 inn = None
@@ -143,16 +143,16 @@ class RusprofileClient:
         *,
         limit: int = 10,
     ) -> list[dict[str, Any]]:
-        """Поиск компании по ИНН/названию/email/телефону на Rusprofile."""
+        'Search for IDN/name/email/phone on Rusprofile.'
 
-        # Если настроен внешний JSON-прокси — используем его.
+        # If the external JSON-proxie is set, we use it.
         if self._api_base:
             try:
                 api_results = await self._search_via_api(query, limit)
                 if api_results:
                     return api_results[:limit]
             except Exception:  # noqa: BLE001
-                # Падаем обратно на HTML-парсинг.
+                # We're gonna go back to HTML parsing.
                 pass
 
         return await self._search_via_html(query, limit)

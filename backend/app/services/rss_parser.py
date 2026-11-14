@@ -1,6 +1,6 @@
-"""Парсер RSS/Atom лент.
+"""Parser RSS/Atom ribbons.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -9,10 +9,10 @@ import feedparser
 
 
 def parse_feed_content(content: str) -> list[dict[str, str]]:
-    """Распарсить RSS/Atom контент и вернуть элементы.
+    """Unload RSS/Atom content and return elements.
 
-    :param content: XML контент RSS/Atom.
-    :return: Список элементов с заголовком, ссылкой и датой.
+    :param content: XML content RSS/Atom.
+    :return: List of elements with title, reference and date.
     """
 
     parsed = feedparser.parse(content)
@@ -30,10 +30,10 @@ def parse_feed_content(content: str) -> list[dict[str, str]]:
 
 
 def parse_feed(feed_url: str) -> list[dict[str, str]]:
-    """Распарсить RSS/Atom ленту и вернуть элементы.
+    """Unload RSS/Atom tape and return the elements.
 
-    :param feed_url: URL RSS/Atom ленты.
-    :return: Список элементов с заголовком, ссылкой и датой.
+    :param feed_url: URL RSS/Atom tape.
+    :return: List of elements with title, reference and date.
     """
 
     parsed = feedparser.parse(feed_url)

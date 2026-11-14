@@ -1,4 +1,4 @@
-"""Ядро: конфигурация и логирование.
+"""Core: configuration and logic.
 
-Автор: Maxi-online
+Author: Maxi-online
 """

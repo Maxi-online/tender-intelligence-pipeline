@@ -1,6 +1,6 @@
-"""Схемы NLP API.
+"""NLP API schemes.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -9,17 +9,17 @@ from pydantic import BaseModel, ConfigDict
 
 
 class TextRequest(BaseModel):
-    """Схема запроса с текстом.
+    """Schematic of request with text.
 
-    Атрибуты:
-        text: Входной текст для обработки.
+    Attributes:
+        text: Input text for processing.
     """
 
     text: str
 
 
 class TextRequestCreate(TextRequest):
-    """Схема для NLP запросов на входе API."""
+    'The chart for the NLP requests at the API inlet.'
 
     model_config = ConfigDict(extra="forbid")
 

@@ -191,7 +191,7 @@ services:
     command:
     - streamlit
     - run
-    - Главная.py
+    - "Main.py"
     - --server.port
     - '8501'
     - --server.address

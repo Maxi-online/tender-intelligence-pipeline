@@ -1,6 +1,6 @@
-"""Страница настроек поиска (файл с латинским именем для сайдбара).
+"""Search configuration page (Latin name file for Sidebar)).
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -11,18 +11,18 @@ from utils import api_get, api_post, apply_theme, render_sidebar_nav, localize_d
 
 
 def main() -> None:
-    """Отрисовать страницу настроек поиска."""
-    st.set_page_config(page_title="TPIS | Настройки поиска", page_icon="🔎", layout="wide")
+    'Draw a search configuration page.'
+    st.set_page_config(page_title='TPIS ♪ Search Settings Original: ENGLISH', page_icon="🔎", layout="wide")
     apply_theme()
-    render_sidebar_nav("Настройки поиска")
-    st.title("Настройки поиска")
-    st.caption("Настройте, по каким темам искать тендеры и проекты, и сколько результатов получать за один запуск.")
+    render_sidebar_nav('Search settings')
+    st.title('Search settings')
+    st.caption('Set the topics on which to seek tenders and projects, and how many results per launch.')
 
     st.markdown("---")
-    st.markdown("### Что ищем: темы и ключевые слова")
+    st.markdown("### What we're looking for: themes and key words")
     st.markdown(
-        "Система ищет по **ключевым словам** (например: строительство, реконструкция, капремонт). "
-        "Вы можете выбрать готовый набор или создать свой."
+        'The system is searching for the ** key words** (e.g.: construction, reconstruction, chaperone)). '
+        'You can choose a ready set or create your own.'
     )
 
     keyword_sets = api_get("/keyword-sets")
@@ -30,36 +30,36 @@ def main() -> None:
         keyword_sets = []
 
     if not keyword_sets:
-        st.info("Пока нет ни одного набора ключевых слов. Создайте новый ниже.")
+        st.info("There's not a single set of key words yet. Create a new one below.")
         selected_set_id = None
         selected_set = None
     else:
         options = {f"{item.get('name')} (#{item.get('id')})": item for item in keyword_sets}
         label = st.selectbox(
-            "Выберите набор ключевых слов",
+            'Select a set of key words',
             list(options.keys()),
             key="kw_select",
         )
         selected_set = options.get(label)
         selected_set_id = selected_set.get("id") if selected_set else None
 
-    with st.expander("➕ Создать новый набор ключевых слов", expanded=False):
-        st.markdown("Задайте название и перечислите слова или короткие фразы (по одному на строку).")
-        new_name = st.text_input("Название набора", placeholder="Например: Строительные тендеры", key="new_kw_set_name")
+    with st.expander('➕ Create a new set of key words', expanded=False):
+        st.markdown('Name and list words or short sentences (one per line)).')
+        new_name = st.text_input('Set Name', placeholder='For example: Construction tenders', key="new_kw_set_name")
         new_desc = st.text_area(
-            "Описание (необязательно)",
-            placeholder="Кратко, для чего этот набор.",
+            'Description (optional)',
+            placeholder='In short, what is this set for?',
             key="new_kw_set_desc",
         )
         new_keywords_raw = st.text_area(
-            "Ключевые слова или фразы — по одному на строку",
+            'Keywords or phrases, one per line',
             placeholder="строительство\nреконструкция\nкапитальный ремонт\nкапремонт",
             key="new_kw_set_keywords",
         )
-        new_author = st.text_input("Кто создал (необязательно)", key="new_kw_set_author")
-        if st.button("Создать набор"):
+        new_author = st.text_input('Who created (optional)', key="new_kw_set_author")
+        if st.button('Create Set'):
             if not new_name:
-                st.error("Укажите название набора.")
+                st.error('Please specify the name of the kit.')
             else:
                 keywords_payload = []
                 for line in new_keywords_raw.splitlines():
@@ -76,22 +76,22 @@ def main() -> None:
                         "keywords": keywords_payload,
                     },
                 )
-                st.success("Набор создан. Обновите страницу (F5), чтобы увидеть его в списке.")
+                st.success('Set created. Update the page (F5) to see it on the list.')
 
     if selected_set:
-        st.markdown("#### Редактировать выбранный набор")
+        st.markdown('#### Edit the selected set')
         edit_name = st.text_input(
-            "Название набора",
+            'Set Name',
             value=selected_set.get("name") or "",
             key="edit_kw_set_name",
         )
         edit_desc = st.text_area(
-            "Описание",
+            'Description',
             value=selected_set.get("description") or "",
             key="edit_kw_set_desc",
         )
         edit_author = st.text_input(
-            "Кто создал",
+            'Who created',
             value=selected_set.get("created_by") or "",
             key="edit_kw_set_author",
         )
@@ -100,16 +100,16 @@ def main() -> None:
             [str(item.get("text")) for item in existing_keywords if item.get("text")]
         )
         edit_keywords_raw = st.text_area(
-            "Ключевые слова или фразы — по одному на строку",
+            'Keywords or phrases, one per line',
             value=keywords_text,
             key="edit_kw_set_keywords",
         )
 
         col_update, col_delete = st.columns([1, 1])
         with col_update:
-            if st.button("Сохранить изменения"):
+            if st.button('Save Changes'):
                 if not edit_name:
-                    st.error("Название набора не может быть пустым.")
+                    st.error("The name of the kit can't be empty.")
                 else:
                     keywords_payload = []
                     for line in edit_keywords_raw.splitlines():
@@ -127,19 +127,19 @@ def main() -> None:
                         },
                         method="PUT",
                     )
-                    st.success("Изменения сохранены.")
+                    st.success('The changes are retained.')
                     st.rerun()
         with col_delete:
-            if st.button("Удалить этот набор"):
+            if st.button('Remove This Set'):
                 api_post(f"/keyword-sets/{selected_set_id}", {}, method="DELETE")
-                st.success("Набор удалён.")
+                st.success("The kit's been removed.")
                 st.rerun()
 
     st.markdown("---")
-    st.markdown("### Сколько ищем за один запуск")
+    st.markdown("### How much we're looking for for one launch #")
     st.markdown(
-        "Эти настройки действуют при автоматическом запуске сбора (страница «Автоматизация»). "
-        "Чем выше значения — тем больше результатов, но дольше работа."
+        'These settings are active when the collection is automatically started (page "Automatization"»). '
+        'The higher the value, the more results, but the longer the job.'
     )
 
     settings = api_get("/search/settings")
@@ -148,30 +148,30 @@ def main() -> None:
     perplexity_query_limit = int(settings.get("perplexity_query_limit", 10))
 
     new_query_limit = st.slider(
-        "Сколько разных тем проверять за один цикл (по ключевым словам)",
+        'How many different topics to check in one cycle (keywords))',
         min_value=1,
         max_value=50,
         value=perplexity_query_limit,
         step=1,
-        help="По каждой теме система делает отдельный поисковый запрос. Больше тем — шире охват.",
+        help='For each topic, the system makes a separate search request. More than that, coverage is greater.',
     )
     new_sources_limit = st.slider(
-        "Максимум новых сайтов-источников за один цикл",
+        'Maximum new source sites per cycle',
         min_value=50,
         max_value=2000,
         value=perplexity_limit_sources,
         step=50,
-        help="Сколько новых сайтов (лент, порталов) добавлять в базу за один запуск.",
+        help='How many new sites (Lent, portals) are added to the base for one launch.',
     )
     new_leads_limit = st.slider(
-        "Максимум проектов и тендеров за один цикл",
+        'Maximum projects and tenders per cycle',
         min_value=50,
         max_value=2000,
         value=perplexity_limit_leads,
         step=50,
-        help="Сколько проектов и тендеров загружать из найденных источников за один запуск.",
+        help='How many projects and tenders to download from identified sources per launch.',
     )
-    if st.button("Сохранить настройки"):
+    if st.button('Save Settings'):
         api_post(
             "/search/settings",
             {
@@ -181,7 +181,7 @@ def main() -> None:
             },
             method="PUT",
         )
-        st.success("Настройки сохранены. Они будут использоваться при следующем запуске сбора.")
+        st.success('Substrates retained. They will be used for the next start of the collection.')
 
     st.markdown("---")
 

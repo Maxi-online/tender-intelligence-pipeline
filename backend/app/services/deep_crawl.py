@@ -1,6 +1,6 @@
-"""Глубокий парсинг HTML-источников: обход внутренних ссылок и sitemap.
+"""Deep parsing of HTML sources: bypassing internal links and sitamp.
 
-Автор: адаптация под TPIS.
+Author: Adaptation to TPIS.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def _same_domain(base: str, url: str) -> bool:
-    """Проверить, что URL относится к тому же домену, что и базовый."""
+    'Check that the URL refers to the same domain as the parent.'
 
     try:
         pb = urlparse(base)
@@ -35,11 +35,11 @@ async def collect_internal_links(
     max_pages: int = 100,
     max_depth: int = 2,
 ) -> List[str]:
-    """Собрать внутренние ссылки для глубокого обхода домена.
+    """Gather internal links for a deep walk around the domain.
 
-    - Стартуем с start_url.
-    - Пытаемся прочитать sitemap.xml и добавить ссылки оттуда.
-    - Дальше обходим HTML-страницы, вытаскивая href и ограничивая глубину/количество.
+    - Start with start_url.
+    - Trying to read sitemap.xml and add links from there.
+    - We're gonna go around the HTML pages, pull out the href and limit the depth/number.
     """
 
     visited: Set[str] = set()
@@ -51,7 +51,7 @@ async def collect_internal_links(
 
     queue.append((start_url, 0))
 
-    # Попробуем sitemap на том же домене
+    # Try the sitamp on the same domain.
     try:
         parsed = urlparse(start_url)
         if parsed.scheme and parsed.netloc:
@@ -89,7 +89,7 @@ async def collect_internal_links(
         pages_processed += 1
         results.add(url)
 
-        # Собираем href для дальнейшего обхода
+        # Gather href for further rounds.
         try:
             import re
 
@@ -107,6 +107,6 @@ async def collect_internal_links(
         pages_processed,
         len(results),
     )
-    # Возвращаем список, чтобы порядок был детерминированным для последующей обработки
+    # Return the list so that order is determinable for further processing
     return list(results)
 

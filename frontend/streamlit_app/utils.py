@@ -1,6 +1,6 @@
-"""Утилиты для Streamlit фронтенда TPIS.
+"""Utilities for Treamlit Frontend TPIS.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -16,12 +16,12 @@ import streamlit as st
 
 
 def _default_api_base() -> str:
-    """Базовый URL API: в Docker — backend:8001, локально — localhost:8001."""
+    '== sync, corrected by elderman == @elder_man.'
     base = os.getenv("TPIS_API_BASE", "").strip()
     if base:
         base = base.rstrip("/")
         return f"{base}/api" if not base.endswith("/api") else base
-    # В контейнере фронтенд обращается к backend по имени сервиса
+    # In the container, the frontand calls backend by the name of the service
     if os.path.exists("/.dockerenv") or os.getenv("RUNNING_IN_DOCKER"):
         return "http://backend:8001/api"
     return "http://localhost:8001/api"
@@ -37,19 +37,19 @@ if not PUBLIC_API_BASE:
 
 
 def get_public_api_base() -> str:
-    """Получить публичный URL API для ссылок в браузере.
+    """Get a public URL API for links in the browser.
 
-    :return: Базовый URL API.
+    :return: Core URL API.
     """
 
     return PUBLIC_API_BASE
 
 
 def _normalize_value(value: Any) -> str:
-    """Нормализовать значение для безопасного отображения в UI.
+    """Normalize value for safe display in UI.
 
-    :param value: Произвольное значение.
-    :return: Строковое представление значения.
+    :param value: Arbitrary value.
+    :return: Static value presentation.
     """
 
     if value is None:
@@ -62,10 +62,10 @@ def _normalize_value(value: Any) -> str:
 
 
 def normalize_tenders(rows: list[dict]) -> list[dict]:
-    """Нормализовать список тендеров.
+    """Normalize the tender list.
 
-    :param rows: Список словарей тендеров.
-    :return: Нормализованный список.
+    :param rows: List of tender dictionary.
+    :return: Normalized list.
     """
 
     normalized = []
@@ -91,10 +91,10 @@ def normalize_tenders(rows: list[dict]) -> list[dict]:
 
 
 def normalize_projects(rows: list[dict]) -> list[dict]:
-    """Нормализовать список проектов.
+    """Normalize the project list.
 
-    :param rows: Список словарей проектов.
-    :return: Нормализованный список.
+    :param rows: List of project dictionaries.
+    :return: Normalized list.
     """
 
     normalized = []
@@ -114,10 +114,10 @@ def normalize_projects(rows: list[dict]) -> list[dict]:
 
 
 def normalize_sources(rows: list[dict]) -> list[dict]:
-    """Нормализовать список источников.
+    """Normalize the source list.
 
-    :param rows: Список словарей источников.
-    :return: Нормализованный список.
+    :param rows: List of dictionaries of sources.
+    :return: Normalized list.
     """
 
     normalized = []
@@ -135,10 +135,10 @@ def normalize_sources(rows: list[dict]) -> list[dict]:
 
 
 def to_dataframe(rows: list[dict]) -> pd.DataFrame:
-    """Преобразовать список словарей в DataFrame.
+    """Transform the list of dictionaries into DataFrame.
 
-    :param rows: Список словарей.
-    :return: DataFrame для отображения.
+    :param rows: List of dictionaries.
+    :return: DataFrame for display.
     """
 
     if not rows:
@@ -147,43 +147,43 @@ def to_dataframe(rows: list[dict]) -> pd.DataFrame:
 
 
 def localize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-    """Переименовать колонки таблицы на русский язык.
+    """Rename the table columns as Russian.
 
-    :param df: DataFrame с исходными колонками.
-    :return: DataFrame с локализованными колонками.
+    :param df: DataFrame with reference columns.
+    :return: DataFrame with localized columns.
     """
 
     mapping = {
         "id": "ID",
-        "tender_id": "ID тендера",
-        "title": "Название",
-        "name": "Название",
-        "region": "Регион",
-        "budget": "Бюджет",
-        "currency": "Валюта",
-        "status": "Статус",
-        "winner": "Победитель",
-        "participants": "Участники",
-        "contacts": "Контакты",
-        "source_url": "Ссылка",
-        "source": "Источник",
-        "stage": "Стадия",
-        "start_date": "Дата начала",
-        "end_date": "Дата окончания",
-        "url": "Ссылка",
-        "published_at": "Дата публикации",
-        "label": "Метка",
-        "quality_flag": "Флаг качества",
-        "kind": "Тип",
-        "type": "Тип",
-        "score": "Сходство",
-        "field": "Поле",
+        "tender_id": 'Tender ID',
+        "title": 'Name',
+        "name": 'Name',
+        "region": 'Region',
+        "budget": 'Budget',
+        "currency": 'Currency',
+        "status": 'Status',
+        "winner": 'Winner',
+        "participants": 'Participants',
+        "contacts": 'Contacts',
+        "source_url": 'Link',
+        "source": 'Source',
+        "stage": 'Stage',
+        "start_date": 'Start date',
+        "end_date": 'End date',
+        "url": 'Link',
+        "published_at": 'Publication date',
+        "label": 'Label',
+        "quality_flag": 'Quality flag',
+        "kind": 'Type',
+        "type": 'Type',
+        "score": 'Similarity',
+        "field": 'Field',
         "seldon": "Seldon",
-        "media": "СМИ",
-        "confidence_score": "Уверенность",
-        "approved": "Подтверждено",
-        "reviewer": "Оператор",
-        "reviewed_at": "Дата проверки",
+        "media": 'Media',
+        "confidence_score": 'Confidence',
+        "approved": 'Confirmed',
+        "reviewer": 'Operator',
+        "reviewed_at": 'Review date',
     }
     rename_map = {col: mapping[col] for col in df.columns if col in mapping}
     if not rename_map:
@@ -192,7 +192,7 @@ def localize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def api_get(path: str, params: dict | None = None) -> Any:
-    """Выполнить GET запрос к API."""
+    'Implement GET request to API.'
     url = f"{API_BASE}{path}"
     with httpx.Client(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
         response = client.get(url, params=params)
@@ -201,7 +201,7 @@ def api_get(path: str, params: dict | None = None) -> Any:
 
 
 def api_post(path: str, payload: dict | None = None, *, method: str = "POST") -> Any:
-    """Выполнить запрос к API (POST/PUT/DELETE)."""
+    'Do a request for API (POST/PUT/DELETE).'
     url = f"{API_BASE}{path}"
     with httpx.Client(timeout=httpx.Timeout(30.0, connect=10.0)) as client:
         response = client.request(method.upper(), url, json=payload)
@@ -209,20 +209,20 @@ def api_post(path: str, payload: dict | None = None, *, method: str = "POST") ->
         return response.json()
 
 
-# Соответствие русских подписей сайдбара и путей к страницам (латинские имена файлов)
+# Conformity of Russian signatures of Sidebar and page routes (Latin file names))
 _SIDEBAR_PAGES = [
-    ("Главная", "Главная.py"),
-    ("Настройки поиска", "pages/2_Search.py"),
-    ("Источники и PDF", "pages/3_Sources.py"),
-    ("Автоматизация", "pages/4_Automation.py"),
+    ('Home', 'Main.py'),
+    ('Search settings', "pages/2_Search.py"),
+    ('Sources and PDF', "pages/3_Sources.py"),
+    ('Automation', "pages/4_Automation.py"),
     ("Seldon API", "pages/5_Seldon_API.py"),
 ]
 
 
 def render_sidebar_nav(current_label: str) -> None:
-    """Показать в сайдбаре навигацию с русскими подписями и переключить страницу при выборе.
+    """Show navigation with Russian signatures in the Sidebar and switch the page to select.
 
-    :param current_label: Подпись текущей страницы (одна из: Главная, Настройки поиска, Источники и PDF, Автоматизация).
+    :param current_label: Signature of the current page (one of: Main, Search Settings, Sources and PDF, Automation).
     :return: None.
     """
     labels = [label for label, _ in _SIDEBAR_PAGES]
@@ -230,7 +230,7 @@ def render_sidebar_nav(current_label: str) -> None:
         idx = next(i for i, (label, _) in enumerate(_SIDEBAR_PAGES) if label == current_label)
     except StopIteration:
         idx = 0
-    selected = st.sidebar.radio("Раздел", labels, index=idx, label_visibility="collapsed")
+    selected = st.sidebar.radio('Section', labels, index=idx, label_visibility="collapsed")
     if selected != current_label:
         path = next((path for label, path in _SIDEBAR_PAGES if label == selected), None)
         if path:
@@ -238,22 +238,12 @@ def render_sidebar_nav(current_label: str) -> None:
 
 
 def apply_theme() -> None:
-    """Применить базовую тему и стилизацию Streamlit.
+    """Apply the basic theme and Streamlit style.
 
-    :return: None. Добавляет CSS и оформление.
+    :return: None. Adds CSS and configuration.
     """
     st.markdown(
-        """
-        <style>
-        .block-container { padding-top: 1.5rem; padding-bottom: 2rem; }
-        .metric-card { padding: 1rem; border-radius: 12px; background: #0F172A; color: #F8FAFC; }
-        .metric-card h3 { margin: 0; font-size: 0.9rem; color: #CBD5F5; }
-        .metric-card p { margin: 0; font-size: 1.4rem; font-weight: 700; }
-        .section-title { font-weight: 700; font-size: 1.1rem; margin-top: 1rem; }
-        /* Скрыть стандартный список страниц Streamlit — навигация через render_sidebar_nav с русскими подписями */
-        section[data-testid="stSidebarNav"] { display: none; }
-        </style>
-        """,
+        '\n        <style>\n        .block-container { padding-top: 1.5rem; padding-bottom: 2rem; }\n        .metric-card { padding: 1rem; border-radius: 12px; background: #0F172A; color: #F8FAFC; }\n        .metric-card h3 { margin: 0; font-size: 0.9rem; color: #CBD5F5; }\n        .metric-card p { margin: 0; font-size: 1.4rem; font-weight: 700; }\n        .section-title { font-weight: 700; font-size: 1.1rem; margin-top: 1rem; }\n        /* Hide Streamlit\'s standard list of pages — navigation via render_sidebar_nav with Russian signatures */\n        section[data-testid="stSidebarNav"] { display: none; }\n        </style>\n        ',
         unsafe_allow_html=True,
     )
 

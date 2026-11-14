@@ -1,8 +1,8 @@
-"""Сервис импорта и маппинга данных из Seldon Tenders API.
+"""A data import and mapping service from Seldon Tenders API.
 
-Назначение: получение максимально свежей информации о заказчиках и победителях
-(не участие в тендерах). Маппинг сырых ответов Purchases/Result, Protocols, Contracts
-в схему ТЗ TPIS и сохранение в кэш (SeldonPurchase) для единого REST API.
+Appointment: obtaining the most up-to-date information possible on customers and winners
+(not participating in tenders). Purchases/Result, Protocols, Contracts
+in the TK TPI scheme and storage in cache (SeldonPurchase) for a single REST API.
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ def _date_only(value: Any) -> Any:
 
 
 def map_purchase_to_tpis_schema(raw: dict[str, Any]) -> dict[str, Any]:
-    """Преобразовать сырой объект purchase из Seldon в схему ТЗ TPIS (для REST API)."""
+    'Transform raw object purchase from Seldon to TK TPIS (for REST API)).'
     seldon_id = raw.get("seldonId") or raw.get("SeldonId")
     status = raw.get("status") or {}
     currency = raw.get("currency") or {}
@@ -77,7 +77,7 @@ def map_purchase_to_tpis_schema(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def map_purchase_to_model(raw: dict[str, Any]) -> dict[str, Any]:
-    """Подготовить поля для записи SeldonPurchase из сырого purchase."""
+    'Prepare fields to record SeldonPurchase from raw purchase.'
     seldon_id = raw.get("seldonId") or raw.get("SeldonId")
     if seldon_id is None:
         raise ValueError("purchase without seldonId")
@@ -120,7 +120,7 @@ def map_purchase_to_model(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def extract_participants_from_protocol(protocol: dict[str, Any] | None) -> list[dict[str, Any]]:
-    """Из протокола извлечь список участников (organizations + dataApps admitted/resultType)."""
+    'List of participants (organizations + dataApps admitted/resultType)).'
     if not protocol:
         return []
     lots_list = protocol.get("lotsList") or []
@@ -161,7 +161,7 @@ def extract_participants_from_protocol(protocol: dict[str, Any] | None) -> list[
 
 
 def extract_winner_from_protocol(protocol: dict[str, Any] | None) -> dict[str, Any] | None:
-    """Из протокола извлечь победителя (заявка с признаком победитель / resultType)."""
+    'From the protocol to extract the winner (request with the winner sign / resultType).'
     if not protocol:
         return None
     lots_list = protocol.get("lotsList") or []
@@ -189,7 +189,7 @@ def extract_winner_from_protocol(protocol: dict[str, Any] | None) -> dict[str, A
 
 
 def extract_winner_from_contract(contract: dict[str, Any] | None) -> dict[str, Any] | None:
-    """Из контракта извлечь поставщика как победителя."""
+    'The Contract for the Supplier as the Winner.'
     if not contract:
         return None
     contracts_list = contract.get("contracts") if isinstance(contract.get("contracts"), list) else []
@@ -215,7 +215,7 @@ async def sync_purchases_from_seldon(
     subtype: int | None = None,
     validate_with_llm: bool | None = None,
 ) -> dict[str, int]:
-    """Создать заказ Purchases, дождаться, выгрузить все страницы и сохранить в SeldonPurchase."""
+    'Create an order for Purches, wait, download all pages and save in SeldonPurchase.'
     task_id = await client.create_order_purchases(filter_id, date_from, date_to, subtype)
     await client.wait_order_ready(task_id, "purchases")
     all_purchases = await client.get_purchases_result_all(task_id)
@@ -256,7 +256,7 @@ async def fetch_tenders_from_seldon(
     date_to: str,
     subtype: int | None = None,
 ) -> list[dict[str, Any]]:
-    """Получить список закупок из Seldon без сохранения в БД (для тестов/разовой выгрузки)."""
+    'Receive a purchase list from Seldon without storage in database (for testing/unloading)).'
     task_id = await client.create_order_purchases(filter_id, date_from, date_to, subtype)
     await client.wait_order_ready(task_id, "purchases")
     all_purchases = await client.get_purchases_result_all(task_id)
@@ -267,7 +267,7 @@ async def fetch_tenders(
     client: SeldonClient,
     params: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
-    """Обратная совместимость: получить тендеры (по filter_id и датам в params или умолчания)."""
+    'Reverse compatibility: obtain tenders (on filter_id and dates in paragraphs or silence)).'
     params = params or {}
     filter_id = params.get("filter_id")
     if filter_id is None:
@@ -286,9 +286,9 @@ async def fetch_tenders(
 
 
 def map_seldon_tender(raw: dict[str, Any]) -> dict[str, Any]:
-    """Преобразовать запись Seldon (уже в формате TPIS schema) в поля модели Tender.
+    """Transform Seldon (already TPIS schema) to the Tender Fields.
 
-    Используется для обратной совместимости с ingest_tenders, если вызывают старый API.
+    Used for inverse compatibility with ingest_tenders if caused by an old API.
     """
     start_date = raw.get("start_date")
     end_date = raw.get("end_date")
@@ -315,10 +315,10 @@ async def ingest_tenders(
     client: SeldonClient,
     limit: int = 100,
 ) -> dict[str, int]:
-    """Загрузить и сохранить тендеры в таблицу tenders (legacy).
+    """Upload and save tenders to table listers (legacy)).
 
-    Если нужна выгрузка из реального Seldon API, используйте sync_purchases_from_seldon
-    с предварительно созданным заказом по filter_id и датам.
+    If you need to unload from the real Seldon API, use sync_purchases_from_seldon
+    pre-ordered for filter_id and dates.
     """
     try:
         filters_list = await client.get_filters()

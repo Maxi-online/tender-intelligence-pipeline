@@ -1,6 +1,6 @@
-"""Пайплайн обработки PDF: извлечение текста и разбиение на фрагменты.
+"""PDF Processing Plane: Text Extraction and Fragmenting.
 
-Если в PDF нет текстового слоя (или его слишком мало), возвращается пустой список фрагментов.
+If there is no text layer in the PDF (or too few), an empty list of fragments returns.
 """
 
 from __future__ import annotations
@@ -14,11 +14,11 @@ from app.services.claude_client import ClaudeClient
 
 
 def _split_plain_text(text: str, max_chars: int = 4000) -> list[str]:
-    """Разбить длинный текст на фрагменты по абзацам.
+    """Split the long text into fragments into paragraphs.
 
-    :param text: Исходный текст.
-    :param max_chars: Максимальная длина одного фрагмента.
-    :return: Список фрагментов.
+    :param text: Reference text.
+    :param max_chars: Maximum length of one fragment.
+    List of fragments.
     """
 
     if not text:
@@ -43,12 +43,12 @@ def _split_plain_text(text: str, max_chars: int = 4000) -> list[str]:
 
 
 async def extract_text_smart(data: bytes) -> dict[str, Any]:
-    """Извлечь текст из PDF.
+    """Extract text from a PDF.
 
-    :param data: Байтовое содержимое PDF.
-    :return: Словарь с полями:
-        - mode: "text" или "vision"
-        - fragments: список текстовых фрагментов
+    :param data: Byte content of PDF.
+    :return: Field dictionary:
+        - Mode: "text" or "vision"
+        - Fragments: list of text pieces
     """
 
     if not data:
@@ -66,7 +66,7 @@ async def extract_text_smart(data: bytes) -> dict[str, Any]:
     if merged_text:
         return {"mode": "text", "fragments": _split_plain_text(merged_text)}
 
-    # Если текстового слоя нет — пытаемся извлечь через Claude Vision (OCR).
+    # If there is no text layer, we try to extract through Claude Vision (OCR)).
     try:
         images: list[bytes] = []
         buffer.seek(0)

@@ -1,4 +1,4 @@
-"""Вкладка модуля Seldon API: актуальная информация о заказчиках и победителях (не участие в тендерах)."""
+'Seldon API tab: up-to-date information on customers and winners (not participating in tenders)).'
 
 from __future__ import annotations
 
@@ -11,110 +11,110 @@ from utils import api_get, api_post, apply_theme, render_sidebar_nav, to_datafra
 
 
 def main() -> None:
-    """Отрисовать страницу Seldon API."""
+    'Paint the Seldon API page.'
     st.set_page_config(page_title="TPIS | Seldon API", page_icon="📋", layout="wide")
     apply_theme()
     render_sidebar_nav("Seldon API")
-    st.title("Модуль Seldon API")
+    st.title('Seldon API module')
     st.caption(
-        "Цель: максимально свежая информация об участниках — заказчиках и победителях. "
-        "Тендеры как источник данных о контрагентах (ИНН, контакты). Сначала загрузите данные в кэш."
+        'Objective: To provide as up-to-date information as possible on customer and winner participants. '
+        'Tenders as counterparty data source (INN, contacts)). First, download the data into the cache.'
     )
 
     mode = st.radio(
-        "Режим",
+        'Mode',
         [
-            "Загрузить данные из Seldon",
-            "Победитель по тендеру",
-            "Заказчики и контакты по ИНН",
-            "Участники по тендеру",
-            "Список тендеров",
-            "Детали по ID",
+            'Upload Seldon data',
+            'Winner on tender',
+            'Buyers and contacts on INS',
+            'Tender participants',
+            'List of tenders',
+            'I.D. Details',
         ],
         horizontal=True,
     )
 
     try:
-        if mode == "Загрузить данные из Seldon":
-            st.subheader("Загрузить данные из Seldon")
-            st.caption("GPT сам подберёт фильтр и период под цель. Один клик — рекомендация и выгрузка.")
+        if mode == 'Upload Seldon data':
+            st.subheader('Upload Seldon data')
+            st.caption('GPT will select the filter and the period to the target. One click — Recommendation and Unload.')
             search_goal = st.text_input(
-                "Цель поиска (можно не менять)",
-                value="Заказчики и победители по строительству и капремонту, госзакупки 44-ФЗ",
+                'Search Purpose (may not change)',
+                value='Buyers and winners in construction and capacitation, public procurement 44-FZ',
                 label_visibility="collapsed",
             )
-            if st.button("Запустить синхронизацию"):
-                with st.spinner("GPT подбирает настройки, затем выгрузка..."):
-                    resp = api_post("/seldon/sync", payload={"search_goal": search_goal or "Заказчики и победители по строительству, госзакупки 44-ФЗ"})
-                st.success(f"Готово: создано {resp.get('created', 0)}, обновлено {resp.get('updated', 0)}, всего {resp.get('total', 0)}")
+            if st.button('Start Synchronization'):
+                with st.spinner('GPT selects settings, then unloads...'):
+                    resp = api_post("/seldon/sync", payload={"search_goal": search_goal or 'Buyers and winners in construction, government procurement 44-FZ'})
+                st.success(f"Ready: Established {resp.get('created', 0)}updated {resp.get('updated', 0)}total {resp.get('total', 0)}")
                 st.json(resp)
 
-        elif mode == "Список тендеров":
-            st.subheader("Список тендеров из кэша")
+        elif mode == 'List of tenders':
+            st.subheader('Cache tender list')
             limit = st.number_input("limit", min_value=1, max_value=100, value=20)
             offset = st.number_input("offset", min_value=0, value=0)
-            if st.button("Запросить наш API"):
+            if st.button('Request our APl'):
                 data = api_get(f"/seldon/tenders?limit={limit}&offset={offset}")
                 if isinstance(data, list) and data:
                     df = to_dataframe(data)
                     st.dataframe(df, use_container_width=True, hide_index=True)
                 else:
-                    st.info("В кэше нет записей. Сначала выполните «Загрузить данные из Seldon».")
+                    st.info('There\'s no record in the cash. First, do "To load data from Seldon».')
 
-        elif mode == "Детали по ID":
-            st.subheader("Детали тендера по seldon_id")
+        elif mode == 'I.D. Details':
+            st.subheader('seldon_id tender details')
             tender_id = st.text_input("tender_id (seldon_id)", value="")
-            if st.button("Запросить наш API") and tender_id:
+            if st.button('Request our APl') and tender_id:
                 data = api_get(f"/seldon/tenders/{tender_id}")
                 if isinstance(data, dict):
                     st.json(data)
                 else:
-                    st.warning("Тендер не найден.")
+                    st.warning('No tender found.')
 
-        elif mode == "Участники по тендеру":
-            st.subheader("Участники закупки (заявки, допуск) по ID")
+        elif mode == 'Tender participants':
+            st.subheader('Participants in procurement (applications, admissions) for ID')
             tender_id = st.text_input("tender_id", value="")
-            if st.button("Запросить наш API") and tender_id:
+            if st.button('Request our APl') and tender_id:
                 data = api_get(f"/seldon/tenders/{tender_id}/participants")
                 if isinstance(data, list) and data:
                     df = to_dataframe(data)
                     st.dataframe(df, use_container_width=True, hide_index=True)
                 else:
-                    st.info("Участники не найдены или тендер отсутствует в кэше.")
+                    st.info('Participants are not found or tender is missing in the cash.')
 
-        elif mode == "Победитель по тендеру":
-            st.subheader("Победитель (актуальные данные об исполнителе) по ID закупки")
+        elif mode == 'Winner on tender':
+            st.subheader('Winner ( up-to-date performance data) for ID procurement')
             tender_id = st.text_input("tender_id", value="")
-            if st.button("Запросить наш API") and tender_id:
+            if st.button('Request our APl') and tender_id:
                 data = api_get(f"/seldon/tenders/{tender_id}/winner")
                 if isinstance(data, dict):
                     st.json(data)
                 else:
-                    st.warning("Тендер не найден.")
+                    st.warning('No tender found.')
 
-        elif mode == "Заказчики и контакты по ИНН":
-            st.subheader("Заказчики и контакты по ИНН (актуальные данные)")
-            inn = st.text_input("ИНН (или company_id)", value="")
-            if st.button("Запросить наш API") and inn:
+        elif mode == 'Buyers and contacts on INS':
+            st.subheader('Buyers and INS contacts (relevant data)')
+            inn = st.text_input('INN (or company_id)', value="")
+            if st.button('Request our APl') and inn:
                 data = api_get(f"/seldon/contacts?inn={inn}")
                 if isinstance(data, list) and data:
                     df = to_dataframe(data)
                     st.dataframe(df, use_container_width=True, hide_index=True)
                 else:
-                    st.info("Контакты по этому ИНН не найдены в кэше.")
+                    st.info("There's no contact on this I.N.A. in the cache.")
     except Exception as e:
-        st.error(f"Ошибка: {e}")
+        st.error(f"mistake: {e}")
 
     st.markdown("---")
-    st.subheader("Справочник: фильтры Seldon")
-    if st.button("Получить список фильтров"):
+    st.subheader('Source: Seldon Filters')
+    if st.button('Get filter list'):
         try:
             filters = api_get("/seldon/filters")
             if isinstance(filters, list) and filters:
                 df = to_dataframe(filters)
                 st.dataframe(df, use_container_width=True, hide_index=True)
             else:
-                st.warning("Не удалось получить фильтры (проверьте настройки Seldon).")
+                st.warning('Could not obtain filters (check Seldon settings)).')
         except Exception as ex:
             st.error(str(ex))
 

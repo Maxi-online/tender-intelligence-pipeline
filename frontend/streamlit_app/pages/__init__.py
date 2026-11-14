@@ -1,4 +1,4 @@
-"""Пакет страниц Streamlit.
+"""Streamlit page package.
 
-Автор: Maxi-online
+Author: Maxi-online
 """

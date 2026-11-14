@@ -1,4 +1,4 @@
-"""Маршруты API.
+"""API routes.
 
-Автор: Maxi-online
+Author: Maxi-online
 """

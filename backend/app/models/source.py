@@ -1,6 +1,6 @@
-"""Модель источника данных.
+"""Data source model.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,17 +14,17 @@ from app.models.base import Base
 
 
 class Source(Base):
-    """Сущность источника данных (RSS/HTML/Sitemap/API).
+    """Materiality of the data source (RSS/HTML/Sitemap/API).
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
-        name: Человекочитаемое имя источника.
-        url: Базовый URL источника.
-        kind: Тип источника (rss, html, sitemap, api).
-        status: Текущий статус источника (active, disabled).
-        auto_discovered: Признак автообнаружения.
-        last_checked_at: Дата последней проверки.
-        created_at: Дата создания записи.
+    Attributes:
+        id: Internal record identifier.
+        name: The human name of the source.
+        url: Source reference URL.
+        kind: Source type (rss, html, sitamp, api).
+        status: Current source status (active, disabled).
+        auto_discovered: Sign of autodetection.
+        last_checked_at: Date of last check.
+        created_at: Date of creation of the record.
     """
 
     __tablename__ = "sources"

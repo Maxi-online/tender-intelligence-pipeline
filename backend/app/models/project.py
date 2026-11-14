@@ -1,6 +1,6 @@
-"""Модель проекта.
+"""Project model.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -14,29 +14,29 @@ from app.models.base import Base
 
 
 class Project(Base):
-    """Сущность строительного проекта.
+    """The essence of the construction project.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
-        project_id: Внешний идентификатор проекта.
-        name: Название проекта.
-        normalized_name: Нормализованное название для защиты от дублей.
-        region: Регион реализации.
-        stage: Стадия проекта.
-        start_date: Плановая дата начала.
-        end_date: Плановая дата окончания.
-        budget: Оценочная стоимость.
-        description: Краткое описание проекта (LLM).
-        customer_name: Заказчик.
-        customer_email: Email заказчика.
-        customer_phone: Телефон заказчика.
-        investor_name: Инвестор.
-        investor_email: Email инвестора.
-        investor_phone: Телефон инвестора.
-        contractor_name: Подрядчик.
-        contractor_email: Email подрядчика.
-        contractor_phone: Телефон подрядчика.
-        source_urls: Ссылки на источники проекта.
+    Attributes:
+        id: Internal record identifier.
+        project_id: Project External Identifier.
+        name: Name of project.
+        normalized_name: Normalized name to protect against duplicates.
+        region: Implementation region.
+        stage: Project stage.
+        start_date: Target date for commencement.
+        end_date: Target Date for Completion.
+        budget: Estimated value.
+        description: Brief description of the project (LLM).
+        customer_name: Buyer.
+        customer_email: Email by the customer.
+        customer_phone: Customer telephone.
+        investor_name: Investor.
+        investor_email: Email investor.
+        investor_phone: Investor &apos; s phone.
+        contractor_name: Contractor.
+        contractor_email: Email contractor.
+        contractor_phone: Contractor &apos; s telephone.
+        source_urls: References to project sources.
     """
 
     __tablename__ = "projects"

@@ -1,6 +1,6 @@
-"""Дедупликация и склейка компаний.
+"""Decodification and Glassing of Companies.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -15,22 +15,22 @@ from app.models.company import Company
 
 LEGAL_FORMS = [
     "ооо",
-    "оао",
+    'Ooh.',
     "пао",
     "зао",
     "ао",
-    "ип",
-    "нко",
-    "гку",
-    "мку",
+    'Yeah.',
+    'nco',
+    'Gku',
+    'mice',
 ]
 
 
 def normalize_name(name: str) -> str:
-    """Нормализовать название компании для сравнения.
+    """Normalize the name of the company for comparison.
 
-    :param name: Исходное название.
-    :return: Нормализованная строка.
+    :paramname: Reference name.
+    :return: Normalized line.
     """
 
     lowered = name.lower()
@@ -42,16 +42,16 @@ def normalize_name(name: str) -> str:
 
 
 def _name_similarity(left: str, right: str) -> float:
-    """Оценить сходство двух нормализованных названий."""
+    'Assess the similarities between the two normalized names.'
 
     return SequenceMatcher(None, left, right).ratio()
 
 
 async def dedupe_companies(session: AsyncSession) -> dict[str, int]:
-    """Склеить дубликаты компаний по ИНН и названию.
+    """Stick duplicates of companies by name and name.
 
-    :param session: Асинхронная сессия БД.
-    :return: Статистика склейки.
+    :param session: Asynchronous database session.
+    :return: Scene statistics.
     """
 
     companies = (await session.execute(select(Company))).scalars().all()

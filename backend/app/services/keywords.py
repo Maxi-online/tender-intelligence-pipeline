@@ -1,6 +1,6 @@
-"""Сервисы для работы с наборами ключевых слов.
+"""Tools to work with key words sets.
 
-Автор: адаптация под TPIS.
+Author: Adaptation to TPIS.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from app.services.config_loader import load_keywords_config
 
 
 async def list_keyword_sets(session: AsyncSession) -> list[SearchKeywordSet]:
-    """Получить все наборы ключевых слов с предзагрузкой ключей."""
+    'Get all keyword sets with keys preset.'
 
     result = await session.execute(
         select(SearchKeywordSet).options(selectinload(SearchKeywordSet.keywords))
@@ -26,7 +26,7 @@ async def list_keyword_sets(session: AsyncSession) -> list[SearchKeywordSet]:
 
 
 async def get_keyword_set(session: AsyncSession, set_id: int) -> SearchKeywordSet | None:
-    """Получить один набор по идентификатору."""
+    'Get one set by identifier.'
 
     result = await session.execute(
         select(SearchKeywordSet)
@@ -45,7 +45,7 @@ async def create_keyword_set(
     created_by: str | None,
     keywords: Iterable[tuple[str, float]] | None = None,
 ) -> SearchKeywordSet:
-    """Создать набор ключевых слов."""
+    'Create a set of key words.'
 
     keyword_set = SearchKeywordSet(
         name=name,
@@ -76,9 +76,9 @@ async def update_keyword_set(
     created_by: str | None = None,
     keywords: Iterable[tuple[str, float]] | None = None,
 ) -> SearchKeywordSet | None:
-    """Обновить параметры набора ключевых слов.
+    """Update the parameters of the set of key words.
 
-    Если передан список keywords, существующие ключи набора будут перезаписаны.
+    If the kywords list is transferred, the existing selection keys will be rewritten.
     """
 
     keyword_set = await get_keyword_set(session, set_id)
@@ -101,7 +101,7 @@ async def update_keyword_set(
 
 
 async def delete_keyword_set(session: AsyncSession, set_id: int) -> bool:
-    """Удалить набор ключевых слов."""
+    'Delete the set of key words.'
 
     keyword_set = await get_keyword_set(session, set_id)
     if not keyword_set:
@@ -115,9 +115,9 @@ async def resolve_keywords_for_set(
     session: AsyncSession,
     set_id: int | None,
 ) -> list[str]:
-    """Получить список текстовых ключей для указанного набора.
+    """Get a list of the text keys for the set.
 
-    Если set_id == None или набор не найден, возвращается пустой список.
+    If set_id = = None or set not found, the empty list returns.
     """
 
     if set_id is None:
@@ -129,7 +129,7 @@ async def resolve_keywords_for_set(
 
 
 async def bootstrap_keyword_sets_from_yaml(session: AsyncSession) -> None:
-    """Создать базовый набор ключевых слов из config/keywords.yaml, если в БД пусто."""
+    'Create a core set of key words from config/keywords.yaml if the database is empty.'
 
     existing = await session.execute(select(SearchKeywordSet))
     if existing.scalars().first():
@@ -142,8 +142,8 @@ async def bootstrap_keyword_sets_from_yaml(session: AsyncSession) -> None:
 
     await create_keyword_set(
         session,
-        name="Строительные тендеры",
-        description="Базовый набор ключевых слов из config/keywords.yaml",
+        name='Construction tenders',
+        description='Core set of key words from config/keywords.yaml',
         created_by="system",
         keywords=[(kw, 1.0) for kw in construction_keywords],
     )

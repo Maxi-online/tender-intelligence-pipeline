@@ -1,8 +1,8 @@
-"""REST API модуля Seldon по ТЗ TPIS.
+"""REST API Seldon module on TK TPIS.
 
-Назначение: получение максимально свежей информации об участниках рынка — заказчиках
-и победителях (не участие в тендерах). Эндпоинты: список закупок, детали, заказчики,
-победители, участники, контакты по ИНН, связанные проекты.
+Designation: obtaining the most up-to-date information possible on the customer market participants
+and winners (not participating in tenders)). Endpoints: procurement list, details, requisitioners,
+Winners, participants, INS contacts, related projects.
 """
 
 from __future__ import annotations
@@ -107,7 +107,7 @@ async def list_seldon_tenders(
     date_to: date | None = Query(None),
     changed_since: datetime | None = Query(None),
 ) -> list[dict[str, Any]]:
-    """Список тендеров из кэша Seldon с фильтрацией и пагинацией."""
+    'List of Cash Seldon tenders with filtering and pagination.'
     q = select(SeldonPurchase).order_by(SeldonPurchase.seldon_id.desc())
     if status:
         q = q.where(SeldonPurchase.status_name == status)
@@ -128,7 +128,7 @@ async def get_seldon_tender(
     tender_id: str,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, Any]:
-    """Детали тендера по ID (seldon_id)."""
+    'ID tender details (seldon_id).'
     try:
         sid = int(tender_id)
     except ValueError:
@@ -137,7 +137,7 @@ async def get_seldon_tender(
     row = result.scalars().first()
     if not row:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Тендер не найден")
+        raise HTTPException(status_code=404, detail='No tender found')
     return {
         "tender_id": str(row.seldon_id),
         "title": row.subject,
@@ -164,7 +164,7 @@ async def get_seldon_tender_participants(
     tender_id: str,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[dict[str, Any]]:
-    """Участники по ID тендера (из кэша протокола)."""
+    'Participants in the ID tender (from the cache of the protocol).'
     try:
         sid = int(tender_id)
     except ValueError:
@@ -173,7 +173,7 @@ async def get_seldon_tender_participants(
     row = result.scalars().first()
     if not row:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Тендер не найден")
+        raise HTTPException(status_code=404, detail='No tender found')
     participants = row.participants
     if isinstance(participants, list):
         return [
@@ -196,7 +196,7 @@ async def get_seldon_tender_winner(
     tender_id: str,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, Any]:
-    """Победитель и результаты торгов по ID тендера."""
+    'Winner and I.D. bid results.'
     try:
         sid = int(tender_id)
     except ValueError:
@@ -205,7 +205,7 @@ async def get_seldon_tender_winner(
     row = result.scalars().first()
     if not row:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Тендер не найден")
+        raise HTTPException(status_code=404, detail='No tender found')
     protocol_info = row.protocol_info or (row.raw_protocol if isinstance(row.raw_protocol, dict) else None)
     protocol_text = str(protocol_info)[:500] if protocol_info else None
     return {
@@ -224,7 +224,7 @@ async def get_seldon_contacts(
     company_id: str | None = Query(None),
     inn: str | None = Query(None),
 ) -> list[dict[str, Any]]:
-    """Контакты контрагентов по company_id или ИНН (из кэша закупок)."""
+    'Contacts of counterparties on company_id or INN (from the purchase cache)).'
     if not inn and not company_id:
         return []
     search_inn = (inn or company_id or "").strip()
@@ -263,7 +263,7 @@ async def get_seldon_tender_related_projects(
     tender_id: str,
     session: AsyncSession = Depends(get_db_session),
 ) -> list[dict[str, Any]]:
-    """Связанные проекты по ID тендера (по совпадению заказчика с проектом)."""
+    'Related ID tender projects (consenting to the project)).'
     try:
         sid = int(tender_id)
     except ValueError:
@@ -309,7 +309,7 @@ class SeldonRecommendRequest(BaseModel):
 
 @router.post("/recommend-filters")
 async def seldon_recommend_filters(body: SeldonRecommendRequest) -> dict[str, Any]:
-    """По цели поиска (GPT-5-nano) подобрать настройки фильтров для максимально точной выгрузки."""
+    'For search purpose (GPT-5-nano), select filter settings to discharge as accurately as possible.'
     client = SeldonClient()
     filters = await client.get_filters()
     return await recommend_filter_settings(body.search_goal, filters)
@@ -320,10 +320,10 @@ async def seldon_sync(
     body: SeldonSyncRequest,
     session: AsyncSession = Depends(get_db_session),
 ) -> dict[str, Any]:
-    """Создать заказ на выгрузку закупок в Seldon и сохранить результат в кэш.
+    """Create an order to unload the Seldon procurement and save the result in cache.
 
-    Можно передать либо явные filter_id/date_from/date_to, либо search_goal —
-    тогда GPT подберёт настройки фильтров под цель поиска.
+    You can give it to me or you can give it to me.filter_id/date_from/date_to, eithersearch_goal —
+    Then the GPT will select filter settings for the purpose of searching.
     """
     client = SeldonClient()
     filter_id = body.filter_id
@@ -341,14 +341,14 @@ async def seldon_sync(
             from fastapi import HTTPException
             raise HTTPException(
                 status_code=400,
-                detail=f"Не удалось подобрать фильтр по цели. Рекомендация: {rec.get('reason', '')}",
+                detail=f"Unable to select filter by target. Recommendation: {rec.get('reason', '')}",
             )
 
     if filter_id is None or date_from is None or date_to is None:
         from fastapi import HTTPException
         raise HTTPException(
             status_code=400,
-            detail="Укажите filter_id, date_from, date_to либо search_goal",
+            detail='Please specify filter_id, date_from, date_to or search_goal',
         )
 
     stats = await sync_purchases_from_seldon(
@@ -364,6 +364,6 @@ async def seldon_sync(
 
 @router.get("/filters")
 async def seldon_filters() -> list[dict[str, Any]]:
-    """Список поисковых фильтров учётной записи Seldon."""
+    "Seldon's search filter list."
     client = SeldonClient()
     return await client.get_filters()

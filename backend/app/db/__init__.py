@@ -1,4 +1,4 @@
-"""База данных: сессии и утилиты.
+"""Database: sessions and utilities.
 
-Автор: Maxi-online
+Author: Maxi-online
 """

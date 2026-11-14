@@ -1,4 +1,4 @@
-"""Фоновые задачи и расписание.
+"""Background tasks and timetable.
 
-Автор: Maxi-online
+Author: Maxi-online
 """

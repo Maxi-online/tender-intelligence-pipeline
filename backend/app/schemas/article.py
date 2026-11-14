@@ -1,6 +1,6 @@
-"""Схемы статьи для API.
+"""Articles for the API.
 
-Автор: Maxi-online
+Author: Maxi-online
 """
 
 from __future__ import annotations
@@ -11,18 +11,18 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ArticleBase(BaseModel):
-    """Базовая схема статьи.
+    """The basic outline of the article.
 
-    Атрибуты:
-        source_id: Идентификатор источника.
-        source: Источник публикации.
-        url: Ссылка на статью.
-        title: Заголовок статьи.
-        published_at: Дата публикации.
-        text: Полный текст статьи.
-        entities: Извлеченные сущности.
-        label: Метка классификации.
-        quality_flag: Признак качества данных.
+    Attributes:
+        source_id: Source Identifier.
+        source: Publication source.
+        url: Reference to article.
+        title: The title of the article.
+        published_at: Date of publication.
+        text: Full text of the article.
+        entities: Extracted Essentials.
+        label: Classification label.
+        quality_flag: Data quality sign.
     """
 
     source_id: int | None = None
@@ -37,16 +37,16 @@ class ArticleBase(BaseModel):
 
 
 class ArticleCreate(ArticleBase):
-    """Схема для создания статьи на входе API."""
+    'Scheme for the creation of an article at the API entrance.'
 
     model_config = ConfigDict(extra="forbid")
 
 
 class ArticleRead(ArticleBase):
-    """Схема статьи для чтения из API.
+    """Schematic of an article to read from API.
 
-    Атрибуты:
-        id: Внутренний идентификатор записи.
+    Attributes:
+        id: Internal record identifier.
     """
 
     id: int

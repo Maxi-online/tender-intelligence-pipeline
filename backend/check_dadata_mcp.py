@@ -1,9 +1,9 @@
-"""Скрипт проверки доступности MCP Dadata с ключами из .env."""
+'.env access test script MCP Datata with keys.'
 import asyncio
 import sys
 from pathlib import Path
 
-# Подгрузить .env из корня проекта
+# Load .env from the root of the project
 root = Path(__file__).resolve().parent.parent
 env_file = root / ".env"
 if env_file.exists():
@@ -23,9 +23,9 @@ from app.services.dadata_mcp import check_dadata_mcp_server
 
 async def main():
     s = get_settings()
-    print("DADATA_API_KEY задан:", bool(s.dadata_api_key))
-    print("DADATA_SECRET_KEY задан:", bool(s.dadata_secret_key))
-    print("Проверка MCP Dadata...")
+    print('DADATA_API_KEY:', bool(s.dadata_api_key))
+    print('DADATA_SECRET_KEY:', bool(s.dadata_secret_key))
+    print('Test MCP Datata...')
     result = await check_dadata_mcp_server()
     for k, v in result.items():
         print(f"  {k}: {v}")
