@@ -22,7 +22,7 @@ Author: Maxi-online
 TPIS – system for automatic collection, normalization and intellectual analysis of data on construction projects and tender. Realizes the cycle: source search, media/portals parsing, LLM-extraction and classification, semantic search (Perplexity + Claude), deduplication, API, export and web interface.
 
 ## Main opportunities
-- Media/journal data collection (RSS/HTML/Sitemap) + auto-detection of new sources via SerpaPI.
+- Media/journal data collection (RSS/HTML/Sitemap) + auto-detection of new sources via SerpAPI.
 - LLM – Russian core (Claude): the essence, dates, amounts, contacts, roles.
 - Semantic search (Perplexity + Claude) with ranking of results.
 - Deduction of projects/companies in the BD, a single table of report.
@@ -50,7 +50,7 @@ TPIS – system for automatic collection, normalization and intellectual analysi
 ## Basic environmental parameters (.env)
 - `DATABASE_URL` is a link to PostgreSQL.
 - `SELDON_BASE_URL`, `SELDON_API_KEY` — Access to Justice in Environmental MattersSeldon API (if available).
-- `DISCOVERY_SEARCH_URL`, `ZDISCOVERY_API_KEY' — Search for Sources (SerpaPI)).
+- `DISCOVERY_SEARCH_URL`, `ZDISCOVERY_API_KEY' — Search for Sources (SerpAPI)).
   - Example: `https://serpapi.com/search.json?engine=google_news&q={query}&hl=ru&gl=ru&api_key={api_key}`
 - `HTTP_PROXY_URL`, `USER_AGENT`, `REQUEST_DELAY_MIN/MAX` — anti‑blocking.
 - `PERPLEXITY_API_KEY`, `PERPLEXITY_MODEL` — Key and ModelPerplexity.
@@ -89,6 +89,6 @@ To run, export the required variables to the process environment or fill the ign
 
 JSON/YAML- facilities use `${NAME}` links; configuration loaders allow them through the environment. For numerical values, ${NAME:int}`. Lack of mandatory value causes an error with the name of the variable, without its content. Safe `*.example.json` / `*.example.yaml` save configuration structure.
 
-The names of the private parameters are given in [.env.example](.env.example)). Old values are only retained in the protected local storage facility of the owner; it is not part of the published project. Once the keys are rotated, use new values.
+The names of the private parameters are given in [.env.example](.env.example). Old values are only retained in the protected local storage facility of the owner; it is not part of the published project. Once the keys are rotated, use new values.
 
 Checking the source and configuration formats does not replace the launch of the infrastructure and model evaluation. Privacy changes do not confirm the quality of AI, the performance of external APIs, or the willingness of the entire system to operate.
